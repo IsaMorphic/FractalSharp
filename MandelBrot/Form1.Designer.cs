@@ -80,7 +80,7 @@
             this.x720ToolStripMenuItem,
             this.x960ToolStripMenuItem});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(136, 26);
             this.optionsToolStripMenuItem.Text = "Options";
             // 
             // x480ToolStripMenuItem
@@ -88,21 +88,21 @@
             this.x480ToolStripMenuItem.Checked = true;
             this.x480ToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.x480ToolStripMenuItem.Name = "x480ToolStripMenuItem";
-            this.x480ToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.x480ToolStripMenuItem.Size = new System.Drawing.Size(147, 26);
             this.x480ToolStripMenuItem.Text = "640x480";
             this.x480ToolStripMenuItem.Click += new System.EventHandler(this.x480ToolStripMenuItem_Click);
             // 
             // x720ToolStripMenuItem
             // 
             this.x720ToolStripMenuItem.Name = "x720ToolStripMenuItem";
-            this.x720ToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.x720ToolStripMenuItem.Size = new System.Drawing.Size(147, 26);
             this.x720ToolStripMenuItem.Text = "900x720";
             this.x720ToolStripMenuItem.Click += new System.EventHandler(this.x720ToolStripMenuItem_Click);
             // 
             // x960ToolStripMenuItem
             // 
             this.x960ToolStripMenuItem.Name = "x960ToolStripMenuItem";
-            this.x960ToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.x960ToolStripMenuItem.Size = new System.Drawing.Size(147, 26);
             this.x960ToolStripMenuItem.Text = "1280x960";
             this.x960ToolStripMenuItem.Click += new System.EventHandler(this.x960ToolStripMenuItem_Click);
             // 
@@ -110,16 +110,14 @@
             // 
             this.startToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.startToolStripMenuItem.Name = "startToolStripMenuItem";
-            this.startToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.startToolStripMenuItem.Size = new System.Drawing.Size(136, 26);
             this.startToolStripMenuItem.Text = "Start";
             this.startToolStripMenuItem.Click += new System.EventHandler(this.startToolStripMenuItem_Click);
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-            this.AutoSize = true;
-            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(622, 480);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.menuStrip1);
