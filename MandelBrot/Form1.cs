@@ -27,6 +27,9 @@ namespace MandelBrot
         public AviWriter videoFile;
         public IAviVideoStream stream;
         public bool rendering = false;
+        public int max_iteration = 5000;
+        double offsetX = -0.743643887037158704752191506114774;
+        double offsetY =  0.131825904205311970493132056385139;
         public Form1()
         {
             InitializeComponent();
@@ -75,9 +78,6 @@ namespace MandelBrot
         {
             frameCount++;
             Frame frame = new Frame { frameNum = frameCount };
-            double offsetX = -0.743643887037158704752191506114774;
-            double offsetY = 0.131825904205311970493132056385139;
-            int max_iteration = 5000;
             DirectBitmap fractal = new DirectBitmap(currentFractal.Width, currentFractal.Height);
             for (var px = 0; px < fractal.Width; px++)
             {
@@ -100,15 +100,14 @@ namespace MandelBrot
                         yy = y * y;
                         iteration++;
                     }
-                    int r, g, b;
-                    HsvToRgb(iteration, 1, 1, out r, out g, out b);
+                    
                     if (xx + yy > 16)
                     {
-                        fractal.SetPixel(px, py, Color.FromArgb(r, g, b));
+                        fractal.SetPixel(px, py, getColor(iteration));
                     }
                     else
                     {
-                        fractal.SetPixel(px, py, Color.Black);
+                        fractal.SetPixel(px, py, 0);
                     }
                 }
             }
@@ -117,106 +116,16 @@ namespace MandelBrot
             
         }
 
-        public void HsvToRgb(double h, double S, double V, out int r, out int g, out int b)
+
+        public int getColor(int i)
         {
-            double H = h;
-            while (H < 0) { H += 360; };
-            while (H >= 360) { H -= 360; };
-            double R, G, B;
-            if (V <= 0)
-            { R = G = B = 0; }
-            else if (S <= 0)
-            {
-                R = G = B = V;
-            }
-            else
-            {
-                double hf = H / 60.0;
-                int i = (int)Math.Floor(hf);
-                double f = hf - i;
-                double pv = V * (1 - S);
-                double qv = V * (1 - S * f);
-                double tv = V * (1 - S * (1 - f));
-                switch (i)
-                {
-
-                    // Red is the dominant color
-
-                    case 0:
-                        R = V;
-                        G = tv;
-                        B = pv;
-                        break;
-
-                    // Green is the dominant color
-
-                    case 1:
-                        R = qv;
-                        G = V;
-                        B = pv;
-                        break;
-                    case 2:
-                        R = pv;
-                        G = V;
-                        B = tv;
-                        break;
-
-                    // Blue is the dominant color
-
-                    case 3:
-                        R = pv;
-                        G = qv;
-                        B = V;
-                        break;
-                    case 4:
-                        R = tv;
-                        G = pv;
-                        B = V;
-                        break;
-
-                    // Red is the dominant color
-
-                    case 5:
-                        R = V;
-                        G = pv;
-                        B = qv;
-                        break;
-
-                    // Just in case we overshoot on our math by a little, we put these here. Since its a switch it won't slow us down at all to put these here.
-
-                    case 6:
-                        R = V;
-                        G = tv;
-                        B = pv;
-                        break;
-                    case -1:
-                        R = V;
-                        G = pv;
-                        B = qv;
-                        break;
-
-                    // The color is not defined, we should throw an error.
-
-                    default:
-                        //LFATAL("i Value error in Pixel conversion, Value is %d", i);
-                        R = G = B = V; // Just pretend its black/white
-                        break;
-                }
-            }
-            r = Clamp((int)(R * 255.0));
-            g = Clamp((int)(G * 255.0));
-            b = Clamp((int)(B * 255.0));
+            int a = (int)(255 * ((double)i) / (max_iteration / 4));
+            return ((0) | (2 * a << 16) | (2 * a << 8) | (a << 0));
         }
 
         /// <summary>
         /// Clamp a value to 0-255
         /// </summary>
-        public int Clamp(int i)
-        {
-            if (i < 0) return 0;
-            if (i > 255) return 255;
-            return i;
-        }
 
         private void startToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -315,15 +224,15 @@ namespace MandelBrot
             Height = height;
             Bits = new Int32[width * height];
             BitsHandle = GCHandle.Alloc(Bits, GCHandleType.Pinned);
-            Bitmap = new Bitmap(width, height, width * 4, PixelFormat.Format32bppPArgb, BitsHandle.AddrOfPinnedObject());
+            Bitmap = new Bitmap(width, height, width * 4, PixelFormat.Format32bppRgb, BitsHandle.AddrOfPinnedObject());
         }
 
-        public void SetPixel(int x, int y, Color colour)
+        public void SetPixel(int x, int y, int color)
         {
             int index = x + (y * Width);
-            int col = colour.ToArgb();
+            //int col = colour.ToArgb();
 
-            Bits[index] = col;
+            Bits[index] = color;
         }
 
         public Color GetPixel(int x, int y)
