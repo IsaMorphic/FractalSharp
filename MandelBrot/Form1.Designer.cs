@@ -35,6 +35,10 @@
             this.x480ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.x720ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.x960ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.processingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.threadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.threadsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.threadsToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.startToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -67,6 +71,7 @@
             // 
             this.renderToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.optionsToolStripMenuItem,
+            this.processingToolStripMenuItem,
             this.startToolStripMenuItem});
             this.renderToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.renderToolStripMenuItem.Name = "renderToolStripMenuItem";
@@ -80,37 +85,71 @@
             this.x720ToolStripMenuItem,
             this.x960ToolStripMenuItem});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(136, 26);
-            this.optionsToolStripMenuItem.Text = "Options";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.optionsToolStripMenuItem.Text = "Resolution";
+            this.optionsToolStripMenuItem.Click += new System.EventHandler(this.optionsToolStripMenuItem_Click);
             // 
             // x480ToolStripMenuItem
             // 
             this.x480ToolStripMenuItem.Checked = true;
             this.x480ToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.x480ToolStripMenuItem.Name = "x480ToolStripMenuItem";
-            this.x480ToolStripMenuItem.Size = new System.Drawing.Size(147, 26);
+            this.x480ToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.x480ToolStripMenuItem.Text = "640x480";
             this.x480ToolStripMenuItem.Click += new System.EventHandler(this.x480ToolStripMenuItem_Click);
             // 
             // x720ToolStripMenuItem
             // 
             this.x720ToolStripMenuItem.Name = "x720ToolStripMenuItem";
-            this.x720ToolStripMenuItem.Size = new System.Drawing.Size(147, 26);
+            this.x720ToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.x720ToolStripMenuItem.Text = "900x720";
             this.x720ToolStripMenuItem.Click += new System.EventHandler(this.x720ToolStripMenuItem_Click);
             // 
             // x960ToolStripMenuItem
             // 
             this.x960ToolStripMenuItem.Name = "x960ToolStripMenuItem";
-            this.x960ToolStripMenuItem.Size = new System.Drawing.Size(147, 26);
+            this.x960ToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.x960ToolStripMenuItem.Text = "1280x960";
             this.x960ToolStripMenuItem.Click += new System.EventHandler(this.x960ToolStripMenuItem_Click);
             // 
+            // processingToolStripMenuItem
+            // 
+            this.processingToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.threadToolStripMenuItem,
+            this.threadsToolStripMenuItem,
+            this.threadsToolStripMenuItem1});
+            this.processingToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.processingToolStripMenuItem.Name = "processingToolStripMenuItem";
+            this.processingToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.processingToolStripMenuItem.Text = "Processing";
+            // 
+            // threadToolStripMenuItem
+            // 
+            this.threadToolStripMenuItem.Name = "threadToolStripMenuItem";
+            this.threadToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.threadToolStripMenuItem.Text = "1 Thread";
+            this.threadToolStripMenuItem.Click += new System.EventHandler(this.threadToolStripMenuItem_Click);
+            // 
+            // threadsToolStripMenuItem
+            // 
+            this.threadsToolStripMenuItem.Checked = true;
+            this.threadsToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.threadsToolStripMenuItem.Name = "threadsToolStripMenuItem";
+            this.threadsToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.threadsToolStripMenuItem.Text = "5 Threads";
+            this.threadsToolStripMenuItem.Click += new System.EventHandler(this.threadsToolStripMenuItem_Click);
+            // 
+            // threadsToolStripMenuItem1
+            // 
+            this.threadsToolStripMenuItem1.Name = "threadsToolStripMenuItem1";
+            this.threadsToolStripMenuItem1.Size = new System.Drawing.Size(181, 26);
+            this.threadsToolStripMenuItem1.Text = "10 Threads";
+            this.threadsToolStripMenuItem1.Click += new System.EventHandler(this.threadsToolStripMenuItem1_Click);
+            // 
             // startToolStripMenuItem
             // 
-            this.startToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.startToolStripMenuItem.Name = "startToolStripMenuItem";
-            this.startToolStripMenuItem.Size = new System.Drawing.Size(136, 26);
+            this.startToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.startToolStripMenuItem.Text = "Start";
             this.startToolStripMenuItem.Click += new System.EventHandler(this.startToolStripMenuItem_Click);
             // 
@@ -142,6 +181,10 @@
         private System.Windows.Forms.ToolStripMenuItem x480ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem x720ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem x960ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem processingToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem threadToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem threadsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem threadsToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem startToolStripMenuItem;
     }
 }

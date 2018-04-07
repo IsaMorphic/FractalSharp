@@ -28,6 +28,7 @@ namespace MandelBrot
         public IAviVideoStream stream;
         public bool rendering = false;
         public int max_iteration = 5000;
+        public int thread_count = 5;
         double offsetX = -0.743643887037158704752191506114774;
         double offsetY =  0.131825904205311970493132056385139;
         public Form1()
@@ -79,13 +80,14 @@ namespace MandelBrot
             frameCount++;
             Frame frame = new Frame { frameNum = frameCount };
             DirectBitmap fractal = new DirectBitmap(currentFractal.Width, currentFractal.Height);
+            int in_set = 0;
             for (var px = 0; px < fractal.Width; px++)
             {
                 for (var py = 0; py < fractal.Height; py++)
                 {
                     var zoom = Math.Pow(frame.frameNum, frame.frameNum / 100.0);
-                    var x0 = Map(px, 0, fractal.Width, -0.15 / zoom + offsetX, 0.15 / zoom + offsetX);
-                    var y0 = Map(py, 0, fractal.Height, -0.15 / zoom + offsetY, 0.15 / zoom + offsetY);
+                    var x0 = Map(px, 0, fractal.Width, -1 / zoom + offsetX, 1 / zoom + offsetX);
+                    var y0 = Map(py, 0, fractal.Height, -1 / zoom + offsetY, 1 / zoom + offsetY);
                     var x = 0.0;
                     var y = 0.0;
                     var xx = x * x;
@@ -103,24 +105,136 @@ namespace MandelBrot
                     
                     if (xx + yy > 16)
                     {
-                        fractal.SetPixel(px, py, getColor(iteration));
+                        int r, g, b;
+                        double hue = Map(iteration, 0, max_iteration, 30, 240);
+                        HsvToRgb(hue, 1.0, 1.0, out r, out g, out b);
+                        fractal.SetPixel(px, py, Color.FromArgb(r, g, b));
                     }
                     else
                     {
-                        fractal.SetPixel(px, py, 0);
+                        fractal.SetPixel(px, py, Color.Black);
+                        in_set++;
                     }
                 }
             }
             frame.Bmp = fractal;
             workingFrames.Add(frame);
-            
+            if (in_set >= fractal.Width * fractal.Height && rendering)
+            {
+                Task.Run(new Action(Shutdown));
+            }
         }
 
+        void HsvToRgb(double h, double S, double V, out int r, out int g, out int b)
+        {
+            // ######################################################################
+            // T. Nathan Mundhenk
+            // mundhenk@usc.edu
+            // C/C++ Macro HSV to RGB
+
+            double H = h;
+            while (H < 0) { H += 360; };
+            while (H >= 360) { H -= 360; };
+            double R, G, B;
+            if (V <= 0)
+            { R = G = B = 0; }
+            else if (S <= 0)
+            {
+                R = G = B = V;
+            }
+            else
+            {
+                double hf = H / 60.0;
+                int i = (int)Math.Floor(hf);
+                double f = hf - i;
+                double pv = V * (1 - S);
+                double qv = V * (1 - S * f);
+                double tv = V * (1 - S * (1 - f));
+                switch (i)
+                {
+
+                    // Red is the dominant color
+
+                    case 0:
+                        R = V;
+                        G = tv;
+                        B = pv;
+                        break;
+
+                    // Green is the dominant color
+
+                    case 1:
+                        R = qv;
+                        G = V;
+                        B = pv;
+                        break;
+                    case 2:
+                        R = pv;
+                        G = V;
+                        B = tv;
+                        break;
+
+                    // Blue is the dominant color
+
+                    case 3:
+                        R = pv;
+                        G = qv;
+                        B = V;
+                        break;
+                    case 4:
+                        R = tv;
+                        G = pv;
+                        B = V;
+                        break;
+
+                    // Red is the dominant color
+
+                    case 5:
+                        R = V;
+                        G = pv;
+                        B = qv;
+                        break;
+
+                    // Just in case we overshoot on our math by a little, we put these here. Since its a switch it won't slow us down at all to put these here.
+
+                    case 6:
+                        R = V;
+                        G = tv;
+                        B = pv;
+                        break;
+                    case -1:
+                        R = V;
+                        G = pv;
+                        B = qv;
+                        break;
+
+                    // The color is not defined, we should throw an error.
+
+                    default:
+                        //LFATAL("i Value error in Pixel conversion, Value is %d", i);
+                        R = G = B = V; // Just pretend its black/white
+                        break;
+                }
+            }
+            r = Clamp((int)(R * 255.0));
+            g = Clamp((int)(G * 255.0));
+            b = Clamp((int)(B * 255.0));
+        }
+
+        /// <summary>
+        /// Clamp a value to 0-255
+        /// </summary>
+        int Clamp(int i)
+        {
+            if (i < 0) return 0;
+            if (i > 255) return 255;
+            return i;
+        }
 
         public int getColor(int i)
         {
-            int a = (int)(255 * ((double)i) / (max_iteration / 4));
-            return ((0) | (2 * a << 16) | (2 * a << 8) | (a << 0));
+            int a = (int)(255 * ((double)i) / (max_iteration));
+            return ((0) | (a * 5 << 16) | (a * 4 << 8) | (a * 2 << 0));
         }
 
         /// <summary>
@@ -151,7 +265,7 @@ namespace MandelBrot
                 videoFile.FramesPerSecond = 30;
                 stream = videoFile.AddMotionJpegVideoStream(currentFractal.Width, currentFractal.Height, 90);
                 rendering = true;
-                for (var i = 0; i < 10; i++)
+                for (var i = 0; i < thread_count; i++)
                 {
                     threads.Add(Task.Run(new Action(MandelBrot)));
                 }
@@ -160,18 +274,22 @@ namespace MandelBrot
             }
             else
             {
-                rendering = false;
-                MessageBox.Show("Finalizing... Please Wait.", "Finalizing Video", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                Manager.Wait();
-                foreach (Frame frame in workingFrames)
-                {
-                    frame.Bmp.Dispose();
-                }
-                workingFrames.RemoveRange(0, workingFrames.Count);
-                videoFile.Close();
-                startToolStripMenuItem.Text = "Start";
-                MessageBox.Show("Rendering Completed!", "Success!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Task.Run(new Action(Shutdown));
             }
+        }
+
+        public void Shutdown() {
+            rendering = false;
+            MessageBox.Show("Finalizing... Please Wait.", "Finalizing Video", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            Manager.Wait();
+            foreach (Frame frame in workingFrames)
+            {
+                frame.Bmp.Dispose();
+            }
+            workingFrames.RemoveRange(0, workingFrames.Count);
+            videoFile.Close();
+            MessageBox.Show("Rendering Completed!", "Success!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            startToolStripMenuItem.Text = "Start";
         }
 
         private void x480ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -200,6 +318,35 @@ namespace MandelBrot
             Width = 1280;
             Height = 960;
         }
+
+        private void optionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void threadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            threadToolStripMenuItem.Checked = true;
+            threadsToolStripMenuItem.Checked = false;
+            threadsToolStripMenuItem1.Checked = false;
+            thread_count = 1;
+        }
+
+        private void threadsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            threadToolStripMenuItem.Checked = false;
+            threadsToolStripMenuItem.Checked = true;
+            threadsToolStripMenuItem1.Checked = false;
+            thread_count = 5;
+        }
+
+        private void threadsToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            threadToolStripMenuItem.Checked = false;
+            threadsToolStripMenuItem.Checked = false;
+            threadsToolStripMenuItem1.Checked = true;
+            thread_count = 10;
+        }
     }
 
     public class Frame
@@ -224,15 +371,15 @@ namespace MandelBrot
             Height = height;
             Bits = new Int32[width * height];
             BitsHandle = GCHandle.Alloc(Bits, GCHandleType.Pinned);
-            Bitmap = new Bitmap(width, height, width * 4, PixelFormat.Format32bppRgb, BitsHandle.AddrOfPinnedObject());
+            Bitmap = new Bitmap(width, height, width * 4, PixelFormat.Format32bppArgb, BitsHandle.AddrOfPinnedObject());
         }
 
-        public void SetPixel(int x, int y, int color)
+        public void SetPixel(int x, int y, Color colour)
         {
             int index = x + (y * Width);
-            //int col = colour.ToArgb();
+            int col = colour.ToArgb();
 
-            Bits[index] = color;
+            Bits[index] = col;
         }
 
         public Color GetPixel(int x, int y)
