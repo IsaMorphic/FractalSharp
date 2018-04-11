@@ -258,6 +258,8 @@
             // livePreviewCheckBox
             // 
             this.livePreviewCheckBox.AutoSize = true;
+            this.livePreviewCheckBox.Checked = true;
+            this.livePreviewCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.livePreviewCheckBox.Location = new System.Drawing.Point(6, 167);
             this.livePreviewCheckBox.Margin = new System.Windows.Forms.Padding(5, 3, 3, 3);
             this.livePreviewCheckBox.Name = "livePreviewCheckBox";

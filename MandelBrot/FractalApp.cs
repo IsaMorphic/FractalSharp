@@ -61,8 +61,8 @@ namespace MandelBrot
         public void MandelBrot()
         {
             frameCount++;
-            int in_set = 0;
-            Parallel.For(0, currentFrame.Width, px =>
+            long in_set = 0;
+            var loop = Parallel.For(0, currentFrame.Width, px =>
             {
                 for (int py = 0; py < currentFrame.Height; py++)
                 {
@@ -134,7 +134,8 @@ namespace MandelBrot
                     }
                 }
             });
-            if (in_set < fractalSize.Width * fractalSize.Height)
+            while (!loop.IsCompleted) { Thread.Sleep(1000); }
+            if (in_set < fractalSize.Width * fractalSize.Height && rendering)
             {
                 try
                 {
@@ -153,8 +154,8 @@ namespace MandelBrot
         public void MandelBrotDecimal()
         {
             frameCount++;
-            int in_set = 0;
-            Parallel.For(0, currentFrame.Width, px =>
+            long in_set = 0;
+            var loop = Parallel.For(0, currentFrame.Width, px =>
             {
                 for (int py = 0; py < currentFrame.Height; py++)
                 {
@@ -226,7 +227,8 @@ namespace MandelBrot
                     }
                 }
             });
-            if (in_set < fractalSize.Width * fractalSize.Height)
+            while (!loop.IsCompleted) { Thread.Sleep(1000); }
+            if (in_set < fractalSize.Width * fractalSize.Height && rendering)
             {
                 try
                 {
@@ -234,7 +236,7 @@ namespace MandelBrot
                     stream.WriteFrame(true, frame, 0, frame.Length);
                 }
                 catch (ArgumentException) { };
-                Task.Run(new Action(MandelBrot));
+                Task.Run(new Action(MandelBrotDecimal));
             }
             else if (rendering)
             {
@@ -372,7 +374,8 @@ namespace MandelBrot
 
         private void intervalTimer_Tick(object sender, EventArgs e)
         {
-            if (livePreviewCheckBox.Checked) {
+            if (livePreviewCheckBox.Checked)
+            {
                 Bitmap img = new Bitmap(fractalSize.Width, fractalSize.Height);
                 var bits = img.LockBits(new Rectangle(0, 0, img.Width, img.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppRgb);
                 Marshal.Copy(currentFrame.Bits, 0, bits.Scan0, currentFrame.Bits.Length);
