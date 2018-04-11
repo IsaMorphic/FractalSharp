@@ -360,7 +360,7 @@
             // 
             this.iterationCountInput.Location = new System.Drawing.Point(4, 36);
             this.iterationCountInput.Maximum = new decimal(new int[] {
-            100000,
+            1000000,
             0,
             0,
             0});

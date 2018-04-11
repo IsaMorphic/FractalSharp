@@ -7,10 +7,16 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+
 namespace MandelBrot
 {
     class Utils
     {
+        
+        public static double FasterPow(double x, double y)
+        {
+            return Math.Exp(y * Math.Log(x));
+        }
         public static RGB[] LoadPallete(string path) {
             List<RGB> pallete = new List<RGB>();
             StreamReader palleteData = new StreamReader(path);

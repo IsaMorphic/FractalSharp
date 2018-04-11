@@ -13,7 +13,6 @@ using SharpAvi;
 using SharpAvi.Output;
 using SharpAvi.Codecs;
 using System.Threading;
-
 namespace MandelBrot
 {
     public partial class FractalApp : Form
@@ -64,14 +63,16 @@ namespace MandelBrot
             long in_set = 0;
             var loop = Parallel.For(0, currentFrame.Width, px =>
             {
+                // Calculate zoom... using math.pow to keep the zoom rate constant.
+                double zoom = Math.Pow(frameCount, frameCount / 100.0);
+
+                // Map our x coordinate to Mandelbrot space.
+                double x0 = Utils.Map(px, 0, currentFrame.Width, -scaleFactor / zoom + offsetX, scaleFactor / zoom + offsetX);
+
                 for (int py = 0; py < currentFrame.Height; py++)
                 {
                     if (!rendering) return;
-                    // Calculate zoom... using math.pow to keep the zoom rate constant.
-                    double zoom = Math.Pow(frameCount, frameCount / 100.0);
 
-                    // Map our image plane to Mandelbrot space.
-                    double x0 = Utils.Map(px, 0, currentFrame.Width, -scaleFactor / zoom + offsetX, scaleFactor / zoom + offsetX);
                     double y0 = Utils.Map(py, 0, currentFrame.Height, -1 / zoom + offsetY, 1 / zoom + offsetY);
 
                     // Initialize some variables..
@@ -134,7 +135,7 @@ namespace MandelBrot
                     }
                 }
             });
-            while (!loop.IsCompleted) { Thread.Sleep(1000); }
+            while (!loop.IsCompleted) { Thread.Sleep(300); }
             if (in_set < fractalSize.Width * fractalSize.Height && rendering)
             {
                 try
@@ -157,14 +158,17 @@ namespace MandelBrot
             long in_set = 0;
             var loop = Parallel.For(0, currentFrame.Width, px =>
             {
+                // Calculate zoom
+                decimal zoom = (decimal)Math.Pow(frameCount, frameCount / 100.0);
+
+                // Map the x coordinate to Mandelbrot Space only once per outer loop.
+                decimal x0 = Utils.MapDecimal(px, 0, currentFrame.Width, -scaleFactorDec / zoom + offsetXDec, scaleFactorDec / zoom + offsetXDec);
+
                 for (int py = 0; py < currentFrame.Height; py++)
                 {
                     if (!rendering) return;
-                    // Calculate zoom... using math.pow to keep the zoom rate constant.
-                    decimal zoom = (decimal)Math.Pow(frameCount, frameCount / 100.0);
 
-                    // Map our image plane to Mandelbrot space.
-                    decimal x0 = Utils.MapDecimal(px, 0, currentFrame.Width, -scaleFactorDec / zoom + offsetXDec, scaleFactorDec / zoom + offsetXDec);
+                    // Then map the y coordinate for every pixel.
                     decimal y0 = Utils.MapDecimal(py, 0, currentFrame.Height, -1.34M / zoom + offsetYDec, 1 / zoom + offsetYDec);
 
                     // Initialize some variables..
@@ -227,7 +231,7 @@ namespace MandelBrot
                     }
                 }
             });
-            while (!loop.IsCompleted) { Thread.Sleep(1000); }
+            while (!loop.IsCompleted) { Thread.Sleep(300); }
             if (in_set < fractalSize.Width * fractalSize.Height && rendering)
             {
                 try
