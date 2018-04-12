@@ -18,26 +18,27 @@ namespace MandelBrot
     public partial class FractalApp : Form
     {
         // Video file properties
-        public AviWriter videoFile;
-        public IAviVideoStream stream;
+        private AviWriter videoFile;
+        private IAviVideoStream stream;
 
 
         // Multi-thread properties
-        public DirectBitmap currentFrame;
-
+        private DirectBitmap currentFrame;
+        private DateTime currentFrameStartTime;
         // Fractal Properties
-        public int frameCount = 0;
-        public bool rendering = false;
-        public int max_iteration = 3500;
-        public decimal offsetXDec = -0.743643887037158704752191506114774M;
-        public decimal offsetYDec = 0.131825904205311970493132056385139M;
-        public double offsetX = -0.743643887037158704752191506114774;
-        public double offsetY = 0.131825904205311970493132056385139;
-        public Size fractalSize = new Size(640, 480);
-        public double scaleFactor;
-        public decimal scaleFactorDec;
-        public RGB[] palette;
-        public Action ChosenMethod;
+        private int frameCount = 0;
+        private bool rendering = false;
+        private int max_iteration = 100;
+        private decimal offsetXDec = -0.743643887037158704752191506114774M;
+        private decimal offsetYDec = 0.131825904205311970493132056385139M;
+        private double offsetX = -0.743643887037158704752191506114774;
+        private double offsetY = 0.131825904205311970493132056385139;
+        private double extraPrecisionThreshold = Math.Pow(500, 5);
+        private Size fractalSize = new Size(640, 480);
+        private double scaleFactor;
+        private decimal scaleFactorDec;
+        private RGB[] palette;
+        private Action ChosenMethod;
 
 
         public FractalApp()
@@ -59,13 +60,23 @@ namespace MandelBrot
 
         public void MandelBrot()
         {
+            currentFrameStartTime = DateTime.Now;
             frameCount++;
+            max_iteration += Math.Min(frameCount, 40);
+            BeginInvoke((Action)(() =>
+            {
+                startFrameInput.Value = frameCount;
+                iterationCountInput.Value = max_iteration;
+            }));
             long in_set = 0;
+            // Calculate zoom... using math.pow to keep the zoom rate constant.
+            double zoom = Math.Pow(frameCount, frameCount / 100.0);
+            if (zoom > extraPrecisionThreshold)
+            {
+                ChosenMethod = new Action(MandelBrotDecimal);
+            }
             var loop = Parallel.For(0, currentFrame.Width, px =>
             {
-                // Calculate zoom... using math.pow to keep the zoom rate constant.
-                double zoom = Math.Pow(frameCount, frameCount / 100.0);
-
                 // Map our x coordinate to Mandelbrot space.
                 double x0 = Utils.Map(px, 0, currentFrame.Width, -scaleFactor / zoom + offsetX, scaleFactor / zoom + offsetX);
 
@@ -142,9 +153,13 @@ namespace MandelBrot
                 {
                     byte[] frame = Utils.BitmapToByteArray(currentFrame.Bitmap);
                     stream.WriteFrame(true, frame, 0, frame.Length);
+                    if (livePreviewCheckBox.Checked)
+                    {
+                        pictureBox1.Image = currentFrame.Bitmap;
+                    }
                 }
                 catch (ArgumentException) { };
-                Task.Run(new Action(MandelBrot));
+                Task.Run(ChosenMethod);
             }
             else if (rendering)
             {
@@ -154,12 +169,19 @@ namespace MandelBrot
 
         public void MandelBrotDecimal()
         {
+            currentFrameStartTime = DateTime.Now;
             frameCount++;
+            max_iteration += Math.Min(frameCount, 40);
+            BeginInvoke((Action)(() =>
+            {
+                startFrameInput.Value = frameCount;
+                iterationCountInput.Value = max_iteration;
+            }));
             long in_set = 0;
+            // Calculate zoom... using math.pow to keep the zoom rate constant.
+            decimal zoom = (decimal)Math.Pow(frameCount, frameCount / 100.0);
             var loop = Parallel.For(0, currentFrame.Width, px =>
             {
-                // Calculate zoom
-                decimal zoom = (decimal)Math.Pow(frameCount, frameCount / 100.0);
 
                 // Map the x coordinate to Mandelbrot Space only once per outer loop.
                 decimal x0 = Utils.MapDecimal(px, 0, currentFrame.Width, -scaleFactorDec / zoom + offsetXDec, scaleFactorDec / zoom + offsetXDec);
@@ -238,6 +260,10 @@ namespace MandelBrot
                 {
                     byte[] frame = Utils.BitmapToByteArray(currentFrame.Bitmap);
                     stream.WriteFrame(true, frame, 0, frame.Length);
+                    if (livePreviewCheckBox.Checked)
+                    {
+                        pictureBox1.Image = currentFrame.Bitmap;
+                    }
                 }
                 catch (ArgumentException) { };
                 Task.Run(new Action(MandelBrotDecimal));
@@ -253,16 +279,16 @@ namespace MandelBrot
             rendering = false;
             BeginInvoke((Action)(() =>
             {
+                intervalTimer.Stop();
+                timeLabel.Text = "00:00:00.000";
                 startToolStripMenuItem.Text = "Start";
                 presicionStripMenuItem.Enabled = true;
                 stopToolStripMenuItem.Enabled = false;
                 startToolStripMenuItem.Enabled = true;
                 closeCurrentToolStripMenuItem.Enabled = true;
                 tableLayoutPanel1.Enabled = true;
-                startFrameInput.Value = frameCount;
-                intervalTimer.Stop();
+                pictureBox1.Image = null;
             }));
-            MessageBox.Show("Rendering Stopped.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void saveFileDialog1_FileOk(object sender, CancelEventArgs e)
@@ -329,7 +355,6 @@ namespace MandelBrot
 
         private void stopToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            rendering = false;
             Task.Run(new Action(Shutdown));
         }
 
@@ -376,16 +401,25 @@ namespace MandelBrot
             fractalSize.Height = Height = 960;
         }
 
+        private void FractalApp_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (videoFile != null) {
+                e.Cancel = true;
+                Task.Run(new Action(Shutdown));
+                videoFile.Close();
+                currentFrame.Dispose();
+                e.Cancel = false;
+            }
+        }
+
         private void intervalTimer_Tick(object sender, EventArgs e)
         {
-            if (livePreviewCheckBox.Checked)
-            {
-                Bitmap img = new Bitmap(fractalSize.Width, fractalSize.Height);
-                var bits = img.LockBits(new Rectangle(0, 0, img.Width, img.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppRgb);
-                Marshal.Copy(currentFrame.Bits, 0, bits.Scan0, currentFrame.Bits.Length);
-                img.UnlockBits(bits);
-                pictureBox1.Image = img;
-            }
+            timeLabel.Text = (DateTime.Now - currentFrameStartTime).ToString(@"hh\:mm\:ss\.fff");
+        }
+
+        private void livePreviewCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            pictureBox1.Image = null;
         }
     }
 }

@@ -62,8 +62,10 @@
             this.XOffLabel = new System.Windows.Forms.Label();
             this.xOffInput = new System.Windows.Forms.NumericUpDown();
             this.viewTab = new System.Windows.Forms.TabPage();
-            this.intervalTimer = new System.Windows.Forms.Timer(this.components);
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.timeLabel = new System.Windows.Forms.Label();
+            this.timeDescLabel = new System.Windows.Forms.Label();
+            this.intervalTimer = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.ViewControl.SuspendLayout();
@@ -244,6 +246,8 @@
             // 
             // advancedTab
             // 
+            this.advancedTab.Controls.Add(this.timeDescLabel);
+            this.advancedTab.Controls.Add(this.timeLabel);
             this.advancedTab.Controls.Add(this.livePreviewCheckBox);
             this.advancedTab.Controls.Add(this.livePreviewLabel);
             this.advancedTab.Controls.Add(this.tableLayoutPanel1);
@@ -267,6 +271,7 @@
             this.livePreviewCheckBox.TabIndex = 12;
             this.livePreviewCheckBox.Text = "Enabled";
             this.livePreviewCheckBox.UseVisualStyleBackColor = true;
+            this.livePreviewCheckBox.CheckedChanged += new System.EventHandler(this.livePreviewCheckBox_CheckedChanged);
             // 
             // livePreviewLabel
             // 
@@ -424,15 +429,34 @@
             this.viewTab.Text = "View";
             this.viewTab.UseVisualStyleBackColor = true;
             // 
-            // intervalTimer
-            // 
-            this.intervalTimer.Tick += new System.EventHandler(this.intervalTimer_Tick);
-            // 
             // saveFileDialog1
             // 
             this.saveFileDialog1.DefaultExt = "avi";
             this.saveFileDialog1.Filter = "AVI Video Files|*.avi";
             this.saveFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.saveFileDialog1_FileOk);
+            // 
+            // timeLabel
+            // 
+            this.timeLabel.Location = new System.Drawing.Point(225, 165);
+            this.timeLabel.Name = "timeLabel";
+            this.timeLabel.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.timeLabel.Size = new System.Drawing.Size(182, 23);
+            this.timeLabel.TabIndex = 13;
+            this.timeLabel.Text = "00:00:00.000";
+            this.timeLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // timeDescLabel
+            // 
+            this.timeDescLabel.AutoSize = true;
+            this.timeDescLabel.Location = new System.Drawing.Point(222, 147);
+            this.timeDescLabel.Name = "timeDescLabel";
+            this.timeDescLabel.Size = new System.Drawing.Size(185, 17);
+            this.timeDescLabel.TabIndex = 14;
+            this.timeDescLabel.Text = "CPU Time for current frame:";
+            // 
+            // intervalTimer
+            // 
+            this.intervalTimer.Tick += new System.EventHandler(this.intervalTimer_Tick);
             // 
             // FractalApp
             // 
@@ -445,6 +469,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "FractalApp";
             this.Text = "Mandelbrot Renderer";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FractalApp_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.menuStrip1.ResumeLayout(false);
@@ -497,10 +522,12 @@
         private System.Windows.Forms.NumericUpDown startFrameInput;
         private System.Windows.Forms.Label XOffLabel;
         private System.Windows.Forms.NumericUpDown xOffInput;
-        private System.Windows.Forms.Timer intervalTimer;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
         private System.Windows.Forms.CheckBox livePreviewCheckBox;
         private System.Windows.Forms.Label livePreviewLabel;
+        private System.Windows.Forms.Label timeDescLabel;
+        private System.Windows.Forms.Label timeLabel;
+        private System.Windows.Forms.Timer intervalTimer;
     }
 }
 
