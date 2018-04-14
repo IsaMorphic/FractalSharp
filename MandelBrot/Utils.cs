@@ -7,7 +7,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-
+using Quadruple;
+using Hybridizer.Runtime.CUDAImports;
 namespace MandelBrot
 {
     class Utils
@@ -47,11 +48,11 @@ namespace MandelBrot
             return buffer;
         }
 
-        public static decimal MapDecimal(decimal OldValue, decimal OldMin, decimal OldMax, decimal NewMin, decimal NewMax)
+        public static Quad MapQuad(Quad OldValue, Quad OldMin, Quad OldMax, Quad NewMin, Quad NewMax)
         {
-            decimal OldRange = (OldMax - OldMin);
-            decimal NewRange = (NewMax - NewMin);
-            decimal NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
+            Quad OldRange = (OldMax - OldMin);
+            Quad NewRange = (NewMax - NewMin);
+            Quad NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
             return NewValue;
         }
         public static double Map(double OldValue, double OldMin, double OldMax, double NewMin, double NewMax)
@@ -110,12 +111,6 @@ namespace MandelBrot
             Bitmap.Dispose();
             BitsHandle.Free();
         }
-    }
-
-    public class Frame
-    {
-        public int frameNum;
-        public DirectBitmap Bmp;
     }
 
     public class RGB

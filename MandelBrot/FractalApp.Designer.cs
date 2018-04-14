@@ -41,15 +41,19 @@
             this.stopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.presicionStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.doublePrecisionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.decimalPrescisionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.extraPrescisionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ResolutionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.x480ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.x720ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.x960ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.accelerationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.gPUAccelerationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorDialog = new System.Windows.Forms.ColorDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.ViewControl = new System.Windows.Forms.TabControl();
             this.advancedTab = new System.Windows.Forms.TabPage();
+            this.timeDescLabel = new System.Windows.Forms.Label();
+            this.timeLabel = new System.Windows.Forms.Label();
             this.livePreviewCheckBox = new System.Windows.Forms.CheckBox();
             this.livePreviewLabel = new System.Windows.Forms.Label();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
@@ -63,8 +67,6 @@
             this.xOffInput = new System.Windows.Forms.NumericUpDown();
             this.viewTab = new System.Windows.Forms.TabPage();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
-            this.timeLabel = new System.Windows.Forms.Label();
-            this.timeDescLabel = new System.Windows.Forms.Label();
             this.intervalTimer = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
@@ -95,7 +97,8 @@
             this.fileToolStripMenuItem,
             this.renderToolStripMenuItem,
             this.presicionStripMenuItem,
-            this.ResolutionToolStripMenuItem});
+            this.ResolutionToolStripMenuItem,
+            this.accelerationToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(622, 28);
@@ -170,7 +173,7 @@
             // 
             this.presicionStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.doublePrecisionToolStripMenuItem,
-            this.decimalPrescisionToolStripMenuItem});
+            this.extraPrescisionToolStripMenuItem});
             this.presicionStripMenuItem.Name = "presicionStripMenuItem";
             this.presicionStripMenuItem.Size = new System.Drawing.Size(80, 24);
             this.presicionStripMenuItem.Text = "Precision";
@@ -180,16 +183,16 @@
             this.doublePrecisionToolStripMenuItem.Checked = true;
             this.doublePrecisionToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.doublePrecisionToolStripMenuItem.Name = "doublePrecisionToolStripMenuItem";
-            this.doublePrecisionToolStripMenuItem.Size = new System.Drawing.Size(208, 26);
-            this.doublePrecisionToolStripMenuItem.Text = "Double Precision";
+            this.doublePrecisionToolStripMenuItem.Size = new System.Drawing.Size(207, 26);
+            this.doublePrecisionToolStripMenuItem.Text = "Standard Precision";
             this.doublePrecisionToolStripMenuItem.Click += new System.EventHandler(this.doublePrecisionToolStripMenuItem_Click);
             // 
             // decimalPrescisionToolStripMenuItem
             // 
-            this.decimalPrescisionToolStripMenuItem.Name = "decimalPrescisionToolStripMenuItem";
-            this.decimalPrescisionToolStripMenuItem.Size = new System.Drawing.Size(208, 26);
-            this.decimalPrescisionToolStripMenuItem.Text = "Decimal Prescision";
-            this.decimalPrescisionToolStripMenuItem.Click += new System.EventHandler(this.decimalPrescisionToolStripMenuItem_Click);
+            this.extraPrescisionToolStripMenuItem.Name = "decimalPrescisionToolStripMenuItem";
+            this.extraPrescisionToolStripMenuItem.Size = new System.Drawing.Size(207, 26);
+            this.extraPrescisionToolStripMenuItem.Text = "Extra Prescision";
+            this.extraPrescisionToolStripMenuItem.Click += new System.EventHandler(this.decimalPrescisionToolStripMenuItem_Click);
             // 
             // ResolutionToolStripMenuItem
             // 
@@ -223,6 +226,22 @@
             this.x960ToolStripMenuItem.Size = new System.Drawing.Size(147, 26);
             this.x960ToolStripMenuItem.Text = "1280x960";
             this.x960ToolStripMenuItem.Click += new System.EventHandler(this.x960ToolStripMenuItem_Click);
+            // 
+            // accelerationToolStripMenuItem
+            // 
+            this.accelerationToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.gPUAccelerationToolStripMenuItem});
+            this.accelerationToolStripMenuItem.Name = "accelerationToolStripMenuItem";
+            this.accelerationToolStripMenuItem.Size = new System.Drawing.Size(104, 24);
+            this.accelerationToolStripMenuItem.Text = "Acceleration";
+            // 
+            // gPUAccelerationToolStripMenuItem
+            // 
+            this.gPUAccelerationToolStripMenuItem.CheckOnClick = true;
+            this.gPUAccelerationToolStripMenuItem.Name = "gPUAccelerationToolStripMenuItem";
+            this.gPUAccelerationToolStripMenuItem.Size = new System.Drawing.Size(199, 26);
+            this.gPUAccelerationToolStripMenuItem.Text = "GPU Acceleration";
+            this.gPUAccelerationToolStripMenuItem.Click += new System.EventHandler(this.gPUAccelerationToolStripMenuItem_Click);
             // 
             // colorDialog
             // 
@@ -258,6 +277,25 @@
             this.advancedTab.TabIndex = 1;
             this.advancedTab.Text = "Fractal Configuration";
             this.advancedTab.UseVisualStyleBackColor = true;
+            // 
+            // timeDescLabel
+            // 
+            this.timeDescLabel.AutoSize = true;
+            this.timeDescLabel.Location = new System.Drawing.Point(222, 147);
+            this.timeDescLabel.Name = "timeDescLabel";
+            this.timeDescLabel.Size = new System.Drawing.Size(223, 17);
+            this.timeDescLabel.TabIndex = 14;
+            this.timeDescLabel.Text = "Rendering Time for current frame:";
+            // 
+            // timeLabel
+            // 
+            this.timeLabel.Location = new System.Drawing.Point(263, 164);
+            this.timeLabel.Name = "timeLabel";
+            this.timeLabel.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.timeLabel.Size = new System.Drawing.Size(182, 23);
+            this.timeLabel.TabIndex = 13;
+            this.timeLabel.Text = "00:00:00.000";
+            this.timeLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // livePreviewCheckBox
             // 
@@ -435,25 +473,6 @@
             this.saveFileDialog1.Filter = "AVI Video Files|*.avi";
             this.saveFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.saveFileDialog1_FileOk);
             // 
-            // timeLabel
-            // 
-            this.timeLabel.Location = new System.Drawing.Point(225, 165);
-            this.timeLabel.Name = "timeLabel";
-            this.timeLabel.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.timeLabel.Size = new System.Drawing.Size(182, 23);
-            this.timeLabel.TabIndex = 13;
-            this.timeLabel.Text = "00:00:00.000";
-            this.timeLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            // 
-            // timeDescLabel
-            // 
-            this.timeDescLabel.AutoSize = true;
-            this.timeDescLabel.Location = new System.Drawing.Point(222, 147);
-            this.timeDescLabel.Name = "timeDescLabel";
-            this.timeDescLabel.Size = new System.Drawing.Size(185, 17);
-            this.timeDescLabel.TabIndex = 14;
-            this.timeDescLabel.Text = "CPU Time for current frame:";
-            // 
             // intervalTimer
             // 
             this.intervalTimer.Tick += new System.EventHandler(this.intervalTimer_Tick);
@@ -506,7 +525,7 @@
         private System.Windows.Forms.ToolStripMenuItem closeCurrentToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem presicionStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem doublePrecisionToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem decimalPrescisionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem extraPrescisionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadPaletteToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
@@ -528,6 +547,8 @@
         private System.Windows.Forms.Label timeDescLabel;
         private System.Windows.Forms.Label timeLabel;
         private System.Windows.Forms.Timer intervalTimer;
+        private System.Windows.Forms.ToolStripMenuItem accelerationToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem gPUAccelerationToolStripMenuItem;
     }
 }
 
