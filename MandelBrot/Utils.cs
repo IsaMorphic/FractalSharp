@@ -55,6 +55,7 @@ namespace MandelBrot
             Quad NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
             return NewValue;
         }
+
         public static double Map(double OldValue, double OldMin, double OldMax, double NewMin, double NewMax)
         {
             double OldRange = (OldMax - OldMin);
