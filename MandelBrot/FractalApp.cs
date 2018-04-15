@@ -14,6 +14,8 @@ using SharpAvi.Output;
 using SharpAvi.Codecs;
 using System.Threading;
 using Quadruple;
+using MandelBrot.Utilities;
+
 namespace MandelBrot
 {
     public partial class FractalApp : Form

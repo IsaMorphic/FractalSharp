@@ -77,7 +77,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BigDecimal.cs" />
     <Compile Include="FractalApp.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -87,9 +86,11 @@
     <Compile Include="GPUFractal.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Quad.cs" />
-    <Compile Include="QuadrupleStringFormat.cs" />
-    <Compile Include="Utils.cs" />
+    <Compile Include="Quadruple\Quad.cs" />
+    <Compile Include="Quadruple\QuadrupleStringFormat.cs" />
+    <Compile Include="Utilities\DirectBitmap.cs" />
+    <Compile Include="Utilities\RGB.cs" />
+    <Compile Include="Utilities\Utils.cs" />
     <EmbeddedResource Include="FractalApp.resx">
       <DependentUpon>FractalApp.cs</DependentUpon>
     </EmbeddedResource>

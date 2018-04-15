@@ -64,6 +64,9 @@ struct GPUFractal ;
 namespace System { 
 struct Math ;
 } // Leaving namespace
+namespace Numbers { 
+struct DoubleDouble ;
+} // Leaving namespace
 #endif // TOTO
 #pragma endregion
 
@@ -78,7 +81,8 @@ extern "C" DLL_PUBLIC int HybridizerGetTypeID( const char* fullTypeName)
 	if (strcmp (fullTypeName, "Hybridizer.Runtime.CUDAImports.gridDim") == 0) return 1000002 ; 
 	if (strcmp (fullTypeName, "Hybridizer.Runtime.CUDAImports.threadIdx") == 0) return 1000003 ; 
 	if (strcmp (fullTypeName, "MandelBrot.GPUFractal") == 0) return 1000004 ; 
-	if (strcmp (fullTypeName, "System.Math") == 0) return 1000005 ; 
+	if (strcmp (fullTypeName, "Numbers.DoubleDouble") == 0) return 1000005 ; 
+	if (strcmp (fullTypeName, "System.Math") == 0) return 1000006 ; 
 	return 0 ;
 }
 extern "C" DLL_PUBLIC const char* HybridizerGetTypeFromID( const int typeId)
@@ -88,13 +92,17 @@ extern "C" DLL_PUBLIC const char* HybridizerGetTypeFromID( const int typeId)
 	if (typeId == 1000002) return "Hybridizer.Runtime.CUDAImports.gridDim" ; 
 	if (typeId == 1000003) return "Hybridizer.Runtime.CUDAImports.threadIdx" ; 
 	if (typeId == 1000004) return "MandelBrot.GPUFractal" ; 
-	if (typeId == 1000005) return "System.Math" ; 
+	if (typeId == 1000005) return "Numbers.DoubleDouble" ; 
+	if (typeId == 1000006) return "System.Math" ; 
 	return "" ;
 }
 extern "C" DLL_PUBLIC int HybridizerGetShallowSize (const char* fullTypeName) 
 {
 	#ifdef __TYPE_DECL__MandelBrot_GPUFractal___
 	if (strcmp (fullTypeName, "MandelBrot.GPUFractal") == 0) return 8 ; 
+	#endif
+	#ifdef __TYPE_DECL__Numbers_DoubleDouble__
+	if (strcmp (fullTypeName, "Numbers.DoubleDouble") == 0) return 16 ; 
 	#endif
 	return 0 ;
 }

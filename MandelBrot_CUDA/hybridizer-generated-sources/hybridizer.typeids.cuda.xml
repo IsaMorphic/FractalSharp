@@ -21,7 +21,11 @@
     <TypeId>1000004</TypeId>
   </SerializedTypeId>
   <SerializedTypeId>
-    <Type>System.Math</Type>
+    <Type>Numbers.DoubleDouble</Type>
     <TypeId>1000005</TypeId>
+  </SerializedTypeId>
+  <SerializedTypeId>
+    <Type>System.Math</Type>
+    <TypeId>1000006</TypeId>
   </SerializedTypeId>
 </ArrayOfSerializedTypeId>

@@ -3,6 +3,8 @@ using System.Drawing;
 using System.Diagnostics;
 using System;
 using System.Threading.Tasks;
+using MandelBrot.Utilities;
+
 namespace MandelBrot
 {
     class GPUFractal
