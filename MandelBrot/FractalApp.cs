@@ -43,7 +43,7 @@ namespace MandelBrot
         private Quad scaleFactorQuad;
         private RGB[] palette;
         private Action ChosenMethod;
-        private bool shouldUseGPU = false;
+
         public FractalApp()
         {
             InitializeComponent();
@@ -76,54 +76,48 @@ namespace MandelBrot
             double zoom = Math.Pow(frameCount, frameCount / 100.0);
             if (zoom > extraPrecisionThreshold)
             {
-                BeginInvoke((Action)(() =>
-                {
-                    gPUAccelerationToolStripMenuItem.Checked = false;
-                }));
-                ChosenMethod = new Action(MandelBrotDecimal);
+                ChosenMethod = new Action(MandelBrotQuad);
             }
-            if (!shouldUseGPU)
+            var loop = Parallel.For(0, currentFrame.Width, px =>
             {
-                var loop = Parallel.For(0, currentFrame.Width, px =>
-                {
                     // Map our x coordinate to Mandelbrot space.
                     double x0 = Utils.Map(px, 0, currentFrame.Width, -scaleFactor / zoom + offsetX, scaleFactor / zoom + offsetX);
 
-                    for (int py = 0; py < currentFrame.Height; py++)
-                    {
-                        if (!rendering) return;
+                for (int py = 0; py < currentFrame.Height; py++)
+                {
+                    if (!rendering) return;
 
-                        double y0 = Utils.Map(py, 0, currentFrame.Height, -1 / zoom + offsetY, 1 / zoom + offsetY);
+                    double y0 = Utils.Map(py, 0, currentFrame.Height, -1 / zoom + offsetY, 1 / zoom + offsetY);
 
                         // Initialize some variables..
                         double x = 0.0;
-                        double y = 0.0;
+                    double y = 0.0;
 
                         // Define x squared and y squared as their own variables
                         // To avoid unnecisarry multiplication.
                         double xx = 0.0;
-                        double yy = 0.0;
+                    double yy = 0.0;
 
                         // Initialize our iteration count.
                         int iteration = 0;
 
                         // Mandelbrot algorithm
                         while (xx + yy < 16 && iteration < max_iteration)
-                        {
-                            var xtemp = xx - yy + x0;
-                            y = 2 * x * y + y0;
-                            x = xtemp;
-                            xx = x * x;
-                            yy = y * y;
-                            iteration++;
-                        }
+                    {
+                        var xtemp = xx - yy + x0;
+                        y = 2 * x * y + y0;
+                        x = xtemp;
+                        xx = x * x;
+                        yy = y * y;
+                        iteration++;
+                    }
                         // If x squared plus y squared is outside the set, give it a fancy color.
                         if (xx + yy > 16)
-                        {
-                            double temp_i = iteration;
+                    {
+                        double temp_i = iteration;
                             // sqrt of inner term removed using log simplification rules.
                             double log_zn = Math.Log(xx + yy) / 2;
-                            double nu = Math.Log(log_zn / Math.Log(2)) / Math.Log(2);
+                        double nu = Math.Log(log_zn / Math.Log(2)) / Math.Log(2);
                             // Rearranging the potential function.
                             // Dividing log_zn by log(2) instead of log(N = 1<<8)
                             // because we want the entire palette to range from the
@@ -132,35 +126,30 @@ namespace MandelBrot
 
                             // Grab two colors from the pallete
                             RGB color1 = palette[(int)temp_i % palette.Length];
-                            RGB color2 = palette[(int)(temp_i + 1) % palette.Length];
+                        RGB color2 = palette[(int)(temp_i + 1) % palette.Length];
 
                             // Linear interpolate red, green, and blue values.
                             int final_red = (int)Utils.lerp(color1.red, color2.red, temp_i % 1);
 
-                            int final_green = (int)Utils.lerp(color1.green, color2.green, temp_i % 1);
+                        int final_green = (int)Utils.lerp(color1.green, color2.green, temp_i % 1);
 
-                            int final_blue = (int)Utils.lerp(color1.blue, color2.blue, temp_i % 1);
+                        int final_blue = (int)Utils.lerp(color1.blue, color2.blue, temp_i % 1);
 
                             // Construct a final color with the interpolated values.
                             RGB finalColor = new RGB(final_red, final_green, final_blue);
 
                             // Then set our pixel to that color.  
                             currentFrame.SetPixel(px, py, Color.FromArgb(finalColor.red, finalColor.green, finalColor.blue));
-                        }
+                    }
                         // Otherwise, make the pixel black, as it is in the set.  
                         else
-                        {
-                            currentFrame.SetPixel(px, py, Color.Black);
-                            Interlocked.Increment(ref in_set);
-                        }
+                    {
+                        currentFrame.SetPixel(px, py, Color.Black);
+                        Interlocked.Increment(ref in_set);
                     }
-                });
-                while (!loop.IsCompleted) { Thread.Sleep(300); }
-            }
-            else
-            {
-                GPUFractal.RenderFrame(ref currentFrame, frameCount, max_iteration, palette);
-            }
+                }
+            });
+            while (!loop.IsCompleted) { Thread.Sleep(300); }
             if (in_set < fractalSize.Width * fractalSize.Height && rendering)
             {
                 try
@@ -181,7 +170,7 @@ namespace MandelBrot
             }
         }
 
-        public void MandelBrotDecimal()
+        public void MandelBrotQuad()
         {
             currentFrameStartTime = DateTime.Now;
             frameCount++;
@@ -280,7 +269,7 @@ namespace MandelBrot
                     }
                 }
                 catch (ArgumentException) { };
-                Task.Run(new Action(MandelBrotDecimal));
+                Task.Run(new Action(MandelBrotQuad));
             }
             else if (rendering)
             {
@@ -300,7 +289,6 @@ namespace MandelBrot
                 stopToolStripMenuItem.Enabled = false;
                 startToolStripMenuItem.Enabled = true;
                 closeCurrentToolStripMenuItem.Enabled = true;
-                accelerationToolStripMenuItem.Enabled = true;
                 tableLayoutPanel1.Enabled = true;
                 pictureBox1.Image = null;
             }));
@@ -365,7 +353,6 @@ namespace MandelBrot
                 closeCurrentToolStripMenuItem.Enabled = false;
                 loadPaletteToolStripMenuItem.Enabled = false;
                 tableLayoutPanel1.Enabled = false;
-                accelerationToolStripMenuItem.Enabled = false;
             }
         }
 
@@ -380,7 +367,6 @@ namespace MandelBrot
         {
             doublePrecisionToolStripMenuItem.Checked = true;
             extraPrescisionToolStripMenuItem.Checked = false;
-            accelerationToolStripMenuItem.Enabled = true;
             ChosenMethod = new Action(MandelBrot);
         }
 
@@ -388,8 +374,7 @@ namespace MandelBrot
         {
             doublePrecisionToolStripMenuItem.Checked = false;
             extraPrescisionToolStripMenuItem.Checked = true;
-            accelerationToolStripMenuItem.Enabled = false;
-            ChosenMethod = new Action(MandelBrotDecimal);
+            ChosenMethod = new Action(MandelBrotQuad);
         }
 
         private void x480ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -439,18 +424,6 @@ namespace MandelBrot
         private void livePreviewCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             pictureBox1.Image = null;
-        }
-
-        private void gPUAccelerationToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (!extraPrescisionToolStripMenuItem.Checked)
-            {
-                shouldUseGPU = gPUAccelerationToolStripMenuItem.Checked;
-            }
-            else
-            {
-                shouldUseGPU = gPUAccelerationToolStripMenuItem.Checked = false;
-            }
         }
     }
 }

@@ -46,8 +46,6 @@
             this.x480ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.x720ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.x960ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.accelerationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.gPUAccelerationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorDialog = new System.Windows.Forms.ColorDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.ViewControl = new System.Windows.Forms.TabControl();
@@ -97,8 +95,7 @@
             this.fileToolStripMenuItem,
             this.renderToolStripMenuItem,
             this.presicionStripMenuItem,
-            this.ResolutionToolStripMenuItem,
-            this.accelerationToolStripMenuItem});
+            this.ResolutionToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(622, 28);
@@ -119,7 +116,7 @@
             // newRenderToolStripMenuItem
             // 
             this.newRenderToolStripMenuItem.Name = "newRenderToolStripMenuItem";
-            this.newRenderToolStripMenuItem.Size = new System.Drawing.Size(172, 26);
+            this.newRenderToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.newRenderToolStripMenuItem.Text = "New Render";
             this.newRenderToolStripMenuItem.Click += new System.EventHandler(this.newRenderToolStripMenuItem_Click);
             // 
@@ -127,19 +124,19 @@
             // 
             this.closeCurrentToolStripMenuItem.Enabled = false;
             this.closeCurrentToolStripMenuItem.Name = "closeCurrentToolStripMenuItem";
-            this.closeCurrentToolStripMenuItem.Size = new System.Drawing.Size(172, 26);
+            this.closeCurrentToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.closeCurrentToolStripMenuItem.Text = "Close Current";
             this.closeCurrentToolStripMenuItem.Click += new System.EventHandler(this.closeCurrentToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(169, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(178, 6);
             // 
             // loadPaletteToolStripMenuItem
             // 
             this.loadPaletteToolStripMenuItem.Name = "loadPaletteToolStripMenuItem";
-            this.loadPaletteToolStripMenuItem.Size = new System.Drawing.Size(172, 26);
+            this.loadPaletteToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.loadPaletteToolStripMenuItem.Text = "Load Palette";
             this.loadPaletteToolStripMenuItem.Click += new System.EventHandler(this.loadPaletteToolStripMenuItem_Click);
             // 
@@ -187,9 +184,9 @@
             this.doublePrecisionToolStripMenuItem.Text = "Standard Precision";
             this.doublePrecisionToolStripMenuItem.Click += new System.EventHandler(this.doublePrecisionToolStripMenuItem_Click);
             // 
-            // decimalPrescisionToolStripMenuItem
+            // extraPrescisionToolStripMenuItem
             // 
-            this.extraPrescisionToolStripMenuItem.Name = "decimalPrescisionToolStripMenuItem";
+            this.extraPrescisionToolStripMenuItem.Name = "extraPrescisionToolStripMenuItem";
             this.extraPrescisionToolStripMenuItem.Size = new System.Drawing.Size(207, 26);
             this.extraPrescisionToolStripMenuItem.Text = "Extra Prescision";
             this.extraPrescisionToolStripMenuItem.Click += new System.EventHandler(this.decimalPrescisionToolStripMenuItem_Click);
@@ -209,39 +206,23 @@
             this.x480ToolStripMenuItem.Checked = true;
             this.x480ToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.x480ToolStripMenuItem.Name = "x480ToolStripMenuItem";
-            this.x480ToolStripMenuItem.Size = new System.Drawing.Size(147, 26);
+            this.x480ToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.x480ToolStripMenuItem.Text = "640x480";
             this.x480ToolStripMenuItem.Click += new System.EventHandler(this.x480ToolStripMenuItem_Click);
             // 
             // x720ToolStripMenuItem
             // 
             this.x720ToolStripMenuItem.Name = "x720ToolStripMenuItem";
-            this.x720ToolStripMenuItem.Size = new System.Drawing.Size(147, 26);
+            this.x720ToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.x720ToolStripMenuItem.Text = "900x720";
             this.x720ToolStripMenuItem.Click += new System.EventHandler(this.x720ToolStripMenuItem_Click);
             // 
             // x960ToolStripMenuItem
             // 
             this.x960ToolStripMenuItem.Name = "x960ToolStripMenuItem";
-            this.x960ToolStripMenuItem.Size = new System.Drawing.Size(147, 26);
+            this.x960ToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.x960ToolStripMenuItem.Text = "1280x960";
             this.x960ToolStripMenuItem.Click += new System.EventHandler(this.x960ToolStripMenuItem_Click);
-            // 
-            // accelerationToolStripMenuItem
-            // 
-            this.accelerationToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.gPUAccelerationToolStripMenuItem});
-            this.accelerationToolStripMenuItem.Name = "accelerationToolStripMenuItem";
-            this.accelerationToolStripMenuItem.Size = new System.Drawing.Size(104, 24);
-            this.accelerationToolStripMenuItem.Text = "Acceleration";
-            // 
-            // gPUAccelerationToolStripMenuItem
-            // 
-            this.gPUAccelerationToolStripMenuItem.CheckOnClick = true;
-            this.gPUAccelerationToolStripMenuItem.Name = "gPUAccelerationToolStripMenuItem";
-            this.gPUAccelerationToolStripMenuItem.Size = new System.Drawing.Size(199, 26);
-            this.gPUAccelerationToolStripMenuItem.Text = "GPU Acceleration";
-            this.gPUAccelerationToolStripMenuItem.Click += new System.EventHandler(this.gPUAccelerationToolStripMenuItem_Click);
             // 
             // colorDialog
             // 
@@ -547,8 +528,6 @@
         private System.Windows.Forms.Label timeDescLabel;
         private System.Windows.Forms.Label timeLabel;
         private System.Windows.Forms.Timer intervalTimer;
-        private System.Windows.Forms.ToolStripMenuItem accelerationToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem gPUAccelerationToolStripMenuItem;
     }
 }
 

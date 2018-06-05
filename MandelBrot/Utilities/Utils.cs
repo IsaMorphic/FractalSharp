@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Quadruple;
-using Hybridizer.Runtime.CUDAImports;
 namespace MandelBrot.Utilities
 {
     class Utils
