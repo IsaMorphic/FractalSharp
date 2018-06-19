@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Quadruple;
+
 namespace MandelBrot.Utilities
 {
     class Utils
@@ -59,6 +60,7 @@ namespace MandelBrot.Utilities
             double NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
             return NewValue;
         }
+
         public static double lerp(double v0, double v1, double t)
         {
             return (1 - t) * v0 + t * v1;

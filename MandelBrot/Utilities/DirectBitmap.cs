@@ -6,7 +6,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-
 namespace MandelBrot.Utilities
 {
     public class DirectBitmap : IDisposable

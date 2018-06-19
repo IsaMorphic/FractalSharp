@@ -29,10 +29,12 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FractalApp));
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newRenderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadRenderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeCurrentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.loadPaletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -63,9 +65,12 @@
             this.startFrameInput = new System.Windows.Forms.NumericUpDown();
             this.XOffLabel = new System.Windows.Forms.Label();
             this.xOffInput = new System.Windows.Forms.NumericUpDown();
+            this.coreCountLabel = new System.Windows.Forms.Label();
+            this.threadCountInput = new System.Windows.Forms.NumericUpDown();
             this.viewTab = new System.Windows.Forms.TabPage();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.intervalTimer = new System.Windows.Forms.Timer(this.components);
+            this.TrayIcon = new System.Windows.Forms.NotifyIcon(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.ViewControl.SuspendLayout();
@@ -75,6 +80,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.iterationCountInput)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.startFrameInput)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.xOffInput)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.threadCountInput)).BeginInit();
             this.viewTab.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -106,6 +112,7 @@
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.newRenderToolStripMenuItem,
+            this.loadRenderToolStripMenuItem,
             this.closeCurrentToolStripMenuItem,
             this.toolStripSeparator1,
             this.loadPaletteToolStripMenuItem});
@@ -116,27 +123,34 @@
             // newRenderToolStripMenuItem
             // 
             this.newRenderToolStripMenuItem.Name = "newRenderToolStripMenuItem";
-            this.newRenderToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.newRenderToolStripMenuItem.Size = new System.Drawing.Size(172, 26);
             this.newRenderToolStripMenuItem.Text = "New Render";
             this.newRenderToolStripMenuItem.Click += new System.EventHandler(this.newRenderToolStripMenuItem_Click);
+            // 
+            // loadRenderToolStripMenuItem
+            // 
+            this.loadRenderToolStripMenuItem.Name = "loadRenderToolStripMenuItem";
+            this.loadRenderToolStripMenuItem.Size = new System.Drawing.Size(172, 26);
+            this.loadRenderToolStripMenuItem.Text = "Load Render";
+            this.loadRenderToolStripMenuItem.Click += new System.EventHandler(this.loadRenderToolStripMenuItem_Click);
             // 
             // closeCurrentToolStripMenuItem
             // 
             this.closeCurrentToolStripMenuItem.Enabled = false;
             this.closeCurrentToolStripMenuItem.Name = "closeCurrentToolStripMenuItem";
-            this.closeCurrentToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.closeCurrentToolStripMenuItem.Size = new System.Drawing.Size(172, 26);
             this.closeCurrentToolStripMenuItem.Text = "Close Current";
             this.closeCurrentToolStripMenuItem.Click += new System.EventHandler(this.closeCurrentToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(178, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(169, 6);
             // 
             // loadPaletteToolStripMenuItem
             // 
             this.loadPaletteToolStripMenuItem.Name = "loadPaletteToolStripMenuItem";
-            this.loadPaletteToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.loadPaletteToolStripMenuItem.Size = new System.Drawing.Size(172, 26);
             this.loadPaletteToolStripMenuItem.Text = "Load Palette";
             this.loadPaletteToolStripMenuItem.Click += new System.EventHandler(this.loadPaletteToolStripMenuItem_Click);
             // 
@@ -206,21 +220,21 @@
             this.x480ToolStripMenuItem.Checked = true;
             this.x480ToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.x480ToolStripMenuItem.Name = "x480ToolStripMenuItem";
-            this.x480ToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.x480ToolStripMenuItem.Size = new System.Drawing.Size(147, 26);
             this.x480ToolStripMenuItem.Text = "640x480";
             this.x480ToolStripMenuItem.Click += new System.EventHandler(this.x480ToolStripMenuItem_Click);
             // 
             // x720ToolStripMenuItem
             // 
             this.x720ToolStripMenuItem.Name = "x720ToolStripMenuItem";
-            this.x720ToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.x720ToolStripMenuItem.Size = new System.Drawing.Size(147, 26);
             this.x720ToolStripMenuItem.Text = "900x720";
             this.x720ToolStripMenuItem.Click += new System.EventHandler(this.x720ToolStripMenuItem_Click);
             // 
             // x960ToolStripMenuItem
             // 
             this.x960ToolStripMenuItem.Name = "x960ToolStripMenuItem";
-            this.x960ToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
+            this.x960ToolStripMenuItem.Size = new System.Drawing.Size(147, 26);
             this.x960ToolStripMenuItem.Text = "1280x960";
             this.x960ToolStripMenuItem.Click += new System.EventHandler(this.x960ToolStripMenuItem_Click);
             // 
@@ -230,8 +244,8 @@
             // 
             // openFileDialog1
             // 
-            this.openFileDialog1.FileName = "openFileDialog1";
-            this.openFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileDialog1_FileOk);
+            this.openFileDialog1.FileName = "blues.map";
+            this.openFileDialog1.InitialDirectory = ".\\Palettes\\";
             // 
             // ViewControl
             // 
@@ -246,23 +260,25 @@
             // 
             // advancedTab
             // 
+            this.advancedTab.BackColor = System.Drawing.Color.White;
             this.advancedTab.Controls.Add(this.timeDescLabel);
             this.advancedTab.Controls.Add(this.timeLabel);
             this.advancedTab.Controls.Add(this.livePreviewCheckBox);
             this.advancedTab.Controls.Add(this.livePreviewLabel);
             this.advancedTab.Controls.Add(this.tableLayoutPanel1);
+            this.advancedTab.Controls.Add(this.coreCountLabel);
+            this.advancedTab.Controls.Add(this.threadCountInput);
             this.advancedTab.Location = new System.Drawing.Point(4, 25);
             this.advancedTab.Name = "advancedTab";
             this.advancedTab.Padding = new System.Windows.Forms.Padding(3);
             this.advancedTab.Size = new System.Drawing.Size(614, 423);
             this.advancedTab.TabIndex = 1;
             this.advancedTab.Text = "Fractal Configuration";
-            this.advancedTab.UseVisualStyleBackColor = true;
             // 
             // timeDescLabel
             // 
             this.timeDescLabel.AutoSize = true;
-            this.timeDescLabel.Location = new System.Drawing.Point(222, 147);
+            this.timeDescLabel.Location = new System.Drawing.Point(220, 138);
             this.timeDescLabel.Name = "timeDescLabel";
             this.timeDescLabel.Size = new System.Drawing.Size(223, 17);
             this.timeDescLabel.TabIndex = 14;
@@ -270,7 +286,7 @@
             // 
             // timeLabel
             // 
-            this.timeLabel.Location = new System.Drawing.Point(263, 164);
+            this.timeLabel.Location = new System.Drawing.Point(261, 155);
             this.timeLabel.Name = "timeLabel";
             this.timeLabel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.timeLabel.Size = new System.Drawing.Size(182, 23);
@@ -283,7 +299,7 @@
             this.livePreviewCheckBox.AutoSize = true;
             this.livePreviewCheckBox.Checked = true;
             this.livePreviewCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.livePreviewCheckBox.Location = new System.Drawing.Point(6, 167);
+            this.livePreviewCheckBox.Location = new System.Drawing.Point(4, 158);
             this.livePreviewCheckBox.Margin = new System.Windows.Forms.Padding(5, 3, 3, 3);
             this.livePreviewCheckBox.Name = "livePreviewCheckBox";
             this.livePreviewCheckBox.Size = new System.Drawing.Size(82, 21);
@@ -295,7 +311,7 @@
             // livePreviewLabel
             // 
             this.livePreviewLabel.AutoSize = true;
-            this.livePreviewLabel.Location = new System.Drawing.Point(3, 147);
+            this.livePreviewLabel.Location = new System.Drawing.Point(1, 138);
             this.livePreviewLabel.Name = "livePreviewLabel";
             this.livePreviewLabel.Size = new System.Drawing.Size(87, 17);
             this.livePreviewLabel.TabIndex = 11;
@@ -318,12 +334,10 @@
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 6);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 4;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 18.85755F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 30.989F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 18.85754F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 31.2959F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(443, 129);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
@@ -331,7 +345,7 @@
             // 
             this.YOffLabel.AutoSize = true;
             this.YOffLabel.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.YOffLabel.Location = new System.Drawing.Point(225, 79);
+            this.YOffLabel.Location = new System.Drawing.Point(225, 70);
             this.YOffLabel.Name = "YOffLabel";
             this.YOffLabel.Size = new System.Drawing.Size(214, 17);
             this.YOffLabel.TabIndex = 8;
@@ -345,7 +359,7 @@
             0,
             0,
             196608});
-            this.yOffInput.Location = new System.Drawing.Point(225, 100);
+            this.yOffInput.Location = new System.Drawing.Point(225, 91);
             this.yOffInput.Maximum = new decimal(new int[] {
             2,
             0,
@@ -364,7 +378,7 @@
             // 
             this.startFrameLabel.AutoSize = true;
             this.startFrameLabel.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.startFrameLabel.Location = new System.Drawing.Point(225, 15);
+            this.startFrameLabel.Location = new System.Drawing.Point(225, 7);
             this.startFrameLabel.Name = "startFrameLabel";
             this.startFrameLabel.Size = new System.Drawing.Size(214, 17);
             this.startFrameLabel.TabIndex = 4;
@@ -374,7 +388,7 @@
             // 
             this.max_iteration_label.AutoSize = true;
             this.max_iteration_label.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.max_iteration_label.Location = new System.Drawing.Point(4, 15);
+            this.max_iteration_label.Location = new System.Drawing.Point(4, 7);
             this.max_iteration_label.Name = "max_iteration_label";
             this.max_iteration_label.Size = new System.Drawing.Size(214, 17);
             this.max_iteration_label.TabIndex = 0;
@@ -382,33 +396,33 @@
             // 
             // iterationCountInput
             // 
-            this.iterationCountInput.Location = new System.Drawing.Point(4, 36);
+            this.iterationCountInput.Location = new System.Drawing.Point(4, 28);
             this.iterationCountInput.Maximum = new decimal(new int[] {
             1000000,
             0,
             0,
             0});
             this.iterationCountInput.Name = "iterationCountInput";
-            this.iterationCountInput.Size = new System.Drawing.Size(120, 22);
+            this.iterationCountInput.Size = new System.Drawing.Size(198, 22);
             this.iterationCountInput.TabIndex = 1;
             // 
             // startFrameInput
             // 
-            this.startFrameInput.Location = new System.Drawing.Point(225, 36);
+            this.startFrameInput.Location = new System.Drawing.Point(225, 28);
             this.startFrameInput.Maximum = new decimal(new int[] {
             5000,
             0,
             0,
             0});
             this.startFrameInput.Name = "startFrameInput";
-            this.startFrameInput.Size = new System.Drawing.Size(120, 22);
+            this.startFrameInput.Size = new System.Drawing.Size(196, 22);
             this.startFrameInput.TabIndex = 5;
             // 
             // XOffLabel
             // 
             this.XOffLabel.AutoSize = true;
             this.XOffLabel.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.XOffLabel.Location = new System.Drawing.Point(4, 79);
+            this.XOffLabel.Location = new System.Drawing.Point(4, 70);
             this.XOffLabel.Name = "XOffLabel";
             this.XOffLabel.Size = new System.Drawing.Size(214, 17);
             this.XOffLabel.TabIndex = 6;
@@ -422,7 +436,7 @@
             0,
             0,
             196608});
-            this.xOffInput.Location = new System.Drawing.Point(4, 100);
+            this.xOffInput.Location = new System.Drawing.Point(4, 91);
             this.xOffInput.Maximum = new decimal(new int[] {
             2,
             0,
@@ -436,6 +450,27 @@
             this.xOffInput.Name = "xOffInput";
             this.xOffInput.Size = new System.Drawing.Size(198, 22);
             this.xOffInput.TabIndex = 7;
+            // 
+            // coreCountLabel
+            // 
+            this.coreCountLabel.AutoSize = true;
+            this.coreCountLabel.Location = new System.Drawing.Point(1, 182);
+            this.coreCountLabel.Name = "coreCountLabel";
+            this.coreCountLabel.Size = new System.Drawing.Size(157, 17);
+            this.coreCountLabel.TabIndex = 12;
+            this.coreCountLabel.Text = "Maximum Thread Count";
+            // 
+            // threadCountInput
+            // 
+            this.threadCountInput.Location = new System.Drawing.Point(4, 203);
+            this.threadCountInput.Maximum = new decimal(new int[] {
+            8,
+            0,
+            0,
+            0});
+            this.threadCountInput.Name = "threadCountInput";
+            this.threadCountInput.Size = new System.Drawing.Size(198, 22);
+            this.threadCountInput.TabIndex = 11;
             // 
             // viewTab
             // 
@@ -458,6 +493,12 @@
             // 
             this.intervalTimer.Tick += new System.EventHandler(this.intervalTimer_Tick);
             // 
+            // TrayIcon
+            // 
+            this.TrayIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("TrayIcon.Icon")));
+            this.TrayIcon.Text = "Mandelbrot Renderer";
+            this.TrayIcon.Click += new System.EventHandler(this.TrayIcon_Click);
+            // 
             // FractalApp
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -466,6 +507,7 @@
             this.Controls.Add(this.ViewControl);
             this.Controls.Add(this.menuStrip1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "FractalApp";
             this.Text = "Mandelbrot Renderer";
@@ -483,6 +525,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.iterationCountInput)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.startFrameInput)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.xOffInput)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.threadCountInput)).EndInit();
             this.viewTab.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -528,6 +571,10 @@
         private System.Windows.Forms.Label timeDescLabel;
         private System.Windows.Forms.Label timeLabel;
         private System.Windows.Forms.Timer intervalTimer;
+        private System.Windows.Forms.NumericUpDown threadCountInput;
+        private System.Windows.Forms.Label coreCountLabel;
+        private System.Windows.Forms.NotifyIcon TrayIcon;
+        private System.Windows.Forms.ToolStripMenuItem loadRenderToolStripMenuItem;
     }
 }
 
