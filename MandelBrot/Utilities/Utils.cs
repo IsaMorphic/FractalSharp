@@ -53,11 +53,14 @@ namespace MandelBrot.Utilities
             return NewValue;
         }
 
-        public static double Map(double OldValue, double OldMin, double OldMax, double NewMin, double NewMax)
+        public static T Map<T, M>(T OldValue, T OldMin, T OldMax, T NewMin, T NewMax)
+            where M : IGenericMath<T>, new()
         {
-            double OldRange = (OldMax - OldMin);
-            double NewRange = (NewMax - NewMin);
-            double NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
+            M TMath = new M();
+            T OldRange = TMath.Subtract(OldMax, OldMin);
+            T NewRange = TMath.Subtract(NewMax, NewMin);
+            // (((OldValue - OldMin) * NewRange) / OldRange) + NewMin
+            T NewValue = TMath.Add(TMath.Divide(TMath.Multiply(TMath.Subtract(OldValue, OldMin), NewRange), OldRange), NewMin);
             return NewValue;
         }
 
