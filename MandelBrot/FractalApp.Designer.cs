@@ -278,7 +278,7 @@
             // timeDescLabel
             // 
             this.timeDescLabel.AutoSize = true;
-            this.timeDescLabel.Location = new System.Drawing.Point(220, 138);
+            this.timeDescLabel.Location = new System.Drawing.Point(280, 138);
             this.timeDescLabel.Name = "timeDescLabel";
             this.timeDescLabel.Size = new System.Drawing.Size(223, 17);
             this.timeDescLabel.TabIndex = 14;
@@ -286,7 +286,7 @@
             // 
             // timeLabel
             // 
-            this.timeLabel.Location = new System.Drawing.Point(261, 155);
+            this.timeLabel.Location = new System.Drawing.Point(321, 155);
             this.timeLabel.Name = "timeLabel";
             this.timeLabel.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.timeLabel.Size = new System.Drawing.Size(182, 23);
@@ -338,28 +338,28 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 30.989F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 18.85754F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 31.2959F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(443, 129);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(503, 129);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // YOffLabel
             // 
             this.YOffLabel.AutoSize = true;
             this.YOffLabel.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.YOffLabel.Location = new System.Drawing.Point(225, 70);
+            this.YOffLabel.Location = new System.Drawing.Point(255, 70);
             this.YOffLabel.Name = "YOffLabel";
-            this.YOffLabel.Size = new System.Drawing.Size(214, 17);
+            this.YOffLabel.Size = new System.Drawing.Size(244, 17);
             this.YOffLabel.TabIndex = 8;
             this.YOffLabel.Text = "Y Offset";
             // 
             // yOffInput
             // 
-            this.yOffInput.DecimalPlaces = 20;
+            this.yOffInput.DecimalPlaces = 28;
             this.yOffInput.Increment = new decimal(new int[] {
             1,
             0,
             0,
             196608});
-            this.yOffInput.Location = new System.Drawing.Point(225, 91);
+            this.yOffInput.Location = new System.Drawing.Point(255, 91);
             this.yOffInput.Maximum = new decimal(new int[] {
             2,
             0,
@@ -371,16 +371,16 @@
             0,
             -2147483648});
             this.yOffInput.Name = "yOffInput";
-            this.yOffInput.Size = new System.Drawing.Size(196, 22);
+            this.yOffInput.Size = new System.Drawing.Size(244, 22);
             this.yOffInput.TabIndex = 9;
             // 
             // startFrameLabel
             // 
             this.startFrameLabel.AutoSize = true;
             this.startFrameLabel.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.startFrameLabel.Location = new System.Drawing.Point(225, 7);
+            this.startFrameLabel.Location = new System.Drawing.Point(255, 7);
             this.startFrameLabel.Name = "startFrameLabel";
-            this.startFrameLabel.Size = new System.Drawing.Size(214, 17);
+            this.startFrameLabel.Size = new System.Drawing.Size(244, 17);
             this.startFrameLabel.TabIndex = 4;
             this.startFrameLabel.Text = "Starting Frame";
             // 
@@ -390,7 +390,7 @@
             this.max_iteration_label.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.max_iteration_label.Location = new System.Drawing.Point(4, 7);
             this.max_iteration_label.Name = "max_iteration_label";
-            this.max_iteration_label.Size = new System.Drawing.Size(214, 17);
+            this.max_iteration_label.Size = new System.Drawing.Size(244, 17);
             this.max_iteration_label.TabIndex = 0;
             this.max_iteration_label.Text = "Maximum Iterations";
             // 
@@ -403,19 +403,19 @@
             0,
             0});
             this.iterationCountInput.Name = "iterationCountInput";
-            this.iterationCountInput.Size = new System.Drawing.Size(198, 22);
+            this.iterationCountInput.Size = new System.Drawing.Size(244, 22);
             this.iterationCountInput.TabIndex = 1;
             // 
             // startFrameInput
             // 
-            this.startFrameInput.Location = new System.Drawing.Point(225, 28);
+            this.startFrameInput.Location = new System.Drawing.Point(255, 28);
             this.startFrameInput.Maximum = new decimal(new int[] {
             5000,
             0,
             0,
             0});
             this.startFrameInput.Name = "startFrameInput";
-            this.startFrameInput.Size = new System.Drawing.Size(196, 22);
+            this.startFrameInput.Size = new System.Drawing.Size(244, 22);
             this.startFrameInput.TabIndex = 5;
             // 
             // XOffLabel
@@ -424,13 +424,13 @@
             this.XOffLabel.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.XOffLabel.Location = new System.Drawing.Point(4, 70);
             this.XOffLabel.Name = "XOffLabel";
-            this.XOffLabel.Size = new System.Drawing.Size(214, 17);
+            this.XOffLabel.Size = new System.Drawing.Size(244, 17);
             this.XOffLabel.TabIndex = 6;
             this.XOffLabel.Text = "X Offset";
             // 
             // xOffInput
             // 
-            this.xOffInput.DecimalPlaces = 20;
+            this.xOffInput.DecimalPlaces = 28;
             this.xOffInput.Increment = new decimal(new int[] {
             1,
             0,
@@ -448,7 +448,7 @@
             0,
             -2147483648});
             this.xOffInput.Name = "xOffInput";
-            this.xOffInput.Size = new System.Drawing.Size(198, 22);
+            this.xOffInput.Size = new System.Drawing.Size(244, 22);
             this.xOffInput.TabIndex = 7;
             // 
             // coreCountLabel
@@ -469,7 +469,7 @@
             0,
             0});
             this.threadCountInput.Name = "threadCountInput";
-            this.threadCountInput.Size = new System.Drawing.Size(198, 22);
+            this.threadCountInput.Size = new System.Drawing.Size(244, 22);
             this.threadCountInput.TabIndex = 11;
             // 
             // viewTab

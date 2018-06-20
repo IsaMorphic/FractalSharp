@@ -45,14 +45,6 @@ namespace MandelBrot.Utilities
             return buffer;
         }
 
-        public static Quad MapQuad(Quad OldValue, Quad OldMin, Quad OldMax, Quad NewMin, Quad NewMax)
-        {
-            Quad OldRange = (OldMax - OldMin);
-            Quad NewRange = (NewMax - NewMin);
-            Quad NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
-            return NewValue;
-        }
-
         public static T Map<T, M>(T OldValue, T OldMin, T OldMax, T NewMin, T NewMax)
             where M : IGenericMath<T>, new()
         {

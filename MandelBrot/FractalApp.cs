@@ -4,18 +4,18 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Threading;
-using Quadruple;
-using MandelBrot.Utilities;
-using System.Numerics;
-using System.IO;
+using System.Threading.Tasks;
 using System.Web.Script.Serialization;
+using System.Windows.Forms;
+
 using Accord.Video.FFMPEG;
+using MandelBrot.Utilities;
 
 namespace MandelBrot
 {
@@ -36,11 +36,9 @@ namespace MandelBrot
         private int max_iteration = 100;
         private decimal offsetXM = -0.743643887037158704752191506114774M;
         private decimal offsetYM = 0.131825904205311970493132056385139M;
-        private Quad offsetXQ = Quad.Parse("-0.743643887037158704752191506114774");
-        private Quad offsetYQ = Quad.Parse("0.131825904205311970493132056385139");
         private double extraPrecisionThreshold = Math.Pow(500, 5);
         private Size fractalSize = new Size(640, 480);
-        private Quad scaleFactorQ;
+        private decimal scaleFactorM;
         private RGB[] palette;
         private bool extraPrecision = false;
         private Action ChosenMethod;
@@ -73,7 +71,7 @@ namespace MandelBrot
         }
 
         #region Frame Setup and Cleanup Methods
-        private Quad FrameStart()
+        private double FrameStart()
         {
             currentFrameStartTime = DateTime.Now;
             frameCount++;
@@ -85,10 +83,10 @@ namespace MandelBrot
             }));
 
             // Calculate zoom... using math.pow to keep the zoom rate constant.
-            Quad zoom = Quad.Pow(frameCount, frameCount / 100.0);
+            double zoom = Math.Pow(frameCount, frameCount / 100.0);
             if (zoom > extraPrecisionThreshold)
             {
-                ChosenMethod = new Action(RenderFrame<Quad, QuadMath>);
+                ChosenMethod = new Action(RenderFrame<Decimal, DecimalMath>);
                 extraPrecision = true;
             }
             return zoom;
@@ -136,7 +134,7 @@ namespace MandelBrot
                 {
                     doublePrecisionToolStripMenuItem.Checked = false;
                     extraPrescisionToolStripMenuItem.Checked = true;
-                    ChosenMethod = new Action(RenderFrame<Quad, QuadMath>);
+                    ChosenMethod = new Action(RenderFrame<Decimal, DecimalMath>);
                 }
             }));
         }
@@ -227,7 +225,7 @@ namespace MandelBrot
             long in_set = 0;
 
             // Increment variables and get new zoom value.  
-            Quad zoomQ = FrameStart();
+            double zoomD = FrameStart();
 
             // Initialize generic values
             T Zero = TMath.fromInt32(0);
@@ -238,12 +236,12 @@ namespace MandelBrot
             T FrameWidth = TMath.fromInt32(currentFrame.Width);
             T FrameHeight = TMath.fromInt32(currentFrame.Height);
 
-            T zoom = TMath.fromQuad(zoomQ);
+            T zoom = TMath.fromDouble(zoomD);
 
-            T offsetX = TMath.fromQuad(offsetXQ);
-            T offsetY = TMath.fromQuad(offsetYQ);
+            T offsetX = TMath.fromDecimal(offsetXM);
+            T offsetY = TMath.fromDecimal(offsetYM);
 
-            T scaleFactor = TMath.fromQuad(scaleFactorQ);
+            T scaleFactor = TMath.fromDecimal(scaleFactorM);
 
             // Predefine minimum and maximum values of the plane, 
             // In order to avoid making unnecisary calculations on each pixel.  
@@ -339,9 +337,6 @@ namespace MandelBrot
                 offsetXM = newFractal.offsetX;
                 offsetYM = newFractal.offsetY;
 
-                offsetXQ = Quad.Parse(offsetXM.ToString());
-                offsetYQ = Quad.Parse(offsetYM.ToString());
-
                 palletePath = newFractal.palettePath;
                 videoPath = newFractal.videoPath;
 
@@ -366,7 +361,7 @@ namespace MandelBrot
                     x960ToolStripMenuItem.Checked = true;
                 }
 
-                scaleFactorQ = (Quad)fractalSize.Width / (Quad)fractalSize.Height;
+                scaleFactorM = (decimal)fractalSize.Width / (decimal)fractalSize.Height;
 
                 currentFrame = new DirectBitmap(fractalSize.Width, fractalSize.Height);
 
@@ -435,7 +430,7 @@ namespace MandelBrot
 
         private void saveFileDialog1_FileOk(object sender, CancelEventArgs e)
         {
-            scaleFactorQ = (Quad)fractalSize.Width / (Quad)fractalSize.Height;
+            scaleFactorM = (decimal)fractalSize.Width / (decimal)fractalSize.Height;
 
             currentFrame = new DirectBitmap(fractalSize.Width, fractalSize.Height);
 
@@ -508,9 +503,6 @@ namespace MandelBrot
                 offsetXM = xOffInput.Value;
                 offsetYM = yOffInput.Value;
 
-                offsetXQ = Quad.Parse(offsetXM.ToString());
-                offsetYQ = Quad.Parse(offsetYM.ToString());
-
                 max_iteration = (int)iterationCountInput.Value;
                 frameCount = (int)startFrameInput.Value;
                 coreCount = (int)threadCountInput.Value;
@@ -560,7 +552,7 @@ namespace MandelBrot
         {
             doublePrecisionToolStripMenuItem.Checked = false;
             extraPrescisionToolStripMenuItem.Checked = true;
-            ChosenMethod = new Action(RenderFrame<Quad, QuadMath>);
+            ChosenMethod = new Action(RenderFrame<Decimal, DecimalMath>);
             extraPrecision = true;
         }
 
