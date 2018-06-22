@@ -189,11 +189,11 @@
             this.presicionStripMenuItem.Size = new System.Drawing.Size(80, 24);
             this.presicionStripMenuItem.Text = "Precision";
             // 
-            // doublePrecisionToolStripMenuItem
+            // standardPrecisionToolStripMenuItem
             // 
             this.standardPrecisionToolStripMenuItem.Checked = true;
             this.standardPrecisionToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.standardPrecisionToolStripMenuItem.Name = "doublePrecisionToolStripMenuItem";
+            this.standardPrecisionToolStripMenuItem.Name = "standardPrecisionToolStripMenuItem";
             this.standardPrecisionToolStripMenuItem.Size = new System.Drawing.Size(207, 26);
             this.standardPrecisionToolStripMenuItem.Text = "Standard Precision";
             this.standardPrecisionToolStripMenuItem.Click += new System.EventHandler(this.standardPrecisionToolStripMenuItem_Click);
@@ -242,9 +242,8 @@
             // 
             this.colorDialog.Color = System.Drawing.Color.Aqua;
             // 
-            // openFileDialog1
+            // FileLoadDialog
             // 
-            this.FileLoadDialog.FileName = "blues.map";
             this.FileLoadDialog.InitialDirectory = ".\\Palettes\\";
             // 
             // ViewControl
@@ -483,7 +482,7 @@
             this.viewTab.Text = "View";
             this.viewTab.UseVisualStyleBackColor = true;
             // 
-            // saveFileDialog1
+            // RenderSaveDialog
             // 
             this.RenderSaveDialog.DefaultExt = "avi";
             this.RenderSaveDialog.Filter = "AVI Video Files|*.avi";
