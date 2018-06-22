@@ -1,4 +1,4 @@
-﻿namespace MandelBrot
+﻿namespace Mandelbrot
 {
     partial class FractalApp
     {
@@ -42,14 +42,14 @@
             this.startToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.stopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.presicionStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.doublePrecisionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.standardPrecisionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extraPrescisionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ResolutionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.x480ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.x720ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.x960ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorDialog = new System.Windows.Forms.ColorDialog();
-            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.fileLoadDialog = new System.Windows.Forms.OpenFileDialog();
             this.ViewControl = new System.Windows.Forms.TabControl();
             this.advancedTab = new System.Windows.Forms.TabPage();
             this.timeDescLabel = new System.Windows.Forms.Label();
@@ -68,7 +68,7 @@
             this.coreCountLabel = new System.Windows.Forms.Label();
             this.threadCountInput = new System.Windows.Forms.NumericUpDown();
             this.viewTab = new System.Windows.Forms.TabPage();
-            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.RenderSaveDialog = new System.Windows.Forms.SaveFileDialog();
             this.intervalTimer = new System.Windows.Forms.Timer(this.components);
             this.TrayIcon = new System.Windows.Forms.NotifyIcon(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -183,7 +183,7 @@
             // presicionStripMenuItem
             // 
             this.presicionStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.doublePrecisionToolStripMenuItem,
+            this.standardPrecisionToolStripMenuItem,
             this.extraPrescisionToolStripMenuItem});
             this.presicionStripMenuItem.Name = "presicionStripMenuItem";
             this.presicionStripMenuItem.Size = new System.Drawing.Size(80, 24);
@@ -191,19 +191,19 @@
             // 
             // doublePrecisionToolStripMenuItem
             // 
-            this.doublePrecisionToolStripMenuItem.Checked = true;
-            this.doublePrecisionToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.doublePrecisionToolStripMenuItem.Name = "doublePrecisionToolStripMenuItem";
-            this.doublePrecisionToolStripMenuItem.Size = new System.Drawing.Size(207, 26);
-            this.doublePrecisionToolStripMenuItem.Text = "Standard Precision";
-            this.doublePrecisionToolStripMenuItem.Click += new System.EventHandler(this.doublePrecisionToolStripMenuItem_Click);
+            this.standardPrecisionToolStripMenuItem.Checked = true;
+            this.standardPrecisionToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.standardPrecisionToolStripMenuItem.Name = "doublePrecisionToolStripMenuItem";
+            this.standardPrecisionToolStripMenuItem.Size = new System.Drawing.Size(207, 26);
+            this.standardPrecisionToolStripMenuItem.Text = "Standard Precision";
+            this.standardPrecisionToolStripMenuItem.Click += new System.EventHandler(this.standardPrecisionToolStripMenuItem_Click);
             // 
             // extraPrescisionToolStripMenuItem
             // 
             this.extraPrescisionToolStripMenuItem.Name = "extraPrescisionToolStripMenuItem";
             this.extraPrescisionToolStripMenuItem.Size = new System.Drawing.Size(207, 26);
             this.extraPrescisionToolStripMenuItem.Text = "Extra Prescision";
-            this.extraPrescisionToolStripMenuItem.Click += new System.EventHandler(this.decimalPrescisionToolStripMenuItem_Click);
+            this.extraPrescisionToolStripMenuItem.Click += new System.EventHandler(this.extraPrescisionToolStripMenuItem_Click);
             // 
             // ResolutionToolStripMenuItem
             // 
@@ -244,8 +244,8 @@
             // 
             // openFileDialog1
             // 
-            this.openFileDialog1.FileName = "blues.map";
-            this.openFileDialog1.InitialDirectory = ".\\Palettes\\";
+            this.fileLoadDialog.FileName = "blues.map";
+            this.fileLoadDialog.InitialDirectory = ".\\Palettes\\";
             // 
             // ViewControl
             // 
@@ -485,9 +485,9 @@
             // 
             // saveFileDialog1
             // 
-            this.saveFileDialog1.DefaultExt = "avi";
-            this.saveFileDialog1.Filter = "AVI Video Files|*.avi";
-            this.saveFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.saveFileDialog1_FileOk);
+            this.RenderSaveDialog.DefaultExt = "avi";
+            this.RenderSaveDialog.Filter = "AVI Video Files|*.avi";
+            this.RenderSaveDialog.FileOk += new System.ComponentModel.CancelEventHandler(this.RenderSaveDialog_OK);
             // 
             // intervalTimer
             // 
@@ -548,10 +548,10 @@
         private System.Windows.Forms.ToolStripMenuItem newRenderToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem closeCurrentToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem presicionStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem doublePrecisionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem standardPrecisionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem extraPrescisionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadPaletteToolStripMenuItem;
-        private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.OpenFileDialog fileLoadDialog;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.TabControl ViewControl;
         private System.Windows.Forms.TabPage viewTab;
@@ -565,7 +565,7 @@
         private System.Windows.Forms.NumericUpDown startFrameInput;
         private System.Windows.Forms.Label XOffLabel;
         private System.Windows.Forms.NumericUpDown xOffInput;
-        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.SaveFileDialog RenderSaveDialog;
         private System.Windows.Forms.CheckBox livePreviewCheckBox;
         private System.Windows.Forms.Label livePreviewLabel;
         private System.Windows.Forms.Label timeDescLabel;

@@ -7,9 +7,11 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using Quadruple;
 
-namespace MandelBrot.Utilities
+using Mandelbrot.Rendering;
+using Mandelbrot.Rendering.Imaging;
+
+namespace Mandelbrot.Utilities
 {
     class Utils
     {

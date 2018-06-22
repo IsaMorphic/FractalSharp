@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-namespace MandelBrot.Utilities
+
+namespace Mandelbrot.Utilities
 {
     interface IGenericMath<T>
     {
@@ -24,11 +25,11 @@ namespace MandelBrot.Utilities
         // Specific Casts
         T fromInt32(Int32 a);
         T fromDouble(Double a);
-        T fromDecimal(Decimal a);
+        T fromQuadruple(Quadruple a);
 
         Int32 toInt32(T a);
         Double toDouble(T a);
-        Decimal toDecimal(T a);
+        Quadruple toQuadruple(T a);
     }
 
     struct DoubleMath : IGenericMath<Double>
@@ -47,35 +48,35 @@ namespace MandelBrot.Utilities
 
         public Double fromInt32(Int32 a) { return a; }
         public Double fromDouble(Double a) { return a; }
-        public Double fromDecimal(Decimal a) { return (double)a; }
+        public Double fromQuadruple(Quadruple a) { return (double)a; }
 
         public Int32 toInt32(Double a) { return (int)a; }
         public Double toDouble(Double a) { return a; }
-        public Decimal toDecimal(Double a) { return (decimal)a; }
+        public Quadruple toQuadruple(Double a) { return a; }
 
     }
 
-    struct DecimalMath : IGenericMath<Decimal>
+    struct QuadrupleMath : IGenericMath<Quadruple>
     {
-        public Decimal Add(Decimal a, Decimal b) { return a + b; }
-        public Decimal Subtract(Decimal a, Decimal b) { return a - b; }
+        public Quadruple Add(Quadruple a, Quadruple b) { return a + b; }
+        public Quadruple Subtract(Quadruple a, Quadruple b) { return a - b; }
 
-        public Decimal Multiply(Decimal a, Decimal b) { return a * b; }
-        public Decimal Divide(Decimal a, Decimal b) { return a / b; }
+        public Quadruple Multiply(Quadruple a, Quadruple b) { return a * b; }
+        public Quadruple Divide(Quadruple a, Quadruple b) { return a / b; }
 
-        public Decimal Negate(Decimal a) { return -a; }
+        public Quadruple Negate(Quadruple a) { return -a; }
 
-        public bool LessThan(Decimal a, Decimal b) { return a < b; }
-        public bool GreaterThan(Decimal a, Decimal b) { return a > b; }
-        public bool EqualTo(Decimal a, Decimal b) { return a == b; }
+        public bool LessThan(Quadruple a, Quadruple b) { return a < b; }
+        public bool GreaterThan(Quadruple a, Quadruple b) { return a > b; }
+        public bool EqualTo(Quadruple a, Quadruple b) { return a == b; }
 
-        public Decimal fromInt32(Int32 a) { return a; }
-        public Decimal fromDouble(Double a) { return (Decimal)a; }
-        public Decimal fromDecimal(Decimal a) { return a; }
+        public Quadruple fromInt32(Int32 a) { return a; }
+        public Quadruple fromDouble(Double a) { return a; }
+        public Quadruple fromQuadruple(Quadruple a) { return a; }
 
-        public Int32 toInt32(Decimal a) { return (int)a; }
-        public Double toDouble(Decimal a) { return (double)a; }
-        public Decimal toDecimal(Decimal a) { return a; }
 
+        public Int32 toInt32(Quadruple a) { return (int)a; }
+        public Double toDouble(Quadruple a) { return (double)a; }
+        public Quadruple toQuadruple(Quadruple a) { return a; }
     }
 }
