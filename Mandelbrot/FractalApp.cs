@@ -19,6 +19,7 @@ using Mandelbrot.Rendering;
 using Mandelbrot.Rendering.Imaging;
 
 using Accord.Video.FFMPEG;
+using Mandelbrot.Movies;
 
 namespace Mandelbrot
 {
@@ -33,22 +34,22 @@ namespace Mandelbrot
         private int coreCount = Environment.ProcessorCount;
 
         // Rendering related Properties
-        private bool rendering = false;
-        private bool extraPrecision = false;
-        private double extraPrecisionThreshold = Math.Pow(500, 5);
+        private bool Rendering = false;
+        private bool ExtraPrecision = false;
+        private double ExtraPrecisionThreshold = Math.Pow(500, 5);
 
-        private MandelbrotRenderer Renderer = new MandelbrotRenderer();
-        private FractalAppSettings RenderSettings = new FractalAppSettings();
+        private MandelbrotMovieRenderer Renderer = new MandelbrotMovieRenderer();
+        private ZoomMovieSettings RenderSettings = new ZoomMovieSettings();
 
-        private Action ChosenMethod;
+        private Action RenderMethod;
 
         // Fractal loading and saving properties.  
-        private bool renderActive = false;
-        private bool loadingFile = false;
+        private bool RenderActive = false;
+        private bool LoadingFile = false;
 
-        private string videoPath;
-        private string settingsPath;
-        private string palletePath = Path.Combine(
+        private string VideoPath;
+        private string SettingsPath;
+        private string PalletePath = Path.Combine(
             Application.StartupPath,
             "Palettes", "blues.map");
 
@@ -59,7 +60,7 @@ namespace Mandelbrot
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            ChosenMethod = new Action(Renderer.RenderFrame<Double, DoubleMath>);
+            RenderMethod = new Action(Renderer.RenderFrame<Double, DoubleMath>);
 
             startFrameInput.Value = RenderSettings.NumFrames;
             iterationCountInput.Value = RenderSettings.MaxIterations;
@@ -75,13 +76,13 @@ namespace Mandelbrot
 
             Renderer.RenderHalted += Shutdown;
 
-            RenderSettings.palettePath = palletePath;
+            RenderSettings.PalettePath = PalletePath;
 
             Width = 640;
             Height = 480;
         }
 
-        #region Frame Setup and Cleanup Methods
+        #region Renderer Events
         private void FrameStart()
         {
             currentFrameStartTime = DateTime.Now;
@@ -93,10 +94,10 @@ namespace Mandelbrot
             }));
 
             // Calculate zoom... using math.pow to keep the zoom rate constant.
-            if (Renderer.Magnification > extraPrecisionThreshold)
+            if (Renderer.Magnification > ExtraPrecisionThreshold)
             {
-                ChosenMethod = new Action(Renderer.RenderFrame<Quadruple, QuadrupleMath>);
-                extraPrecision = true;
+                RenderMethod = new Action(Renderer.RenderFrame<Quadruple, QuadrupleMath>);
+                ExtraPrecision = true;
             }
         }
 
@@ -114,12 +115,12 @@ namespace Mandelbrot
 
             Renderer.SetFrame(Renderer.NumFrames + 1);
 
-            Task.Run(ChosenMethod);
+            Task.Run(RenderMethod);
         }
 
         public void Shutdown()
         {
-            rendering = false;
+            Rendering = false;
             BeginInvoke((Action)(() =>
             {
                 intervalTimer.Stop();
@@ -133,11 +134,11 @@ namespace Mandelbrot
                 threadCountInput.Enabled = true;
                 coreCountLabel.Enabled = true;
                 pictureBox1.Image = null;
-                if (extraPrecision)
+                if (ExtraPrecision)
                 {
                     standardPrecisionToolStripMenuItem.Checked = false;
                     extraPrescisionToolStripMenuItem.Checked = true;
-                    ChosenMethod = new Action(Renderer.RenderFrame<Quadruple, QuadrupleMath>);
+                    RenderMethod = new Action(Renderer.RenderFrame<Quadruple, QuadrupleMath>);
                 }
             }));
         }
@@ -150,6 +151,8 @@ namespace Mandelbrot
         // from an old video file and saves it to a new one.  
         private void GrabFrame()
         {
+            FrameStart();
+
             Renderer.SetFrame(Renderer.NumFrames + 1);
 
             if (Renderer.NumFrames < videoReader.FrameCount - 1)
@@ -160,9 +163,9 @@ namespace Mandelbrot
             }
             else
             {
-                loadingFile = false;
+                LoadingFile = false;
                 videoReader.Close();
-                Task.Run(ChosenMethod);
+                Task.Run(RenderMethod);
             }
         }
 
@@ -176,13 +179,13 @@ namespace Mandelbrot
             fileLoadDialog.InitialDirectory = Path.Combine(Application.StartupPath, "Renders");
             if (fileLoadDialog.ShowDialog() == DialogResult.OK)
             {
-                settingsPath = fileLoadDialog.FileName;
-                string jsonData = File.ReadAllText(settingsPath);
+                SettingsPath = fileLoadDialog.FileName;
+                string jsonData = File.ReadAllText(SettingsPath);
 
                 JavaScriptSerializer js = new JavaScriptSerializer();
-                RenderSettings = js.Deserialize<FractalAppSettings>(jsonData);
+                RenderSettings = js.Deserialize<ZoomMovieSettings>(jsonData);
 
-                videoPath = RenderSettings.videoPath;
+                VideoPath = RenderSettings.VideoPath;
 
                 x480ToolStripMenuItem.Checked = false;
                 x720ToolStripMenuItem.Checked = false;
@@ -211,8 +214,8 @@ namespace Mandelbrot
                 yOffInput.Value = RenderSettings.offsetY;
 
                 int bitrate = RenderSettings.Width * RenderSettings.Height * 32 * 3 * 8; // 80 percent quality, explained below
-                videoReader.Open(String.Format(videoPath, RenderSettings.version));
-                videoWriter.Open(String.Format(videoPath, RenderSettings.version + 1), RenderSettings.Width, RenderSettings.Height, 30, VideoCodec.MPEG4, bitrate);
+                videoReader.Open(String.Format(VideoPath, RenderSettings.Version));
+                videoWriter.Open(String.Format(VideoPath, RenderSettings.Version + 1), RenderSettings.Width, RenderSettings.Height, 30, VideoCodec.MPEG4, bitrate);
 
                 loaded = true;
             }
@@ -221,7 +224,7 @@ namespace Mandelbrot
 
         private void SaveFractal()
         {
-            string fractalName = Path.GetFileNameWithoutExtension(videoPath).Replace("_{0}", String.Empty);
+            string fractalName = Path.GetFileNameWithoutExtension(VideoPath).Replace("_{0}", String.Empty);
             string fractalDate = DateTime.Now.ToShortDateString().Replace('/', '-');
             string fileName = String.Format("{0}_{1}.fractal", fractalName, fractalDate);
             string filePath = Path.Combine(Application.StartupPath, "Renders", fileName);
@@ -234,16 +237,16 @@ namespace Mandelbrot
 
         private void UpdateFractal()
         {
-            string jsonData = File.ReadAllText(settingsPath);
+            string jsonData = File.ReadAllText(SettingsPath);
 
             JavaScriptSerializer js = new JavaScriptSerializer();
-            RenderSettings = js.Deserialize<FractalAppSettings>(jsonData);
+            RenderSettings = js.Deserialize<ZoomMovieSettings>(jsonData);
 
-            RenderSettings.version++;
+            RenderSettings.Version++;
 
             jsonData = js.Serialize(RenderSettings);
 
-            File.WriteAllText(settingsPath, jsonData);
+            File.WriteAllText(SettingsPath, jsonData);
         }
 
         #endregion
@@ -252,33 +255,33 @@ namespace Mandelbrot
 
         private void newRenderToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            RenderSettings.version = 0;
+            RenderSettings.Version = 0;
             RenderSaveDialog.ShowDialog();
         }
 
         private void RenderSaveDialog_OK(object sender, CancelEventArgs e)
         {
-            RGB[] palette = Utils.LoadPallete(RenderSettings.palettePath);
+            RGB[] palette = Utils.LoadPallete(RenderSettings.PalettePath);
 
             Renderer.Initialize(RenderSettings, palette);
 
-            videoPath = RenderSaveDialog.FileName;
+            VideoPath = RenderSaveDialog.FileName;
 
-            string videoDirectory = Path.GetDirectoryName(videoPath);
-            string videoName = Path.GetFileNameWithoutExtension(videoPath);
+            string videoDirectory = Path.GetDirectoryName(VideoPath);
+            string videoName = Path.GetFileNameWithoutExtension(VideoPath);
 
             if (!videoName.EndsWith("_{0}.avi"))
                 videoName += "_{0}.avi";
 
-            videoPath = Path.Combine(videoDirectory, videoName);
+            VideoPath = Path.Combine(videoDirectory, videoName);
 
-            RenderSettings.videoPath = videoPath;
+            RenderSettings.VideoPath = VideoPath;
 
             // width and height multiplied by 32, 32 bpp
             // then multiply by framerate divided by ten, after multiplying by eight yeilds 80% of the normal amount of bits per second.  
             // Note: we're assuming that there is no audio in the video.  Otherwise we would have to accomidate for that as well.  
             int bitrate = RenderSettings.Width * RenderSettings.Height * 32 * 3 * 8; // 80 percent quality
-            videoWriter.Open(String.Format(videoPath, RenderSettings.version), RenderSettings.Width, RenderSettings.Height, 30, VideoCodec.MPEG4, bitrate);
+            videoWriter.Open(String.Format(VideoPath, RenderSettings.Version), RenderSettings.Width, RenderSettings.Height, 30, VideoCodec.MPEG4, bitrate);
 
             newRenderToolStripMenuItem.Enabled = false;
             loadRenderToolStripMenuItem.Enabled = false;
@@ -291,7 +294,7 @@ namespace Mandelbrot
         {
             if (LoadFractal())
             {
-                loadingFile = true;
+                LoadingFile = true;
 
                 newRenderToolStripMenuItem.Enabled = false;
                 loadRenderToolStripMenuItem.Enabled = false;
@@ -320,15 +323,15 @@ namespace Mandelbrot
             fileLoadDialog.InitialDirectory = Path.Combine(Application.StartupPath, "Palettes");
             if (fileLoadDialog.ShowDialog() == DialogResult.OK)
             {
-                palletePath = fileLoadDialog.FileName;
+                PalletePath = fileLoadDialog.FileName;
             }
         }
 
         private void startToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (!rendering)
+            if (!Rendering)
             {
-                rendering = true;
+                Rendering = true;
                 RenderSettings.offsetX = xOffInput.Value;
                 RenderSettings.offsetY = yOffInput.Value;
 
@@ -338,19 +341,19 @@ namespace Mandelbrot
 
                 Renderer.Setup(RenderSettings);
 
-                if (!loadingFile)
+                if (!LoadingFile)
                 {
-                    if (!renderActive)
+                    if (!RenderActive)
                     {
-                        renderActive = true;
+                        RenderActive = true;
                         SaveFractal();
                     }
-                    Task.Run(ChosenMethod);
+                    Task.Run(RenderMethod);
                 }
                 else
                 {
                     UpdateFractal();
-                    RGB[] palette = Utils.LoadPallete(RenderSettings.palettePath);
+                    RGB[] palette = Utils.LoadPallete(RenderSettings.PalettePath);
                     Renderer.Initialize(RenderSettings, palette);
                     Renderer.Setup(RenderSettings);
                     Task.Run(new Action(GrabFrame));
@@ -378,16 +381,16 @@ namespace Mandelbrot
         {
             standardPrecisionToolStripMenuItem.Checked = true;
             extraPrescisionToolStripMenuItem.Checked = false;
-            ChosenMethod = new Action(Renderer.RenderFrame<Double, DoubleMath>);
-            extraPrecision = false;
+            RenderMethod = new Action(Renderer.RenderFrame<Double, DoubleMath>);
+            ExtraPrecision = false;
         }
 
         private void extraPrescisionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             standardPrecisionToolStripMenuItem.Checked = false;
             extraPrescisionToolStripMenuItem.Checked = true;
-            ChosenMethod = new Action(Renderer.RenderFrame<Quadruple, QuadrupleMath>);
-            extraPrecision = true;
+            RenderMethod = new Action(Renderer.RenderFrame<Quadruple, QuadrupleMath>);
+            ExtraPrecision = true;
         }
 
         private void x480ToolStripMenuItem_Click(object sender, EventArgs e)

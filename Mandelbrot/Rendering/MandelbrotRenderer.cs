@@ -20,11 +20,9 @@ namespace Mandelbrot.Rendering
     {
         private DirectBitmap currentFrame;
 
-        private int ThreadCount = Environment.ProcessorCount;
-
-        public int NumFrames { get; private set; }
-        public long MaxIterations { get; private set; }
-        public double Magnification { get; private set; }
+        private int    ThreadCount = Environment.ProcessorCount;
+        public  long   MaxIterations { get; protected set; }
+        public  double Magnification { get; protected set; }
 
 
         private decimal offsetXM;
@@ -37,7 +35,7 @@ namespace Mandelbrot.Rendering
         private int Width;
         private int Height;
 
-        private RGB[] palette;
+        protected RGB[] palette;
 
         private CancellationTokenSource Job;
 
@@ -51,8 +49,6 @@ namespace Mandelbrot.Rendering
         {
             Width = settings.Width;
             Height = settings.Height;
-
-            Magnification = 1;
 
             aspectQ = (double)Width / (double)Height;
 
@@ -72,8 +68,9 @@ namespace Mandelbrot.Rendering
             offsetXQ = Quadruple.FromString(offsetXM.ToString());
             offsetYQ = Quadruple.FromString(offsetYM.ToString());
 
+            Magnification = settings.Magnification;
             MaxIterations = settings.MaxIterations;
-            NumFrames = settings.NumFrames;
+
             ThreadCount = settings.ThreadCount;
         }
 
@@ -150,17 +147,6 @@ namespace Mandelbrot.Rendering
         #endregion
 
         #region Rendering Methods
-
-        public void SetFrame(int frameNum)
-        {
-            // Set variables and get new zoom value.  
-            NumFrames = frameNum;
-
-            Magnification = Math.Pow(NumFrames, NumFrames / 100.0);
-
-            MaxIterations += NumFrames / Math.Max(5 - NumFrames / 100, 1);
-
-        }
 
         // Frame rendering method, using generic typing to reduce the amount 
         // of code used and to make the algorithm easily applicable to other number types
