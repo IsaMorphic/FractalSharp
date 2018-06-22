@@ -176,10 +176,10 @@ namespace Mandelbrot
         private bool LoadFractal()
         {
             bool loaded = false;
-            fileLoadDialog.InitialDirectory = Path.Combine(Application.StartupPath, "Renders");
-            if (fileLoadDialog.ShowDialog() == DialogResult.OK)
+            FileLoadDialog.InitialDirectory = Path.Combine(Application.StartupPath, "Renders");
+            if (FileLoadDialog.ShowDialog() == DialogResult.OK)
             {
-                SettingsPath = fileLoadDialog.FileName;
+                SettingsPath = FileLoadDialog.FileName;
                 string jsonData = File.ReadAllText(SettingsPath);
 
                 JavaScriptSerializer js = new JavaScriptSerializer();
@@ -320,10 +320,10 @@ namespace Mandelbrot
 
         private void loadPaletteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            fileLoadDialog.InitialDirectory = Path.Combine(Application.StartupPath, "Palettes");
-            if (fileLoadDialog.ShowDialog() == DialogResult.OK)
+            FileLoadDialog.InitialDirectory = Path.Combine(Application.StartupPath, "Palettes");
+            if (FileLoadDialog.ShowDialog() == DialogResult.OK)
             {
-                PalletePath = fileLoadDialog.FileName;
+                PalletePath = FileLoadDialog.FileName;
             }
         }
 
