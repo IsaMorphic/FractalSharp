@@ -35,7 +35,7 @@ namespace Mandelbrot
 
         // Rendering related Properties
         private bool Rendering = false;
-        private bool ExtraPrecision = false;
+        private bool PrecisionSwitched = false;
         private double ExtraPrecisionThreshold = Math.Pow(500, 5);
 
         private MandelbrotMovieRenderer Renderer = new MandelbrotMovieRenderer();
@@ -97,7 +97,7 @@ namespace Mandelbrot
             if (Renderer.Magnification > ExtraPrecisionThreshold)
             {
                 RenderMethod = new Action(Renderer.RenderFrame<Quadruple, QuadrupleMath>);
-                ExtraPrecision = true;
+                PrecisionSwitched = true;
             }
         }
 
@@ -134,7 +134,7 @@ namespace Mandelbrot
                 threadCountInput.Enabled = true;
                 coreCountLabel.Enabled = true;
                 pictureBox1.Image = null;
-                if (ExtraPrecision)
+                if (PrecisionSwitched)
                 {
                     standardPrecisionToolStripMenuItem.Checked = false;
                     extraPrescisionToolStripMenuItem.Checked = true;
@@ -206,6 +206,20 @@ namespace Mandelbrot
                 {
                     x960ToolStripMenuItem.Checked = true;
                 }
+
+                if (RenderSettings.ExtraPrecision)
+                {
+                    standardPrecisionToolStripMenuItem.Checked = false;
+                    extraPrescisionToolStripMenuItem.Checked = true;
+                    RenderMethod = new Action(Renderer.RenderFrame<Quadruple, QuadrupleMath>);
+                }
+                else
+                {
+                    standardPrecisionToolStripMenuItem.Checked = true;
+                    extraPrescisionToolStripMenuItem.Checked = false;
+                    RenderMethod = new Action(Renderer.RenderFrame<Double, DoubleMath>);
+                }
+
 
                 startFrameInput.Value = RenderSettings.NumFrames;
                 iterationCountInput.Value = RenderSettings.MaxIterations;
@@ -382,7 +396,7 @@ namespace Mandelbrot
             standardPrecisionToolStripMenuItem.Checked = true;
             extraPrescisionToolStripMenuItem.Checked = false;
             RenderMethod = new Action(Renderer.RenderFrame<Double, DoubleMath>);
-            ExtraPrecision = false;
+            RenderSettings.ExtraPrecision = false;
         }
 
         private void extraPrescisionToolStripMenuItem_Click(object sender, EventArgs e)
@@ -390,7 +404,7 @@ namespace Mandelbrot
             standardPrecisionToolStripMenuItem.Checked = false;
             extraPrescisionToolStripMenuItem.Checked = true;
             RenderMethod = new Action(Renderer.RenderFrame<Quadruple, QuadrupleMath>);
-            ExtraPrecision = true;
+            RenderSettings.ExtraPrecision = true;
         }
 
         private void x480ToolStripMenuItem_Click(object sender, EventArgs e)
