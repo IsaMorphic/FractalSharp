@@ -14,8 +14,9 @@ namespace Mandelbrot.Movies
 
         public void Setup(ZoomMovieSettings settings)
         {
-            NumFrames = settings.NumFrames;
             base.Setup(settings);
+            NumFrames = settings.NumFrames;
+            Magnification = Math.Pow(NumFrames, NumFrames / 100.0);
         }
 
         public void SetFrame(int frameNum)

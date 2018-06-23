@@ -35,7 +35,7 @@ namespace Mandelbrot.Rendering
         private int Width;
         private int Height;
 
-        protected RGB[] palette;
+        private RGB[] palette;
 
         private CancellationTokenSource Job;
 

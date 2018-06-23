@@ -49,7 +49,7 @@
             this.x720ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.x960ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorDialog = new System.Windows.Forms.ColorDialog();
-            this.fileLoadDialog = new System.Windows.Forms.OpenFileDialog();
+            this.FileLoadDialog = new System.Windows.Forms.OpenFileDialog();
             this.ViewControl = new System.Windows.Forms.TabControl();
             this.advancedTab = new System.Windows.Forms.TabPage();
             this.timeDescLabel = new System.Windows.Forms.Label();
@@ -189,11 +189,11 @@
             this.presicionStripMenuItem.Size = new System.Drawing.Size(80, 24);
             this.presicionStripMenuItem.Text = "Precision";
             // 
-            // doublePrecisionToolStripMenuItem
+            // standardPrecisionToolStripMenuItem
             // 
             this.standardPrecisionToolStripMenuItem.Checked = true;
             this.standardPrecisionToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.standardPrecisionToolStripMenuItem.Name = "doublePrecisionToolStripMenuItem";
+            this.standardPrecisionToolStripMenuItem.Name = "standardPrecisionToolStripMenuItem";
             this.standardPrecisionToolStripMenuItem.Size = new System.Drawing.Size(207, 26);
             this.standardPrecisionToolStripMenuItem.Text = "Standard Precision";
             this.standardPrecisionToolStripMenuItem.Click += new System.EventHandler(this.standardPrecisionToolStripMenuItem_Click);
@@ -242,10 +242,9 @@
             // 
             this.colorDialog.Color = System.Drawing.Color.Aqua;
             // 
-            // openFileDialog1
+            // FileLoadDialog
             // 
-            this.fileLoadDialog.FileName = "blues.map";
-            this.fileLoadDialog.InitialDirectory = ".\\Palettes\\";
+            this.FileLoadDialog.InitialDirectory = ".\\Palettes\\";
             // 
             // ViewControl
             // 
@@ -483,7 +482,7 @@
             this.viewTab.Text = "View";
             this.viewTab.UseVisualStyleBackColor = true;
             // 
-            // saveFileDialog1
+            // RenderSaveDialog
             // 
             this.RenderSaveDialog.DefaultExt = "avi";
             this.RenderSaveDialog.Filter = "AVI Video Files|*.avi";
@@ -551,7 +550,7 @@
         private System.Windows.Forms.ToolStripMenuItem standardPrecisionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem extraPrescisionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadPaletteToolStripMenuItem;
-        private System.Windows.Forms.OpenFileDialog fileLoadDialog;
+        private System.Windows.Forms.OpenFileDialog FileLoadDialog;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.TabControl ViewControl;
         private System.Windows.Forms.TabPage viewTab;
