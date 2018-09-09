@@ -23,60 +23,61 @@ namespace Mandelbrot.Utilities
         bool EqualTo(T a, T b);
 
         // Specific Casts
-        T fromInt32(Int32 a);
-        T fromDouble(Double a);
-        T fromQuadruple(Quadruple a);
+        T fromInt32(int a);
+        T fromDouble(double a);
+        T fromDecimal(decimal a);
 
-        Int32 toInt32(T a);
-        Double toDouble(T a);
-        Quadruple toQuadruple(T a);
+        int toInt32(T a);
+        double toDouble(T a);
+        decimal toDecimal(T a);
     }
 
-    struct DoubleMath : IGenericMath<Double>
+    struct DoubleMath : IGenericMath<double>
     {
-        public Double Add(Double a, Double b) { return a + b; }
-        public Double Subtract(Double a, Double b) { return a - b; }
+        public double Add(double a, double b) { return a + b; }
+        public double Subtract(double a, double b) { return a - b; }
 
-        public Double Multiply(Double a, Double b) { return a * b; }
-        public Double Divide(Double a, Double b) { return a / b; }
+        public double Multiply(double a, double b) { return a * b; }
+        public double Divide(double a, double b) { return a / b; }
 
-        public Double Negate(Double a) { return -a; }
+        public double Negate(double a) { return -a; }
 
-        public bool LessThan(Double a, Double b) { return a < b; }
-        public bool GreaterThan(Double a, Double b) { return a > b; }
-        public bool EqualTo(Double a, Double b) { return a == b; }
+        public bool LessThan(double a, double b) { return a < b; }
+        public bool GreaterThan(double a, double b) { return a > b; }
+        public bool EqualTo(double a, double b) { return a == b; }
 
-        public Double fromInt32(Int32 a) { return a; }
-        public Double fromDouble(Double a) { return a; }
-        public Double fromQuadruple(Quadruple a) { return (double)a; }
+        public double fromInt32(int a) { return a; }
+        public double fromDouble(double a) { return a; }
+        public double fromDecimal(decimal a) { return (double)a; }
 
-        public Int32 toInt32(Double a) { return (int)a; }
-        public Double toDouble(Double a) { return a; }
-        public Quadruple toQuadruple(Double a) { return a; }
+
+        public int toInt32(double a) { return (int)a; }
+        public double toDouble(double a) { return a; }
+        public decimal toDecimal(double a) { return (decimal)a; }
 
     }
 
-    struct QuadrupleMath : IGenericMath<Quadruple>
+    struct DecimalMath : IGenericMath<decimal>
     {
-        public Quadruple Add(Quadruple a, Quadruple b) { return a + b; }
-        public Quadruple Subtract(Quadruple a, Quadruple b) { return a - b; }
+        public decimal Add(decimal a, decimal b) { return a + b; }
+        public decimal Subtract(decimal a, decimal b) { return a - b; }
 
-        public Quadruple Multiply(Quadruple a, Quadruple b) { return a * b; }
-        public Quadruple Divide(Quadruple a, Quadruple b) { return a / b; }
+        public decimal Multiply(decimal a, decimal b) { return a * b; }
+        public decimal Divide(decimal a, decimal b) { return a / b; }
 
-        public Quadruple Negate(Quadruple a) { return -a; }
+        public decimal Negate(decimal a) { return -a; }
 
-        public bool LessThan(Quadruple a, Quadruple b) { return a < b; }
-        public bool GreaterThan(Quadruple a, Quadruple b) { return a > b; }
-        public bool EqualTo(Quadruple a, Quadruple b) { return a == b; }
+        public bool LessThan(decimal a, decimal b) { return a < b; }
+        public bool GreaterThan(decimal a, decimal b) { return a > b; }
+        public bool EqualTo(decimal a, decimal b) { return a == b; }
 
-        public Quadruple fromInt32(Int32 a) { return a; }
-        public Quadruple fromDouble(Double a) { return a; }
-        public Quadruple fromQuadruple(Quadruple a) { return a; }
+        public decimal fromInt32(int a) { return a; }
+        public decimal fromDouble(double a) { return (decimal)a; }
+        public decimal fromDecimal(decimal a) { return a; }
 
 
-        public Int32 toInt32(Quadruple a) { return (int)a; }
-        public Double toDouble(Quadruple a) { return (double)a; }
-        public Quadruple toQuadruple(Quadruple a) { return a; }
+        public int toInt32(decimal a) { return (int)a; }
+        public double toDouble(decimal a) { return (double)a; }
+        public decimal toDecimal(decimal a) { return a; }
     }
 }

@@ -96,7 +96,7 @@ namespace Mandelbrot
             // Calculate zoom... using math.pow to keep the zoom rate constant.
             if (Renderer.Magnification > ExtraPrecisionThreshold)
             {
-                RenderMethod = new Action(Renderer.RenderFrame<Quadruple, QuadrupleMath>);
+                RenderMethod = new Action(Renderer.RenderFrame<Decimal, DecimalMath>);
                 PrecisionSwitched = true;
             }
         }
@@ -138,7 +138,7 @@ namespace Mandelbrot
                 {
                     standardPrecisionToolStripMenuItem.Checked = false;
                     extraPrescisionToolStripMenuItem.Checked = true;
-                    RenderMethod = new Action(Renderer.RenderFrame<Quadruple, QuadrupleMath>);
+                    RenderMethod = new Action(Renderer.RenderFrame<Decimal, DecimalMath>);
                 }
             }));
         }
@@ -211,7 +211,7 @@ namespace Mandelbrot
                 {
                     standardPrecisionToolStripMenuItem.Checked = false;
                     extraPrescisionToolStripMenuItem.Checked = true;
-                    RenderMethod = new Action(Renderer.RenderFrame<Quadruple, QuadrupleMath>);
+                    RenderMethod = new Action(Renderer.RenderFrame<Decimal, DecimalMath>);
                 }
                 else
                 {
@@ -403,7 +403,7 @@ namespace Mandelbrot
         {
             standardPrecisionToolStripMenuItem.Checked = false;
             extraPrescisionToolStripMenuItem.Checked = true;
-            RenderMethod = new Action(Renderer.RenderFrame<Quadruple, QuadrupleMath>);
+            RenderMethod = new Action(Renderer.RenderFrame<Decimal, DecimalMath>);
             RenderSettings.ExtraPrecision = true;
         }
 

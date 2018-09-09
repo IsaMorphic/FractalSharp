@@ -28,9 +28,7 @@ namespace Mandelbrot.Rendering
         private decimal offsetXM;
         private decimal offsetYM;
 
-        private Quadruple offsetXQ;
-        private Quadruple offsetYQ;
-        private Quadruple aspectQ;
+        private decimal aspectM;
 
         private int Width;
         private int Height;
@@ -50,7 +48,7 @@ namespace Mandelbrot.Rendering
             Width = settings.Width;
             Height = settings.Height;
 
-            aspectQ = (double)Width / (double)Height;
+            aspectM = (decimal)Width / (decimal)Height;
 
             currentFrame = new DirectBitmap(Width, Height);
 
@@ -64,9 +62,6 @@ namespace Mandelbrot.Rendering
 
             offsetXM = settings.offsetX;
             offsetYM = settings.offsetY;
-
-            offsetXQ = Quadruple.FromString(offsetXM.ToString());
-            offsetYQ = Quadruple.FromString(offsetYM.ToString());
 
             Magnification = settings.Magnification;
             MaxIterations = settings.MaxIterations;
@@ -170,10 +165,10 @@ namespace Mandelbrot.Rendering
 
             T zoom = TMath.fromDouble(Magnification);
 
-            T offsetX = TMath.fromQuadruple(offsetXQ);
-            T offsetY = TMath.fromQuadruple(offsetYQ);
+            T offsetX = TMath.fromDecimal(offsetXM);
+            T offsetY = TMath.fromDecimal(offsetYM);
 
-            T scaleFactor = TMath.fromQuadruple(aspectQ);
+            T scaleFactor = TMath.fromDecimal(aspectM);
 
             // Predefine minimum and maximum values of the plane, 
             // In order to avoid making unnecisary calculations on each pixel.  
