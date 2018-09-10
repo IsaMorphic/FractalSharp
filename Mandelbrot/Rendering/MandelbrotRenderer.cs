@@ -20,9 +20,9 @@ namespace Mandelbrot.Rendering
     {
         private DirectBitmap currentFrame;
 
-        private int    ThreadCount = Environment.ProcessorCount;
-        public  long   MaxIterations { get; protected set; }
-        public  double Magnification { get; protected set; }
+        private int ThreadCount = Environment.ProcessorCount;
+        public long MaxIterations { get; protected set; }
+        public double Magnification { get; protected set; }
 
 
         private decimal offsetXM;
@@ -72,56 +72,98 @@ namespace Mandelbrot.Rendering
         #endregion
 
         #region Algorithm Methods
-        // Traditional Mandelbrot algorithm, 
-        // using generic typing in order to increase modularity
-        private void mandelbrot<T, M>
-            (T Zero, T Two, T Four, T x0, T y0, out T xx, out T yy, out long iter)
-            where M : IGenericMath<T>, new()
+        // Perturbation Theory Algorithm, 
+        // produces a list of iteration values used to compute the surrounding points
+        private GenericComplex<T>[] get_iteration_list<T, M>(
+            M TMath, // Math Object
+            T Zero, T TwoPow10, T NegTwoPow10, // Constants
+            T center_r, T center_i // Input values
+            )
+            where M : IGenericMath<T>
         {
-            M TMath = new M();
+            T xn_r = center_r;
+            T xn_i = center_i;
 
+            GenericComplex<T>[] iter_list = new GenericComplex<T>[MaxIterations];
+
+            for (int i = 0; i < MaxIterations; i++)
+            {
+                // pre multiply by two
+                T real = TMath.Add(xn_r, xn_r);
+                T imag = TMath.Add(xn_i, xn_i);
+
+                T xn_r2 = TMath.Multiply(xn_r, xn_r);
+                T xn_i2 = TMath.Multiply(xn_i, xn_i);
+
+                GenericComplex<T> c = new GenericComplex<T>(real, imag);
+
+                iter_list[i] = c;
+
+                // make sure our numbers don't get too big
+
+                // real > 1024 || imag > 1024 || real < -1024 || imag < -1024
+                if (TMath.GreaterThan(real, TwoPow10) || TMath.GreaterThan(imag, TwoPow10) ||
+                    TMath.LessThan(real, NegTwoPow10) || TMath.LessThan(imag, NegTwoPow10))
+                    return iter_list;
+
+                // calculate next iteration, remember real = 2 * xn_r
+
+                // xn_r = xn_r^2 - xn_i^2 + center_r
+                xn_r = TMath.Add(TMath.Subtract(xn_r2, xn_i2), center_r);
+                // xn_i = re * xn_i + center_i
+                xn_i = TMath.Add(TMath.Multiply(real, xn_i), center_i);
+            }
+            return iter_list;
+        }
+
+        // Non-Traditional Mandelbrot algorithm, 
+        // Iterates a point over its neighbors to approximate an iteration count.
+        private void mandelbrot<T, M>(
+            M TMath, ComplexMath<T, M> CMath, // Math Objects
+            T Zero, T OneHalf, T Four, // Constants
+            T x0, T y0, GenericComplex<T>[] iter_list, // Input values
+            out T zn_size, out long iter) // Output values
+            where M : IGenericMath<T>
+        {
             // Initialize some variables..
-            T x = Zero;
-            T y = Zero;
+            GenericComplex<T> d0 = new GenericComplex<T>(x0, y0);
 
-            // Define x squared and y squared as their own variables
-            // To avoid unnecisarry multiplication.
-            xx = Zero;
-            yy = Zero;
+            GenericComplex<T> dn = d0;
+
+            // Get Max Iterations.  
+            long max_iter = MaxIterations - 1;
 
             // Initialize our iteration count.
             iter = 0;
 
+            zn_size = Zero;
+
             // Mandelbrot algorithm
-            while (TMath.LessThan(TMath.Add(xx, yy), Four) && iter < MaxIterations)
+            do
             {
-                // xtemp = xx - yy + x0
-                T xtemp = TMath.Add(TMath.Subtract(xx, yy), x0);
-                // ytemp = 2 * x * y + y0
-                T ytemp = TMath.Add(TMath.Multiply(Two, TMath.Multiply(x, y)), y0);
+                // dn *= iter_list[iter] + dn
+                dn = CMath.Multiply(dn, CMath.Add(iter_list[iter], dn));
 
-                if (TMath.EqualTo(x, xtemp) && TMath.EqualTo(y, ytemp))
-                {
-                    iter = MaxIterations;
-                    break;
-                }
-
-                x = xtemp;
-                y = ytemp;
-                xx = TMath.Multiply(x, x);
-                yy = TMath.Multiply(y, y);
+                // dn += d0
+                dn = CMath.Add(dn, d0);
 
                 iter++;
-            }
+
+                // zn = x[iter] * 0.5 + dn
+                GenericComplex<T> zn = CMath.Add(CMath.Multiply(iter_list[iter], OneHalf), dn);
+
+                zn_size = CMath.MagnitudeSquared(zn);
+
+            } while (TMath.LessThan(zn_size, Four) && iter < max_iter);
 
         }
 
         // Smooth Coloring Algorithm
-        private Color GetColorFromIterationCount(long iterations, double xx, double yy)
+        private Color GetColorFromIterationCount(long iterations, double zn_size)
         {
             double temp_i = iterations;
             // sqrt of inner term removed using log simplification rules.
-            double log_zn = Math.Log(xx + yy) / 2;
+            double log_zn = Math.Log(zn_size) / 2;
             double nu = Math.Log(log_zn / Math.Log(2)) / Math.Log(2);
             // Rearranging the potential function.
             // Dividing log_zn by log(2) instead of log(N = 1<<8)
@@ -149,6 +191,8 @@ namespace Mandelbrot.Rendering
         {
             M TMath = new M();
 
+            ComplexMath<T, M> CMath = new ComplexMath<T, M>(TMath);
+
             // Fire frame start event
             FrameStart();
 
@@ -156,8 +200,10 @@ namespace Mandelbrot.Rendering
 
             // Initialize generic values
             T Zero = TMath.fromInt32(0);
-            T Two = TMath.fromInt32(2);
+            T OneHalf = TMath.fromDouble(0.5);
             T Four = TMath.fromInt32(4);
+            T TwoPow10 = TMath.fromInt32(1024);
+            T NegTwoPow10 = TMath.fromInt32(-1024);
 
             // Cast type specific values to the generic type
             T FrameWidth = TMath.fromInt32(Width);
@@ -175,13 +221,15 @@ namespace Mandelbrot.Rendering
 
             // x_min = -scaleFactor / zoom + offsetX
             // x_max =  scaleFactor / zoom + offsetX
-            T x_min = TMath.Add(TMath.Divide(TMath.Negate(scaleFactor), zoom), offsetX);
-            T x_max = TMath.Add(TMath.Divide(scaleFactor, zoom), offsetX);
+            T x_min = TMath.Divide(TMath.Negate(scaleFactor), zoom);
+            T x_max = TMath.Divide(scaleFactor, zoom);
 
             // y_min = -1 / zoom + offsetY
             // y_max =  1 / zoom + offsetY
-            T y_min = TMath.Add(TMath.Divide(TMath.fromInt32(-1), zoom), offsetY);
-            T y_max = TMath.Add(TMath.Divide(TMath.fromInt32(1), zoom), offsetY);
+            T y_min = TMath.Divide(TMath.fromInt32(-1), zoom);
+            T y_max = TMath.Divide(TMath.fromInt32(1), zoom);
+
+            var iter_list = get_iteration_list<T, M>(TMath, Zero, TwoPow10, NegTwoPow10, offsetX, offsetY);
 
             var loop = Parallel.For(0, Width, new ParallelOptions { CancellationToken = Job.Token, MaxDegreeOfParallelism = ThreadCount }, px =>
             {
@@ -191,20 +239,17 @@ namespace Mandelbrot.Rendering
                 {
                     T y0 = Utils.Map<T, M>(TMath.fromInt32(py), Zero, FrameHeight, y_min, y_max);
 
-                    // Define x squared and y squared as their own variables
-                    // To avoid unnecisarry multiplication.
-                    T xx = Zero;
-                    T yy = Zero;
+                    T zn_size = Zero;
 
                     // Initialize our iteration count.
                     long iteration = 0;
 
-                    mandelbrot<T, M>(Zero, Two, Four, x0, y0, out xx, out yy, out iteration);
+                    mandelbrot<T, M>(TMath, CMath, Zero, OneHalf, Four, x0, y0, iter_list, out zn_size, out iteration);
 
                     // If x squared plus y squared is outside the set, give it a fancy color.
-                    if (TMath.GreaterThan(TMath.Add(xx, yy), Four)) // xx + yy > 4
+                    if (TMath.GreaterThan(zn_size, Four)) // xx + yy > 4
                     {
-                        Color PixelColor = GetColorFromIterationCount(iteration, TMath.toDouble(xx), TMath.toDouble(yy));
+                        Color PixelColor = GetColorFromIterationCount(iteration, TMath.toDouble(zn_size));
                         currentFrame.SetPixel(px, py, PixelColor);
                     }
                     // Otherwise, make the pixel black, as it is in the set.  

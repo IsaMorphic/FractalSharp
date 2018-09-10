@@ -99,6 +99,10 @@
     <Compile Include="Movies\MandelbrotMovieRenderer.cs" />
     <Compile Include="Rendering\MandelbrotRenderer.cs" />
     <Compile Include="Rendering\RenderSettings.cs" />
+    <Compile Include="Utilities\ComplexMath.cs" />
+    <Compile Include="Utilities\DecimalMath.cs" />
+    <Compile Include="Utilities\DoubleMath.cs" />
+    <Compile Include="Utilities\GenericComplex.cs" />
     <Compile Include="Utilities\GenericMath.cs" />
     <Compile Include="Rendering\Imaging\RGB.cs" />
     <Compile Include="Utilities\Utils.cs" />
