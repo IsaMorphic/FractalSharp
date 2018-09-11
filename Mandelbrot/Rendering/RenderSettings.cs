@@ -9,7 +9,7 @@ namespace Mandelbrot.Rendering
 {
     class RenderSettings
     {
-        public long   MaxIterations = 100;
+        public int    MaxIterations = 100;
         public int    ThreadCount   = Environment.ProcessorCount;
         public double Magnification = 1;
 

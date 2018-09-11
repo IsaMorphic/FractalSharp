@@ -97,6 +97,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rendering\Imaging\DirectBitmap.cs" />
     <Compile Include="Movies\MandelbrotMovieRenderer.cs" />
+    <Compile Include="Rendering\Imaging\PixelData.cs" />
     <Compile Include="Rendering\MandelbrotRenderer.cs" />
     <Compile Include="Rendering\RenderSettings.cs" />
     <Compile Include="Utilities\ComplexMath.cs" />

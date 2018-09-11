@@ -18,11 +18,11 @@ namespace Mandelbrot.Rendering
 
     class MandelbrotRenderer
     {
-        private DirectBitmap currentFrame;
+        private DirectBitmap CurrentFrame;
 
-        private int ThreadCount = Environment.ProcessorCount;
-        public long MaxIterations { get; protected set; }
-        public double Magnification { get; protected set; }
+        private int    ThreadCount = Environment.ProcessorCount;
+        public  int    MaxIterations { get; protected set; }
+        public  double Magnification { get; protected set; }
 
 
         private decimal offsetXM;
@@ -50,7 +50,7 @@ namespace Mandelbrot.Rendering
 
             aspectM = (decimal)Width / (decimal)Height;
 
-            currentFrame = new DirectBitmap(Width, Height);
+            CurrentFrame = new DirectBitmap(Width, Height);
 
             palette = newPalette;
 
@@ -74,18 +74,17 @@ namespace Mandelbrot.Rendering
         #region Algorithm Methods
         // Perturbation Theory Algorithm, 
         // produces a list of iteration values used to compute the surrounding points
-        private List<GenericComplex<T>> get_iteration_list<T, M>(
+        private List<GenericComplex<T>> GetIterationList<T, M>(
             T Zero, T TwoPow10, T NegTwoPow10, // Constants
-            T center_r, T center_i // Input values
-            )
-            where M : IGenericMath<T>, new()
+            T center_real, T center_imag // Input values
+            ) where M : IGenericMath<T>, new()
         {
             M TMath = new M();
 
-            T xn_r = center_r;
-            T xn_i = center_i;
+            T xn_r = center_real;
+            T xn_i = center_imag;
 
-            List<GenericComplex<T>> iter_list = new List<GenericComplex<T>>();
+            List<GenericComplex<T>> iterList = new List<GenericComplex<T>>();
 
             for (int i = 0; i < MaxIterations; i++)
             {
@@ -98,76 +97,77 @@ namespace Mandelbrot.Rendering
 
                 GenericComplex<T> c = new GenericComplex<T>(real, imag);
 
-                iter_list.Add(c);
+                iterList.Add(c);
 
                 // make sure our numbers don't get too big
 
                 // real > 1024 || imag > 1024 || real < -1024 || imag < -1024
                 if (TMath.GreaterThan(real, TwoPow10) || TMath.GreaterThan(imag, TwoPow10) ||
                     TMath.LessThan(real, NegTwoPow10) || TMath.LessThan(imag, NegTwoPow10))
-                    return iter_list;
+                    return iterList;
 
                 // calculate next iteration, remember real = 2 * xn_r
 
                 // xn_r = xn_r^2 - xn_i^2 + center_r
-                xn_r = TMath.Add(TMath.Subtract(xn_r2, xn_i2), center_r);
+                xn_r = TMath.Add(TMath.Subtract(xn_r2, xn_i2), center_real);
                 // xn_i = re * xn_i + center_i
-                xn_i = TMath.Add(TMath.Multiply(real, xn_i), center_i);
+                xn_i = TMath.Add(TMath.Multiply(real, xn_i), center_imag);
             }
-            return iter_list;
+            return iterList;
         }
 
         // Non-Traditional Mandelbrot algorithm, 
         // Iterates a point over its neighbors to approximate an iteration count.
-        private void mandelbrot<T, M>(
+        private PixelData<T> Mandelbrot<T, M>(
             T Zero, T OneHalf, T TwoPow8, // Constants
-            T x0, T y0, List<GenericComplex<T>> iter_list, // Input values
-            out T zn_size, out int iter) // Output values
-            where M : IGenericMath<T>, new()
+            T x0, T y0, List<GenericComplex<T>> iterList // Input values
+            ) where M : IGenericMath<T>, new()
         {
+            // Math objects
             M TMath = new M();
             ComplexMath<T, M> CMath = new ComplexMath<T, M>();
 
-            // Initialize some variables..
+            // Get max iterations.  
+            int maxIterations = iterList.Count;
+
+            // Initialize our iteration count.
+            int iterCount = 0;
+
+            // Initialize some variables...
             GenericComplex<T> zn;
 
             GenericComplex<T> d0 = new GenericComplex<T>(x0, y0);
 
             GenericComplex<T> dn = d0;
 
-            zn_size = Zero;
-
-            // Get Max Iterations.  
-            int max_iter = iter_list.Count;
-
-            // Initialize our iteration count.
-            iter = 0;
+            T znMagn = Zero;
 
             // Mandelbrot algorithm
-            while (TMath.LessThan(zn_size, TwoPow8) && iter < max_iter){
+            while (TMath.LessThan(znMagn, TwoPow8) && iterCount < maxIterations){
 
                 // dn *= iter_list[iter] + dn
-                dn = CMath.Multiply(dn, CMath.Add(iter_list[iter], dn));
+                dn = CMath.Multiply(dn, CMath.Add(iterList[iterCount], dn));
 
                 // dn += d0
                 dn = CMath.Add(dn, d0);
 
                 // zn = x[iter] * 0.5 + dn
-                zn = CMath.Add(CMath.Multiply(iter_list[iter], OneHalf), dn);
+                zn = CMath.Add(CMath.Multiply(iterList[iterCount], OneHalf), dn);
 
-                zn_size = CMath.MagnitudeSquared(zn);
+                znMagn = CMath.MagnitudeSquared(zn);
 
-                iter++;
+                iterCount++;
             }
 
+            return new PixelData<T>(znMagn, iterCount);
         }
 
         // Smooth Coloring Algorithm
-        private Color GetColorFromIterationCount(long iterations, double zn_size)
+        private Color GetColorFromIterationCount(int iterCount, double znMagn)
         {
-            double temp_i = iterations;
+            double temp_i = iterCount;
             // sqrt of inner term removed using log simplification rules.
-            double log_zn = Math.Log(zn_size) / 2;
+            double log_zn = Math.Log(znMagn) / 2;
             double nu = Math.Log(log_zn / Math.Log(2)) / Math.Log(2);
             // Rearranging the potential function.
             // Dividing log_zn by log(2) instead of log(N = 1<<8)
@@ -195,12 +195,10 @@ namespace Mandelbrot.Rendering
         {
             M TMath = new M();
 
-            ComplexMath<T, M> CMath = new ComplexMath<T, M>(TMath);
-
             // Fire frame start event
             FrameStart();
 
-            long in_set = 0;
+            int inSet = 0;
 
             // Initialize generic values
             T Zero = TMath.fromInt32(0);
@@ -223,51 +221,53 @@ namespace Mandelbrot.Rendering
             // Predefine minimum and maximum values of the plane, 
             // In order to avoid making unnecisary calculations on each pixel.  
 
-            // x_min = -scaleFactor / zoom + offsetX
-            // x_max =  scaleFactor / zoom + offsetX
-            T x_min = TMath.Divide(TMath.Negate(scaleFactor), zoom);
-            T x_max = TMath.Divide(scaleFactor, zoom);
+            // x_min = -scaleFactor / zoom
+            // x_max =  scaleFactor / zoom
+            T xMin = TMath.Divide(TMath.Negate(scaleFactor), zoom);
+            T xMax = TMath.Divide(scaleFactor, zoom);
 
-            // y_min = -1 / zoom + offsetY
-            // y_max =  1 / zoom + offsetY
-            T y_min = TMath.Divide(TMath.fromInt32(-1), zoom);
-            T y_max = TMath.Divide(TMath.fromInt32(1), zoom);
+            // y_min = -1 / zoom
+            // y_max =  1 / zoom
+            T yMin = TMath.Divide(TMath.fromInt32(-1), zoom);
+            T yMax = TMath.Divide(TMath.fromInt32(1), zoom);
 
-            var iter_list = get_iteration_list<T, M>(Zero, TwoPow10, NegTwoPow10, offsetX, offsetY);
+            var iterList = GetIterationList<T, M>(Zero, TwoPow10, NegTwoPow10, offsetX, offsetY);
 
             var loop = Parallel.For(0, Width, new ParallelOptions { CancellationToken = Job.Token, MaxDegreeOfParallelism = ThreadCount }, px =>
             {
-                T x0 = Utils.Map<T, M>(TMath.fromInt32(px), Zero, FrameWidth, x_min, x_max);
+                T x0 = Utils.Map<T, M>(TMath.fromInt32(px), Zero, FrameWidth, xMin, xMax);
 
                 for (int py = 0; py < Height; py++)
                 {
-                    T y0 = Utils.Map<T, M>(TMath.fromInt32(py), Zero, FrameHeight, y_min, y_max);
+                    T y0 = Utils.Map<T, M>(TMath.fromInt32(py), Zero, FrameHeight, yMin, yMax);
 
-                    T zn_size = Zero;
 
-                    // Initialize our iteration count.
-                    int iteration = 0;
+                    PixelData<T> pixelData = Mandelbrot<T, M>(Zero, OneHalf, TwoPow8, x0, y0, iterList);
 
-                    mandelbrot<T, M>(Zero, OneHalf, TwoPow8, x0, y0, iter_list, out zn_size, out iteration);
+                    // Grab the values from our pixel data
 
-                    // If x squared plus y squared is outside the set, give it a fancy color.
-                    if (TMath.GreaterThan(zn_size, TwoPow8)) // xx + yy > 4
+                    T znMagn = pixelData.GetZnMagn();
+                    int iterCount = pixelData.GetIterCount();
+
+                    // if zn's magnitude surpasses the 
+                    // bailout radius, give it a fancy color.
+                    if (iterCount < iterList.Count) // itercount
                     {
-                        Color PixelColor = GetColorFromIterationCount(iteration, TMath.toDouble(zn_size));
-                        currentFrame.SetPixel(px, py, PixelColor);
+                        Color PixelColor = GetColorFromIterationCount(iterCount, TMath.toDouble(znMagn));
+                        CurrentFrame.SetPixel(px, py, PixelColor);
                     }
                     // Otherwise, make the pixel black, as it is in the set.  
                     else
                     {
-                        currentFrame.SetPixel(px, py, Color.Black);
-                        Interlocked.Increment(ref in_set);
+                        CurrentFrame.SetPixel(px, py, Color.Black);
+                        Interlocked.Increment(ref inSet);
                     }
                 }
             });
 
-            if (in_set == Width * Height) StopRender();
+            if (inSet == Width * Height) StopRender();
 
-            Bitmap newFrame = (Bitmap)currentFrame.Bitmap.Clone();
+            Bitmap newFrame = (Bitmap)CurrentFrame.Bitmap.Clone();
             FrameEnd(newFrame);
         }
 

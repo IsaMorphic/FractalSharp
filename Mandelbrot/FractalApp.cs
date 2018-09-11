@@ -60,7 +60,9 @@ namespace Mandelbrot
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            RenderMethod = new Action(Renderer.RenderFrame<Double, DoubleMath>);
+            Directory.CreateDirectory("Renders");
+
+            RenderMethod = Renderer.RenderFrame<Double, DoubleMath>;
 
             startFrameInput.Value = RenderSettings.NumFrames;
             iterationCountInput.Value = RenderSettings.MaxIterations;
@@ -138,7 +140,7 @@ namespace Mandelbrot
                 {
                     standardPrecisionToolStripMenuItem.Checked = false;
                     extraPrescisionToolStripMenuItem.Checked = true;
-                    RenderMethod = new Action(Renderer.RenderFrame<Decimal, DecimalMath>);
+                    RenderMethod = Renderer.RenderFrame<Decimal, DecimalMath>;
                 }
             }));
         }
@@ -211,13 +213,13 @@ namespace Mandelbrot
                 {
                     standardPrecisionToolStripMenuItem.Checked = false;
                     extraPrescisionToolStripMenuItem.Checked = true;
-                    RenderMethod = new Action(Renderer.RenderFrame<Decimal, DecimalMath>);
+                    RenderMethod = Renderer.RenderFrame<Decimal, DecimalMath>;
                 }
                 else
                 {
                     standardPrecisionToolStripMenuItem.Checked = true;
                     extraPrescisionToolStripMenuItem.Checked = false;
-                    RenderMethod = new Action(Renderer.RenderFrame<Double, DoubleMath>);
+                    RenderMethod = Renderer.RenderFrame<Double, DoubleMath>;
                 }
 
 
@@ -370,7 +372,7 @@ namespace Mandelbrot
                     RGB[] palette = Utils.LoadPallete(RenderSettings.PalettePath);
                     Renderer.Initialize(RenderSettings, palette);
                     Renderer.Setup(RenderSettings);
-                    Task.Run(new Action(GrabFrame));
+                    Task.Run((Action)GrabFrame);
                 }
                 intervalTimer.Start();
                 presicionStripMenuItem.Enabled = false;
@@ -395,7 +397,7 @@ namespace Mandelbrot
         {
             standardPrecisionToolStripMenuItem.Checked = true;
             extraPrescisionToolStripMenuItem.Checked = false;
-            RenderMethod = new Action(Renderer.RenderFrame<Double, DoubleMath>);
+            RenderMethod = Renderer.RenderFrame<Double, DoubleMath>;
             RenderSettings.ExtraPrecision = false;
         }
 
@@ -403,7 +405,7 @@ namespace Mandelbrot
         {
             standardPrecisionToolStripMenuItem.Checked = false;
             extraPrescisionToolStripMenuItem.Checked = true;
-            RenderMethod = new Action(Renderer.RenderFrame<Decimal, DecimalMath>);
+            RenderMethod = Renderer.RenderFrame<Decimal, DecimalMath>;
             RenderSettings.ExtraPrecision = true;
         }
 
