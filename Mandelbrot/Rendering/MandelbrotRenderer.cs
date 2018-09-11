@@ -74,17 +74,18 @@ namespace Mandelbrot.Rendering
         #region Algorithm Methods
         // Perturbation Theory Algorithm, 
         // produces a list of iteration values used to compute the surrounding points
-        private GenericComplex<T>[] get_iteration_list<T, M>(
-            M TMath, // Math Object
+        private List<GenericComplex<T>> get_iteration_list<T, M>(
             T Zero, T TwoPow10, T NegTwoPow10, // Constants
             T center_r, T center_i // Input values
             )
-            where M : IGenericMath<T>
+            where M : IGenericMath<T>, new()
         {
+            M TMath = new M();
+
             T xn_r = center_r;
             T xn_i = center_i;
 
-            GenericComplex<T>[] iter_list = new GenericComplex<T>[MaxIterations];
+            List<GenericComplex<T>> iter_list = new List<GenericComplex<T>>();
 
             for (int i = 0; i < MaxIterations; i++)
             {
@@ -97,7 +98,7 @@ namespace Mandelbrot.Rendering
 
                 GenericComplex<T> c = new GenericComplex<T>(real, imag);
 
-                iter_list[i] = c;
+                iter_list.Add(c);
 
                 // make sure our numbers don't get too big
 
@@ -119,42 +120,45 @@ namespace Mandelbrot.Rendering
         // Non-Traditional Mandelbrot algorithm, 
         // Iterates a point over its neighbors to approximate an iteration count.
         private void mandelbrot<T, M>(
-            M TMath, ComplexMath<T, M> CMath, // Math Objects
-            T Zero, T OneHalf, T Four, // Constants
-            T x0, T y0, GenericComplex<T>[] iter_list, // Input values
-            out T zn_size, out long iter) // Output values
-            where M : IGenericMath<T>
+            T Zero, T OneHalf, T TwoPow8, // Constants
+            T x0, T y0, List<GenericComplex<T>> iter_list, // Input values
+            out T zn_size, out int iter) // Output values
+            where M : IGenericMath<T>, new()
         {
+            M TMath = new M();
+            ComplexMath<T, M> CMath = new ComplexMath<T, M>();
+
             // Initialize some variables..
+            GenericComplex<T> zn;
+
             GenericComplex<T> d0 = new GenericComplex<T>(x0, y0);
 
             GenericComplex<T> dn = d0;
 
+            zn_size = Zero;
+
             // Get Max Iterations.  
-            long max_iter = MaxIterations - 1;
+            int max_iter = iter_list.Count;
 
             // Initialize our iteration count.
             iter = 0;
 
-            zn_size = Zero;
-
             // Mandelbrot algorithm
-            do
-            {
+            while (TMath.LessThan(zn_size, TwoPow8) && iter < max_iter){
+
                 // dn *= iter_list[iter] + dn
                 dn = CMath.Multiply(dn, CMath.Add(iter_list[iter], dn));
 
                 // dn += d0
                 dn = CMath.Add(dn, d0);
 
-                iter++;
-
                 // zn = x[iter] * 0.5 + dn
-                GenericComplex<T> zn = CMath.Add(CMath.Multiply(iter_list[iter], OneHalf), dn);
+                zn = CMath.Add(CMath.Multiply(iter_list[iter], OneHalf), dn);
 
                 zn_size = CMath.MagnitudeSquared(zn);
 
-            } while (TMath.LessThan(zn_size, Four) && iter < max_iter);
+                iter++;
+            }
 
         }
 
@@ -201,7 +205,7 @@ namespace Mandelbrot.Rendering
             // Initialize generic values
             T Zero = TMath.fromInt32(0);
             T OneHalf = TMath.fromDouble(0.5);
-            T Four = TMath.fromInt32(4);
+            T TwoPow8 = TMath.fromInt32(256);
             T TwoPow10 = TMath.fromInt32(1024);
             T NegTwoPow10 = TMath.fromInt32(-1024);
 
@@ -229,7 +233,7 @@ namespace Mandelbrot.Rendering
             T y_min = TMath.Divide(TMath.fromInt32(-1), zoom);
             T y_max = TMath.Divide(TMath.fromInt32(1), zoom);
 
-            var iter_list = get_iteration_list<T, M>(TMath, Zero, TwoPow10, NegTwoPow10, offsetX, offsetY);
+            var iter_list = get_iteration_list<T, M>(Zero, TwoPow10, NegTwoPow10, offsetX, offsetY);
 
             var loop = Parallel.For(0, Width, new ParallelOptions { CancellationToken = Job.Token, MaxDegreeOfParallelism = ThreadCount }, px =>
             {
@@ -242,12 +246,12 @@ namespace Mandelbrot.Rendering
                     T zn_size = Zero;
 
                     // Initialize our iteration count.
-                    long iteration = 0;
+                    int iteration = 0;
 
-                    mandelbrot<T, M>(TMath, CMath, Zero, OneHalf, Four, x0, y0, iter_list, out zn_size, out iteration);
+                    mandelbrot<T, M>(Zero, OneHalf, TwoPow8, x0, y0, iter_list, out zn_size, out iteration);
 
                     // If x squared plus y squared is outside the set, give it a fancy color.
-                    if (TMath.GreaterThan(zn_size, Four)) // xx + yy > 4
+                    if (TMath.GreaterThan(zn_size, TwoPow8)) // xx + yy > 4
                     {
                         Color PixelColor = GetColorFromIterationCount(iteration, TMath.toDouble(zn_size));
                         currentFrame.SetPixel(px, py, PixelColor);

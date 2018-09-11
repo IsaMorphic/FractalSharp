@@ -8,13 +8,13 @@ namespace Mandelbrot.Utilities
 {
     struct GenericComplex<T>
     {
-        public T r { get; }
-        public T i { get; }
+        public T real { get; }
+        public T imag { get; }
 
-        public GenericComplex(T real, T imaginary)
+        public GenericComplex(T real, T imag)
         {
-            r = real;
-            i = imaginary;
+            this.real = real;
+            this.imag = imag;
         }
     }
 }
