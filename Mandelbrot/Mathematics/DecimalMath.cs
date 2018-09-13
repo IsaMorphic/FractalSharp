@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mandelbrot.Utilities
+namespace Mandelbrot.Mathematics
 {
-    struct DecimalMath : IGenericMath<decimal>
+    class DecimalMath : IGenericMath<decimal>
     {
         public decimal Add(decimal a, decimal b) { return a + b; }
         public decimal Subtract(decimal a, decimal b) { return a - b; }

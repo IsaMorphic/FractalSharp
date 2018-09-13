@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mandelbrot.Utilities
+namespace Mandelbrot.Mathematics
 {
-    struct ComplexMath<T, M> where M : IGenericMath<T>
+    class ComplexMath<T>
     {
-        private M TMath;
+        private IGenericMath<T> TMath;
 
-        public ComplexMath(M TMath)
+        public ComplexMath(IGenericMath<T> TMath)
         {
             this.TMath = TMath;
         }

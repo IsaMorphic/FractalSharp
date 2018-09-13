@@ -44,10 +44,13 @@
             this.presicionStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.standardPrecisionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extraPrescisionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.algorithmToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.traditionalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.perturbationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ResolutionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.x480ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.x540ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.x720ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.x960ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.x1080ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorDialog = new System.Windows.Forms.ColorDialog();
             this.FileLoadDialog = new System.Windows.Forms.OpenFileDialog();
             this.ViewControl = new System.Windows.Forms.TabControl();
@@ -101,6 +104,7 @@
             this.fileToolStripMenuItem,
             this.renderToolStripMenuItem,
             this.presicionStripMenuItem,
+            this.algorithmToolStripMenuItem,
             this.ResolutionToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
@@ -205,38 +209,65 @@
             this.extraPrescisionToolStripMenuItem.Text = "Extra Prescision";
             this.extraPrescisionToolStripMenuItem.Click += new System.EventHandler(this.extraPrescisionToolStripMenuItem_Click);
             // 
+            // algorithmToolStripMenuItem
+            // 
+            this.algorithmToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.traditionalToolStripMenuItem,
+            this.perturbationToolStripMenuItem});
+            this.algorithmToolStripMenuItem.Name = "algorithmToolStripMenuItem";
+            this.algorithmToolStripMenuItem.Size = new System.Drawing.Size(88, 24);
+            this.algorithmToolStripMenuItem.Text = "Algorithm";
+            // 
+            // traditionalToolStripMenuItem
+            // 
+            this.traditionalToolStripMenuItem.Checked = true;
+            this.traditionalToolStripMenuItem.CheckOnClick = true;
+            this.traditionalToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.traditionalToolStripMenuItem.Name = "traditionalToolStripMenuItem";
+            this.traditionalToolStripMenuItem.Size = new System.Drawing.Size(236, 26);
+            this.traditionalToolStripMenuItem.Text = "Traditional Algorithm";
+            this.traditionalToolStripMenuItem.Click += new System.EventHandler(this.traditionalToolStripMenuItem_Click);
+            // 
+            // perturbationToolStripMenuItem
+            // 
+            this.perturbationToolStripMenuItem.CheckOnClick = true;
+            this.perturbationToolStripMenuItem.Name = "perturbationToolStripMenuItem";
+            this.perturbationToolStripMenuItem.Size = new System.Drawing.Size(236, 26);
+            this.perturbationToolStripMenuItem.Text = "Perturbation Algorithm";
+            this.perturbationToolStripMenuItem.Click += new System.EventHandler(this.perturbationToolStripMenuItem_Click);
+            // 
             // ResolutionToolStripMenuItem
             // 
             this.ResolutionToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.x480ToolStripMenuItem,
+            this.x540ToolStripMenuItem,
             this.x720ToolStripMenuItem,
-            this.x960ToolStripMenuItem});
+            this.x1080ToolStripMenuItem});
             this.ResolutionToolStripMenuItem.Name = "ResolutionToolStripMenuItem";
             this.ResolutionToolStripMenuItem.Size = new System.Drawing.Size(91, 24);
             this.ResolutionToolStripMenuItem.Text = "Resolution";
             // 
-            // x480ToolStripMenuItem
+            // x540ToolStripMenuItem
             // 
-            this.x480ToolStripMenuItem.Checked = true;
-            this.x480ToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.x480ToolStripMenuItem.Name = "x480ToolStripMenuItem";
-            this.x480ToolStripMenuItem.Size = new System.Drawing.Size(147, 26);
-            this.x480ToolStripMenuItem.Text = "640x480";
-            this.x480ToolStripMenuItem.Click += new System.EventHandler(this.x480ToolStripMenuItem_Click);
+            this.x540ToolStripMenuItem.Checked = true;
+            this.x540ToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.x540ToolStripMenuItem.Name = "x540ToolStripMenuItem";
+            this.x540ToolStripMenuItem.Size = new System.Drawing.Size(155, 26);
+            this.x540ToolStripMenuItem.Text = "960x540";
+            this.x540ToolStripMenuItem.Click += new System.EventHandler(this.x540ToolStripMenuItem_Click);
             // 
             // x720ToolStripMenuItem
             // 
             this.x720ToolStripMenuItem.Name = "x720ToolStripMenuItem";
-            this.x720ToolStripMenuItem.Size = new System.Drawing.Size(147, 26);
-            this.x720ToolStripMenuItem.Text = "900x720";
+            this.x720ToolStripMenuItem.Size = new System.Drawing.Size(155, 26);
+            this.x720ToolStripMenuItem.Text = "1280x720";
             this.x720ToolStripMenuItem.Click += new System.EventHandler(this.x720ToolStripMenuItem_Click);
             // 
-            // x960ToolStripMenuItem
+            // x1080ToolStripMenuItem
             // 
-            this.x960ToolStripMenuItem.Name = "x960ToolStripMenuItem";
-            this.x960ToolStripMenuItem.Size = new System.Drawing.Size(147, 26);
-            this.x960ToolStripMenuItem.Text = "1280x960";
-            this.x960ToolStripMenuItem.Click += new System.EventHandler(this.x960ToolStripMenuItem_Click);
+            this.x1080ToolStripMenuItem.Name = "x1080ToolStripMenuItem";
+            this.x1080ToolStripMenuItem.Size = new System.Drawing.Size(155, 26);
+            this.x1080ToolStripMenuItem.Text = "1920x1080";
+            this.x1080ToolStripMenuItem.Click += new System.EventHandler(this.x1080ToolStripMenuItem_Click);
             // 
             // colorDialog
             // 
@@ -505,9 +536,9 @@
             this.ClientSize = new System.Drawing.Size(622, 480);
             this.Controls.Add(this.ViewControl);
             this.Controls.Add(this.menuStrip1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
+            this.MinimumSize = new System.Drawing.Size(640, 527);
             this.Name = "FractalApp";
             this.Text = "Mandelbrot Renderer";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FractalApp_FormClosing);
@@ -539,9 +570,9 @@
         private System.Windows.Forms.ToolStripMenuItem startToolStripMenuItem;
         private System.Windows.Forms.ColorDialog colorDialog;
         private System.Windows.Forms.ToolStripMenuItem ResolutionToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem x480ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem x540ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem x720ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem x960ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem x1080ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem stopToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem newRenderToolStripMenuItem;
@@ -574,6 +605,9 @@
         private System.Windows.Forms.Label coreCountLabel;
         private System.Windows.Forms.NotifyIcon TrayIcon;
         private System.Windows.Forms.ToolStripMenuItem loadRenderToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem algorithmToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem traditionalToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem perturbationToolStripMenuItem;
     }
 }
 

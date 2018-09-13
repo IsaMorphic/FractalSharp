@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 using Mandelbrot.Utilities;
 
-namespace Mandelbrot.Rendering.Imaging
+namespace Mandelbrot.Imaging
 {
     struct RGB
     {

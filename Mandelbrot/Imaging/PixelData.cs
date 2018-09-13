@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mandelbrot.Rendering.Imaging
+namespace Mandelbrot.Imaging
 {
-    struct PixelData<T>
+    class PixelData<T>
     {
         private T ZnMagn;
         private int IterCount;
+        private bool BelowMaxIter;
 
         public T GetZnMagn()
         {
@@ -21,10 +22,16 @@ namespace Mandelbrot.Rendering.Imaging
             return IterCount;
         }
 
-        public PixelData(T ZnMagn, int IterCount)
+        public bool GetBelowMaxIter()
+        {
+            return BelowMaxIter;
+        }
+
+        public PixelData(T ZnMagn, int IterCount, bool BelowMaxIter)
         {
             this.ZnMagn = ZnMagn;
             this.IterCount = IterCount;
+            this.BelowMaxIter = BelowMaxIter;
         }
     }
 }

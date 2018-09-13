@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mandelbrot.Rendering.Imaging
+namespace Mandelbrot.Imaging
 {
     public class DirectBitmap : IDisposable
     {
