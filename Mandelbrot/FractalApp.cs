@@ -28,6 +28,9 @@ namespace Mandelbrot
     public partial class FractalApp : Form
     {
         private Type traditionalAlgorithm =
+            typeof(TraditionalAlgorithmProvider<>);
+
+        private Type perturbationAlgorithm =
             typeof(PerturbationAlgorithmProvider<>);
 
         // Video file properties
@@ -42,6 +45,9 @@ namespace Mandelbrot
         private bool Rendering = false;
         private bool PrecisionSwitched = false;
         private double ExtraPrecisionThreshold = Math.Pow(500, 5);
+
+        private Type PreferredAlgorithm =
+            typeof(TraditionalAlgorithmProvider<>);
 
         private GenericMathResolver MathResolver =
             new GenericMathResolver(new Assembly[] 
@@ -89,8 +95,8 @@ namespace Mandelbrot
 
             RenderSettings.PalettePath = PalletePath;
 
-            Width = 640;
-            Height = 480;
+            Width = 960;
+            Height = 540;
         }
 
         #region Renderer Events
@@ -126,7 +132,7 @@ namespace Mandelbrot
 
             Renderer.SetFrame(Renderer.NumFrames + 1);
 
-            Task.Run(() => RenderMethod(traditionalAlgorithm));
+            Task.Run(() => RenderMethod(PreferredAlgorithm));
         }
 
         public void Shutdown()
@@ -138,6 +144,7 @@ namespace Mandelbrot
                 timeLabel.Text = "00:00:00.000";
                 startToolStripMenuItem.Text = "Start";
                 presicionStripMenuItem.Enabled = true;
+                algorithmToolStripMenuItem.Enabled = true;
                 stopToolStripMenuItem.Enabled = false;
                 startToolStripMenuItem.Enabled = true;
                 closeCurrentToolStripMenuItem.Enabled = true;
@@ -176,7 +183,7 @@ namespace Mandelbrot
             {
                 LoadingFile = false;
                 videoReader.Close();
-                Task.Run(() => RenderMethod(traditionalAlgorithm));
+                Task.Run(() => RenderMethod(PreferredAlgorithm));
             }
         }
 
@@ -200,7 +207,7 @@ namespace Mandelbrot
 
                 x540ToolStripMenuItem.Checked = false;
                 x720ToolStripMenuItem.Checked = false;
-                x960ToolStripMenuItem.Checked = false;
+                x1080ToolStripMenuItem.Checked = false;
 
                 Width = RenderSettings.Width;
                 Height = RenderSettings.Height;
@@ -213,9 +220,9 @@ namespace Mandelbrot
                 {
                     x720ToolStripMenuItem.Checked = true;
                 }
-                else if (RenderSettings.Height == 960)
+                else if (RenderSettings.Height == 1080)
                 {
-                    x960ToolStripMenuItem.Checked = true;
+                    x1080ToolStripMenuItem.Checked = true;
                 }
 
                 if (RenderSettings.ExtraPrecision)
@@ -373,7 +380,7 @@ namespace Mandelbrot
                         RenderActive = true;
                         SaveFractal();
                     }
-                    Task.Run(() => RenderMethod(traditionalAlgorithm));
+                    Task.Run(() => RenderMethod(PreferredAlgorithm));
                 }
                 else
                 {
@@ -384,6 +391,7 @@ namespace Mandelbrot
                     Task.Run((Action)GrabFrame);
                 }
                 intervalTimer.Start();
+                algorithmToolStripMenuItem.Enabled = false;
                 presicionStripMenuItem.Enabled = false;
                 stopToolStripMenuItem.Enabled = true;
                 startToolStripMenuItem.Enabled = false;
@@ -418,11 +426,23 @@ namespace Mandelbrot
             RenderSettings.ExtraPrecision = true;
         }
 
-        private void x480ToolStripMenuItem_Click(object sender, EventArgs e)
+        private void traditionalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            perturbationToolStripMenuItem.Checked = false;
+            PreferredAlgorithm = traditionalAlgorithm;
+        }
+
+        private void perturbationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            traditionalToolStripMenuItem.Checked = false;
+            PreferredAlgorithm = perturbationAlgorithm;
+        }
+
+        private void x540ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             x540ToolStripMenuItem.Checked = true;
             x720ToolStripMenuItem.Checked = false;
-            x960ToolStripMenuItem.Checked = false;
+            x1080ToolStripMenuItem.Checked = false;
             RenderSettings.Width = Width = 960;
             RenderSettings.Height = Height = 540;
         }
@@ -431,16 +451,16 @@ namespace Mandelbrot
         {
             x540ToolStripMenuItem.Checked = false;
             x720ToolStripMenuItem.Checked = true;
-            x960ToolStripMenuItem.Checked = false;
+            x1080ToolStripMenuItem.Checked = false;
             RenderSettings.Width = Width = 1280;
             RenderSettings.Height = Height = 720;
         }
 
-        private void x960ToolStripMenuItem_Click(object sender, EventArgs e)
+        private void x1080ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             x540ToolStripMenuItem.Checked = false;
             x720ToolStripMenuItem.Checked = false;
-            x960ToolStripMenuItem.Checked = true;
+            x1080ToolStripMenuItem.Checked = true;
             RenderSettings.Width = Width = 1920;
             RenderSettings.Height = Height = 1080;
         }
