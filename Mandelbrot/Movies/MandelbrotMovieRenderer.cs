@@ -10,6 +10,7 @@ namespace Mandelbrot.Movies
 {
     class MandelbrotMovieRenderer : MandelbrotRenderer
     {
+
         public int NumFrames { get; private set; }
 
         public void Setup(ZoomMovieSettings settings)

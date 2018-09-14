@@ -8,8 +8,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
+using Mandelbrot.Imaging;
 using Mandelbrot.Rendering;
-using Mandelbrot.Rendering.Imaging;
+using Mandelbrot.Mathematics;
+using System.Reflection;
 
 namespace Mandelbrot.Utilities
 {
@@ -47,10 +49,8 @@ namespace Mandelbrot.Utilities
             return buffer;
         }
 
-        public static T Map<T, M>(T OldValue, T OldMin, T OldMax, T NewMin, T NewMax)
-            where M : IGenericMath<T>, new()
+        public static T Map<T>(IGenericMath<T> TMath, T OldValue, T OldMin, T OldMax, T NewMin, T NewMax)
         {
-            M TMath = new M();
             T OldRange = TMath.Subtract(OldMax, OldMin);
             T NewRange = TMath.Subtract(NewMax, NewMin);
             // (((OldValue - OldMin) * NewRange) / OldRange) + NewMin
@@ -61,6 +61,26 @@ namespace Mandelbrot.Utilities
         public static double lerp(double v0, double v1, double t)
         {
             return (1 - t) * v0 + t * v1;
+        }
+
+        public static List<Type> GetAllImplementationsInAssemblies(Assembly[] assemblies, Type @interface)
+        {
+            List<Type> resolvedTypes = new List<Type>();
+
+            foreach (Assembly assembly in assemblies)
+            {
+                var definedTypes = assembly.DefinedTypes;
+
+                foreach (var type in definedTypes)
+                {
+                    if (type.GetInterfaces().Contains(@interface))
+                    {
+                        resolvedTypes.Add(type);
+                    }
+                }
+            }
+
+            return resolvedTypes;
         }
     }
 }

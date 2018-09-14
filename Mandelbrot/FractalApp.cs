@@ -14,17 +14,25 @@ using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
 
-using Mandelbrot.Utilities;
+using Mandelbrot.Imaging;
 using Mandelbrot.Rendering;
-using Mandelbrot.Rendering.Imaging;
+using Mandelbrot.Utilities;
+using Mandelbrot.Algorithms;
 
 using Accord.Video.FFMPEG;
 using Mandelbrot.Movies;
+using System.Reflection;
 
 namespace Mandelbrot
 {
     public partial class FractalApp : Form
     {
+        private Type traditionalAlgorithm =
+            typeof(TraditionalAlgorithmProvider<>);
+
+        private Type perturbationAlgorithm =
+            typeof(PerturbationAlgorithmProvider<>);
+
         // Video file properties
         private VideoFileReader videoReader = new VideoFileReader();
         private VideoFileWriter videoWriter = new VideoFileWriter();
@@ -38,10 +46,17 @@ namespace Mandelbrot
         private bool PrecisionSwitched = false;
         private double ExtraPrecisionThreshold = Math.Pow(500, 5);
 
+        private Type PreferredAlgorithm =
+            typeof(TraditionalAlgorithmProvider<>);
+
+        private GenericMathResolver MathResolver =
+            new GenericMathResolver(new Assembly[] 
+            { Assembly.GetExecutingAssembly() });
+
         private MandelbrotMovieRenderer Renderer = new MandelbrotMovieRenderer();
         private ZoomMovieSettings RenderSettings = new ZoomMovieSettings();
 
-        private Action RenderMethod;
+        private Action<Type> RenderMethod;
 
         // Fractal loading and saving properties.  
         private bool RenderActive = false;
@@ -60,7 +75,9 @@ namespace Mandelbrot
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            RenderMethod = new Action(Renderer.RenderFrame<Double, DoubleMath>);
+            Directory.CreateDirectory("Renders");
+
+            RenderMethod = Renderer.RenderFrame<double>;
 
             startFrameInput.Value = RenderSettings.NumFrames;
             iterationCountInput.Value = RenderSettings.MaxIterations;
@@ -78,8 +95,8 @@ namespace Mandelbrot
 
             RenderSettings.PalettePath = PalletePath;
 
-            Width = 640;
-            Height = 480;
+            Width = 960;
+            Height = 540;
         }
 
         #region Renderer Events
@@ -96,7 +113,7 @@ namespace Mandelbrot
             // Calculate zoom... using math.pow to keep the zoom rate constant.
             if (Renderer.Magnification > ExtraPrecisionThreshold)
             {
-                RenderMethod = new Action(Renderer.RenderFrame<Quadruple, QuadrupleMath>);
+                RenderMethod = Renderer.RenderFrame<decimal>;
                 PrecisionSwitched = true;
             }
         }
@@ -115,7 +132,7 @@ namespace Mandelbrot
 
             Renderer.SetFrame(Renderer.NumFrames + 1);
 
-            Task.Run(RenderMethod);
+            Task.Run(() => RenderMethod(PreferredAlgorithm));
         }
 
         public void Shutdown()
@@ -127,6 +144,7 @@ namespace Mandelbrot
                 timeLabel.Text = "00:00:00.000";
                 startToolStripMenuItem.Text = "Start";
                 presicionStripMenuItem.Enabled = true;
+                algorithmToolStripMenuItem.Enabled = true;
                 stopToolStripMenuItem.Enabled = false;
                 startToolStripMenuItem.Enabled = true;
                 closeCurrentToolStripMenuItem.Enabled = true;
@@ -138,7 +156,7 @@ namespace Mandelbrot
                 {
                     standardPrecisionToolStripMenuItem.Checked = false;
                     extraPrescisionToolStripMenuItem.Checked = true;
-                    RenderMethod = new Action(Renderer.RenderFrame<Quadruple, QuadrupleMath>);
+                    RenderMethod = Renderer.RenderFrame<decimal>;
                 }
             }));
         }
@@ -165,7 +183,7 @@ namespace Mandelbrot
             {
                 LoadingFile = false;
                 videoReader.Close();
-                Task.Run(RenderMethod);
+                Task.Run(() => RenderMethod(PreferredAlgorithm));
             }
         }
 
@@ -187,37 +205,37 @@ namespace Mandelbrot
 
                 VideoPath = RenderSettings.VideoPath;
 
-                x480ToolStripMenuItem.Checked = false;
+                x540ToolStripMenuItem.Checked = false;
                 x720ToolStripMenuItem.Checked = false;
-                x960ToolStripMenuItem.Checked = false;
+                x1080ToolStripMenuItem.Checked = false;
 
                 Width = RenderSettings.Width;
                 Height = RenderSettings.Height;
 
-                if (RenderSettings.Height == 480)
+                if (RenderSettings.Height == 540)
                 {
-                    x480ToolStripMenuItem.Checked = true;
+                    x540ToolStripMenuItem.Checked = true;
                 }
                 else if (RenderSettings.Height == 720)
                 {
                     x720ToolStripMenuItem.Checked = true;
                 }
-                else if (RenderSettings.Height == 960)
+                else if (RenderSettings.Height == 1080)
                 {
-                    x960ToolStripMenuItem.Checked = true;
+                    x1080ToolStripMenuItem.Checked = true;
                 }
 
                 if (RenderSettings.ExtraPrecision)
                 {
                     standardPrecisionToolStripMenuItem.Checked = false;
                     extraPrescisionToolStripMenuItem.Checked = true;
-                    RenderMethod = new Action(Renderer.RenderFrame<Quadruple, QuadrupleMath>);
+                    RenderMethod = Renderer.RenderFrame<decimal>;
                 }
                 else
                 {
                     standardPrecisionToolStripMenuItem.Checked = true;
                     extraPrescisionToolStripMenuItem.Checked = false;
-                    RenderMethod = new Action(Renderer.RenderFrame<Double, DoubleMath>);
+                    RenderMethod = Renderer.RenderFrame<decimal>;
                 }
 
 
@@ -277,7 +295,7 @@ namespace Mandelbrot
         {
             RGB[] palette = Utils.LoadPallete(RenderSettings.PalettePath);
 
-            Renderer.Initialize(RenderSettings, palette);
+            Renderer.Initialize(RenderSettings, palette, MathResolver);
 
             VideoPath = RenderSaveDialog.FileName;
 
@@ -362,17 +380,18 @@ namespace Mandelbrot
                         RenderActive = true;
                         SaveFractal();
                     }
-                    Task.Run(RenderMethod);
+                    Task.Run(() => RenderMethod(PreferredAlgorithm));
                 }
                 else
                 {
                     UpdateFractal();
                     RGB[] palette = Utils.LoadPallete(RenderSettings.PalettePath);
-                    Renderer.Initialize(RenderSettings, palette);
+                    Renderer.Initialize(RenderSettings, palette, MathResolver);
                     Renderer.Setup(RenderSettings);
-                    Task.Run(new Action(GrabFrame));
+                    Task.Run((Action)GrabFrame);
                 }
                 intervalTimer.Start();
+                algorithmToolStripMenuItem.Enabled = false;
                 presicionStripMenuItem.Enabled = false;
                 stopToolStripMenuItem.Enabled = true;
                 startToolStripMenuItem.Enabled = false;
@@ -395,7 +414,7 @@ namespace Mandelbrot
         {
             standardPrecisionToolStripMenuItem.Checked = true;
             extraPrescisionToolStripMenuItem.Checked = false;
-            RenderMethod = new Action(Renderer.RenderFrame<Double, DoubleMath>);
+            RenderMethod = Renderer.RenderFrame<double>;
             RenderSettings.ExtraPrecision = false;
         }
 
@@ -403,35 +422,47 @@ namespace Mandelbrot
         {
             standardPrecisionToolStripMenuItem.Checked = false;
             extraPrescisionToolStripMenuItem.Checked = true;
-            RenderMethod = new Action(Renderer.RenderFrame<Quadruple, QuadrupleMath>);
+            RenderMethod = Renderer.RenderFrame<decimal>;
             RenderSettings.ExtraPrecision = true;
         }
 
-        private void x480ToolStripMenuItem_Click(object sender, EventArgs e)
+        private void traditionalToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            x480ToolStripMenuItem.Checked = true;
+            perturbationToolStripMenuItem.Checked = false;
+            PreferredAlgorithm = traditionalAlgorithm;
+        }
+
+        private void perturbationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            traditionalToolStripMenuItem.Checked = false;
+            PreferredAlgorithm = perturbationAlgorithm;
+        }
+
+        private void x540ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            x540ToolStripMenuItem.Checked = true;
             x720ToolStripMenuItem.Checked = false;
-            x960ToolStripMenuItem.Checked = false;
-            RenderSettings.Width = Width = 640;
-            RenderSettings.Height = Height = 480;
+            x1080ToolStripMenuItem.Checked = false;
+            RenderSettings.Width = Width = 960;
+            RenderSettings.Height = Height = 540;
         }
 
         private void x720ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            x480ToolStripMenuItem.Checked = false;
+            x540ToolStripMenuItem.Checked = false;
             x720ToolStripMenuItem.Checked = true;
-            x960ToolStripMenuItem.Checked = false;
-            RenderSettings.Width = Width = 900;
+            x1080ToolStripMenuItem.Checked = false;
+            RenderSettings.Width = Width = 1280;
             RenderSettings.Height = Height = 720;
         }
 
-        private void x960ToolStripMenuItem_Click(object sender, EventArgs e)
+        private void x1080ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            x480ToolStripMenuItem.Checked = false;
+            x540ToolStripMenuItem.Checked = false;
             x720ToolStripMenuItem.Checked = false;
-            x960ToolStripMenuItem.Checked = true;
-            RenderSettings.Width = Width = 1280;
-            RenderSettings.Height = Height = 960;
+            x1080ToolStripMenuItem.Checked = true;
+            RenderSettings.Width = Width = 1920;
+            RenderSettings.Height = Height = 1080;
         }
 
         private void FractalApp_FormClosing(object sender, FormClosingEventArgs e)
