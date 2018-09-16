@@ -5,11 +5,15 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Script.Serialization;
 
 namespace Mandelbrot.Rendering
 {
     class RenderSettings
     {
+        [ScriptIgnore]
+        public Type AlgorithmType = typeof(TraditionalAlgorithmProvider<>);
+
         public int    MaxIterations = 100;
         public int    ThreadCount   = Environment.ProcessorCount;
         public double Magnification = 1;
@@ -19,7 +23,5 @@ namespace Mandelbrot.Rendering
 
         public int Width  = 960;
         public int Height = 540;
-
-        public Type AlgorithmType = typeof(TraditionalAlgorithmProvider<>);
     }
 }

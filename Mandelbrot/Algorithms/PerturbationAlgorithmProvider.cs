@@ -89,7 +89,7 @@ namespace Mandelbrot.Algorithms
             ComplexMath<T> CMath = new ComplexMath<T>(TMath);
 
             // Get max iterations.  
-            int maxIterations = iterList.Count;
+            int maxIterations = iterList.Count - 1;
 
             // Initialize our iteration count.
             int iterCount = 0;
@@ -104,7 +104,7 @@ namespace Mandelbrot.Algorithms
             T znMagn = Zero;
 
             // Mandelbrot algorithm
-            while (TMath.LessThan(znMagn, TwoPow8) && iterCount < maxIterations)
+            do
             {
 
                 // dn *= iter_list[iter] + dn
@@ -113,13 +113,14 @@ namespace Mandelbrot.Algorithms
                 // dn += d0
                 dn = CMath.Add(dn, d0);
 
+                iterCount++;
+
                 // zn = x[iter] * 0.5 + dn
                 zn = CMath.Add(CMath.Multiply(iterList[iterCount], OneHalf), dn);
 
                 znMagn = CMath.MagnitudeSquared(zn);
 
-                iterCount++;
-            }
+            } while (TMath.LessThan(znMagn, TwoPow8) && iterCount < maxIterations);
 
             return new PixelData<T>(znMagn, iterCount, iterCount < maxIterations);
         }
