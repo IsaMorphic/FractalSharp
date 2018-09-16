@@ -465,6 +465,18 @@ namespace Mandelbrot
             RenderSettings.Height = Height = 1080;
         }
 
+        private void exploreFractalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var exploreWindow = new Explorer(PalletePath, xOffInput.Value, yOffInput.Value);
+            exploreWindow.ShowDialog();
+
+            if (!Rendering)
+            {
+                xOffInput.Value = exploreWindow.GetXOffset();
+                yOffInput.Value = exploreWindow.GetYOffset();
+            }
+        }
+
         private void FractalApp_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (videoWriter.IsOpen)

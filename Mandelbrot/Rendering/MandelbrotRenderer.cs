@@ -20,7 +20,7 @@ namespace Mandelbrot.Rendering
     delegate void RenderStopDelegate();
 
     class MandelbrotRenderer
-    {
+    { 
         private GenericMathResolver MathResolver;
 
         private DirectBitmap CurrentFrame;
@@ -58,6 +58,8 @@ namespace Mandelbrot.Rendering
             CurrentFrame = new DirectBitmap(Width, Height);
 
             palette = newPalette;
+
+            Setup(settings);
         }
 
         public void Setup(RenderSettings settings)
