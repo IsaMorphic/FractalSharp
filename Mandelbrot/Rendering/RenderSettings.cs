@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mandelbrot.Algorithms;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -18,5 +19,7 @@ namespace Mandelbrot.Rendering
 
         public int Width  = 960;
         public int Height = 540;
+
+        public Type AlgorithmType = typeof(TraditionalAlgorithmProvider<>);
     }
 }

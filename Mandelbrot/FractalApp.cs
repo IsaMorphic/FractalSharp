@@ -56,7 +56,7 @@ namespace Mandelbrot
         private MandelbrotMovieRenderer Renderer = new MandelbrotMovieRenderer();
         private ZoomMovieSettings RenderSettings = new ZoomMovieSettings();
 
-        private Action<Type> RenderMethod;
+        private Action RenderMethod;
 
         // Fractal loading and saving properties.  
         private bool RenderActive = false;
@@ -132,7 +132,7 @@ namespace Mandelbrot
 
             Renderer.SetFrame(Renderer.NumFrames + 1);
 
-            Task.Run(() => RenderMethod(PreferredAlgorithm));
+            Task.Run(RenderMethod);
         }
 
         public void Shutdown()
@@ -183,7 +183,7 @@ namespace Mandelbrot
             {
                 LoadingFile = false;
                 videoReader.Close();
-                Task.Run(() => RenderMethod(PreferredAlgorithm));
+                Task.Run(RenderMethod);
             }
         }
 
@@ -380,7 +380,7 @@ namespace Mandelbrot
                         RenderActive = true;
                         SaveFractal();
                     }
-                    Task.Run(() => RenderMethod(PreferredAlgorithm));
+                    Task.Run(RenderMethod);
                 }
                 else
                 {
@@ -429,13 +429,15 @@ namespace Mandelbrot
         private void traditionalToolStripMenuItem_Click(object sender, EventArgs e)
         {
             perturbationToolStripMenuItem.Checked = false;
-            PreferredAlgorithm = traditionalAlgorithm;
+            RenderSettings.AlgorithmType = traditionalAlgorithm;
+            Renderer.Setup(RenderSettings);
         }
 
         private void perturbationToolStripMenuItem_Click(object sender, EventArgs e)
         {
             traditionalToolStripMenuItem.Checked = false;
-            PreferredAlgorithm = perturbationAlgorithm;
+            RenderSettings.AlgorithmType = perturbationAlgorithm;
+            Renderer.Setup(RenderSettings);
         }
 
         private void x540ToolStripMenuItem_Click(object sender, EventArgs e)

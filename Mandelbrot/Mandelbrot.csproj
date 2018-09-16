@@ -86,6 +86,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Explorer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Explorer.Designer.cs">
+      <DependentUpon>Explorer.cs</DependentUpon>
+    </Compile>
     <Compile Include="FractalApp.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -111,6 +117,9 @@
     <Compile Include="Imaging\RGB.cs" />
     <Compile Include="Utilities\GenericMathResolver.cs" />
     <Compile Include="Utilities\Utils.cs" />
+    <EmbeddedResource Include="Explorer.resx">
+      <DependentUpon>Explorer.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FractalApp.resx">
       <DependentUpon>FractalApp.cs</DependentUpon>
     </EmbeddedResource>

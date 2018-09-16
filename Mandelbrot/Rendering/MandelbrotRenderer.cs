@@ -29,14 +29,16 @@ namespace Mandelbrot.Rendering
         public int MaxIterations { get; protected set; }
         public double Magnification { get; protected set; }
 
-        private decimal offsetXM;
-        private decimal offsetYM;
+        protected decimal offsetXM;
+        protected decimal offsetYM;
         private decimal aspectM;
 
         private int Width;
         private int Height;
 
         private RGB[] palette;
+
+        private Type AlgorithmType;
 
         private CancellationTokenSource Job;
 
@@ -71,6 +73,8 @@ namespace Mandelbrot.Rendering
             MaxIterations = settings.MaxIterations;
 
             ThreadCount = settings.ThreadCount;
+
+            AlgorithmType = settings.AlgorithmType;
         }
 
         #endregion
@@ -106,7 +110,7 @@ namespace Mandelbrot.Rendering
 
         // Frame rendering method, using generic typing to reduce the amount 
         // of code used and to make the algorithm easily applicable to other number types
-        public void RenderFrame<T>(Type algorithmBase)
+        public void RenderFrame<T>()
         {
             Type NumType;
 
@@ -114,7 +118,7 @@ namespace Mandelbrot.Rendering
             IGenericMath<T> TMath = MathResolver.CreateMathObject<T>(out NumType);
 
             // Initialize Algorithm Provider
-            Type algorithmType = algorithmBase.MakeGenericType(NumType);
+            Type algorithmType = AlgorithmType.MakeGenericType(NumType);
 
             IAlgorithmProvider<T> algorithmProvider = 
                 (IAlgorithmProvider<T>)Activator
