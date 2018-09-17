@@ -162,17 +162,21 @@ namespace Mandelbrot
             pictureBox1.Image = frame;
             Thread.Sleep(1000 / 30);
 
-            if (ExplorationSettings.Magnification < 81140)
-                ExplorationRenderer.RenderFrame<float>();
-            else
-                ExplorationRenderer.RenderFrame<double>();
-
+            NextFrame();
         }
 
         private void ExplorationRenderer_RenderHalted()
         {
             ExplorationSettings.Magnification /= 1.2;
-            ExplorationRenderer.RenderFrame<float>();
+            NextFrame();
+        }
+
+        private void NextFrame()
+        {
+            if (ExplorationSettings.Magnification < 81140)
+                ExplorationRenderer.RenderFrame<float>();
+            else
+                ExplorationRenderer.RenderFrame<double>();
         }
 
         public decimal GetXOffset()
