@@ -11,7 +11,7 @@ namespace Mandelbrot.Algorithms
     class PerturbationAlgorithmProvider<T> : IAlgorithmProvider<T>
     {
         private IGenericMath<T> TMath;
-        private List<GenericComplex<T>> iterList;
+        private List<GenericComplex<T>> pointsList;
 
         private T Zero;
         private T OneHalf;
@@ -42,15 +42,15 @@ namespace Mandelbrot.Algorithms
             center_real = offsetX;
             center_imag = offsetY;
 
-            GetIterationList();
+            pointsList = GetSurroundingPoints();
         }
 
-        public void GetIterationList()
+        public List<GenericComplex<T>> GetSurroundingPoints()
         {
             T xn_r = center_real;
             T xn_i = center_imag;
 
-            iterList = new List<GenericComplex<T>>();
+            var x = new List<GenericComplex<T>>();
 
             for (int i = 0; i < MaxIterations; i++)
             {
@@ -63,7 +63,7 @@ namespace Mandelbrot.Algorithms
 
                 GenericComplex<T> c = new GenericComplex<T>(real, imag);
 
-                iterList.Add(c);
+                x.Add(c);
 
                 // make sure our numbers don't get too big
 
@@ -79,7 +79,7 @@ namespace Mandelbrot.Algorithms
                 // xn_i = re * xn_i + center_i
                 xn_i = TMath.Add(TMath.Multiply(real, xn_i), center_imag);
             }
-            return;
+            return x;
         }
 
         // Non-Traditional Mandelbrot algorithm, 
@@ -89,7 +89,7 @@ namespace Mandelbrot.Algorithms
             ComplexMath<T> CMath = new ComplexMath<T>(TMath);
 
             // Get max iterations.  
-            int maxIterations = iterList.Count - 1;
+            int maxIterations = pointsList.Count - 1;
 
             // Initialize our iteration count.
             int iterCount = 0;
@@ -108,7 +108,7 @@ namespace Mandelbrot.Algorithms
             {
 
                 // dn *= iter_list[iter] + dn
-                dn = CMath.Multiply(dn, CMath.Add(iterList[iterCount], dn));
+                dn = CMath.Multiply(dn, CMath.Add(pointsList[iterCount], dn));
 
                 // dn += d0
                 dn = CMath.Add(dn, d0);
@@ -116,7 +116,7 @@ namespace Mandelbrot.Algorithms
                 iterCount++;
 
                 // zn = x[iter] * 0.5 + dn
-                zn = CMath.Add(CMath.Multiply(iterList[iterCount], OneHalf), dn);
+                zn = CMath.Add(CMath.Multiply(pointsList[iterCount], OneHalf), dn);
 
                 znMagn = CMath.MagnitudeSquared(zn);
 

@@ -55,6 +55,7 @@
             this.Name = "Explorer";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Fractal Explorer";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Explorer_FormClosing);
             this.Load += new System.EventHandler(this.Explorer_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Explorer_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Explorer_KeyUp);

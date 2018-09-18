@@ -1,5 +1,6 @@
 ﻿using Mandelbrot.Algorithms;
 using Mandelbrot.Imaging;
+using Mandelbrot.Mathematics;
 using Mandelbrot.Rendering;
 using Mandelbrot.Utilities;
 using System;
@@ -18,6 +19,11 @@ namespace Mandelbrot
 {
     public partial class Explorer : Form
     {
+        private int LowIterations = 400;
+        private int HighIterations = 6000;
+
+        private bool ShouldRestartRender = true;
+
         private bool MovingUp;
         private bool MovingDown;
         private bool MovingLeft;
@@ -37,16 +43,28 @@ namespace Mandelbrot
 
         private DateTime RenderStartTime;
 
+        private List<GenericComplex<decimal>> PointList;
+
+        private PerturbationAlgorithmProvider<decimal> PointChecker =
+            new PerturbationAlgorithmProvider<decimal>();
+
+        private Pen CrosshairColor = Pens.White;
+
+        private Font TextFont = new Font(new FontFamily("Arial"), 8);
+
         public Explorer(string palettePath, decimal offsetX, decimal offsetY)
         {
             ColorPalette = Utils.LoadPallete(palettePath);
             ExplorationSettings.offsetX = offsetX;
             ExplorationSettings.offsetY = offsetY;
+
             InitializeComponent();
         }
 
         private void Explorer_KeyDown(object sender, KeyEventArgs e)
         {
+            CrosshairColor = Pens.White;
+            ExplorationSettings.MaxIterations = LowIterations;
             switch (e.KeyCode)
             {
                 case Keys.Left:
@@ -67,8 +85,27 @@ namespace Mandelbrot
                 case Keys.ControlKey:
                     ZoomingOut = true;
                     break;
-                case Keys.M:
-                    Console.WriteLine(ExplorationSettings.Magnification);
+                case Keys.Oemplus:
+                    ExplorationSettings.MaxIterations = 
+                        LowIterations += 100;
+                    break;
+                case Keys.OemMinus:
+                    ExplorationSettings.MaxIterations = 
+                        LowIterations -= 100;
+                    break;
+                case Keys.Enter:
+                    PointChecker.Init(
+                        new DecimalMath(),
+                        ExplorationSettings.offsetX,
+                        ExplorationSettings.offsetY,
+                        1000000);
+                    if (PointChecker.GetSurroundingPoints().Count < HighIterations)
+                        CrosshairColor = Pens.Red;
+                    else
+                    {
+                        CrosshairColor = Pens.Green;
+                        ExplorationSettings.MaxIterations = HighIterations;
+                    }
                     break;
             }
         }
@@ -106,10 +143,10 @@ namespace Mandelbrot
             Width = 700;
             Height = 500;
 
-            ExplorationSettings.Width = 350;
-            ExplorationSettings.Height = 250;
+            ExplorationSettings.Width = 262;
+            ExplorationSettings.Height = 187;
 
-            ExplorationSettings.MaxIterations = 250;
+            ExplorationSettings.MaxIterations = LowIterations;
 
             ExplorationSettings.ThreadCount = Environment.ProcessorCount - 1;
 
@@ -129,7 +166,7 @@ namespace Mandelbrot
         {
             TimeSpan renderTime = DateTime.Now - RenderStartTime;
 
-            decimal stepAmount = .1M / (decimal)ExplorationSettings.Magnification;
+            decimal stepAmount = .03M / (decimal)ExplorationSettings.Magnification;
             if (MovingUp)
                 ExplorationSettings.offsetY -= stepAmount;
             if (MovingDown)
@@ -152,12 +189,13 @@ namespace Mandelbrot
         {
             using (var g = Graphics.FromImage(frame))
             {
-                g.DrawString("real: " + ExplorationSettings.offsetX, SystemFonts.DefaultFont, Brushes.White, 0, 0);
-                g.DrawString("imag: " + ExplorationSettings.offsetY, SystemFonts.DefaultFont, Brushes.White, 0, 10);
-                g.DrawString("zoom: " + ExplorationSettings.Magnification, SystemFonts.DefaultFont, Brushes.White, 0, 20);
+                g.DrawString("real: " + ExplorationSettings.offsetX, TextFont, Brushes.White, 0, 0);
+                g.DrawString("imag: " + ExplorationSettings.offsetY, TextFont, Brushes.White, 0, 10);
+                g.DrawString("zoom: " + ExplorationSettings.Magnification, TextFont, Brushes.White, 0, 20);
+                g.DrawString("iter: " + ExplorationSettings.MaxIterations, TextFont, Brushes.White, 0, 30);
 
-                g.DrawEllipse(Pens.White, new Rectangle(frame.Width / 2 - 10, frame.Height / 2 - 10, 20, 20));
-                g.DrawEllipse(Pens.White, new Rectangle(frame.Width / 2 - 5, frame.Height / 2 - 5, 10, 10));
+                g.DrawEllipse(CrosshairColor, new Rectangle(frame.Width / 2 - 10, frame.Height / 2 - 10, 20, 20));
+                g.DrawEllipse(CrosshairColor, new Rectangle(frame.Width / 2 - 5, frame.Height / 2 - 5, 10, 10));
             }
             pictureBox1.Image = frame;
             Thread.Sleep(1000 / 30);
@@ -167,8 +205,11 @@ namespace Mandelbrot
 
         private void ExplorationRenderer_RenderHalted()
         {
-            ExplorationSettings.Magnification /= 1.2;
-            NextFrame();
+            if (ShouldRestartRender)
+            {
+                ExplorationSettings.Magnification /= 1.2;
+                NextFrame();
+            }
         }
 
         private void NextFrame()
@@ -187,6 +228,12 @@ namespace Mandelbrot
         public decimal GetYOffset()
         {
             return ExplorationSettings.offsetY;
+        }
+
+        private void Explorer_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            ShouldRestartRender = false;
+                    ExplorationRenderer.StopRender();
         }
     }
 }
