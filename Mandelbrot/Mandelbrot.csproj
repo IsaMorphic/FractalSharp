@@ -70,6 +70,9 @@
     <Reference Include="Accord.Video.FFMPEG, Version=3.8.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=x86">
       <HintPath>..\packages\Accord.Video.FFMPEG.3.8.0\lib\net45\Accord.Video.FFMPEG.dll</HintPath>
     </Reference>
+    <Reference Include="ManagedCuda">
+      <HintPath>Dependencies\ManagedCuda.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -105,7 +108,7 @@
     <Compile Include="Imaging\DirectBitmap.cs" />
     <Compile Include="Movies\MandelbrotMovieRenderer.cs" />
     <Compile Include="Imaging\PixelData.cs" />
-    <Compile Include="Algorithms\AlgorithmProvider.cs" />
+    <Compile Include="Algorithms\IAlgorithmProvider.cs" />
     <Compile Include="Algorithms\PerturbationAlgorithmProvider.cs" />
     <Compile Include="Algorithms\TraditionalAlgorithmProvider.cs" />
     <Compile Include="Rendering\MandelbrotRenderer.cs" />
@@ -114,7 +117,7 @@
     <Compile Include="Mathematics\DecimalMath.cs" />
     <Compile Include="Mathematics\DoubleMath.cs" />
     <Compile Include="Mathematics\GenericComplex.cs" />
-    <Compile Include="Mathematics\GenericMath.cs" />
+    <Compile Include="Mathematics\IGenericMath.cs" />
     <Compile Include="Imaging\RGB.cs" />
     <Compile Include="Utilities\GenericMathResolver.cs" />
     <Compile Include="Utilities\Utils.cs" />
@@ -125,7 +128,7 @@
       <DependentUpon>FractalApp.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -134,6 +137,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="Dependencies\Kernel.ptx" />
     <None Include="packages.config" />
     <None Include="Palettes\altern.map">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -223,6 +227,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="Resources\kernel_x64.ptx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

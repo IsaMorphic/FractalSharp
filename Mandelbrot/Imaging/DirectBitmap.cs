@@ -45,6 +45,14 @@ namespace Mandelbrot.Imaging
             return result;
         }
 
+        public void SetBits(int[] BitsIn)
+        {
+            for (var i = 0; i < Bits.Length; i++)
+            {
+                Bits[i] = BitsIn[i];
+            }
+        }
+
         public void Dispose()
         {
             if (Disposed) return;
