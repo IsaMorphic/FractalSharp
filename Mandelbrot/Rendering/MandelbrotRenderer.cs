@@ -7,10 +7,15 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ManagedCuda;
+using ManagedCuda.VectorTypes;
+
 using Mandelbrot.Imaging;
 using Mandelbrot.Mathematics;
 using Mandelbrot.Utilities;
 using Mandelbrot.Algorithms;
+using System.IO;
+using Mandelbrot.Properties;
 
 namespace Mandelbrot.Rendering
 {
@@ -21,6 +26,8 @@ namespace Mandelbrot.Rendering
 
     class MandelbrotRenderer
     {
+        private CudaContext ctx;
+
         private GenericMathResolver MathResolver;
 
         private DirectBitmap CurrentFrame;
@@ -37,8 +44,10 @@ namespace Mandelbrot.Rendering
         private int Height;
 
         private RGB[] palette;
+        private int[] int_palette;
 
         private Type AlgorithmType;
+        private IAlgorithmProvider<double> GPUAlgorithmProvider;
 
         private CancellationTokenSource Job;
 
@@ -60,6 +69,8 @@ namespace Mandelbrot.Rendering
             CurrentFrame = new DirectBitmap(Width, Height);
 
             palette = newPalette;
+
+            Setup(settings);
         }
 
         public void Setup(RenderSettings settings)
@@ -75,6 +86,30 @@ namespace Mandelbrot.Rendering
             ThreadCount = settings.ThreadCount;
 
             AlgorithmType = settings.AlgorithmType;
+        }
+
+        public void InitGPU()
+        {
+            ctx = new CudaContext(CudaContext.GetMaxGflopsDeviceId());
+
+            int_palette = new int[palette.Length];
+            for (var i = 0; i < palette.Length; i++)
+            {
+                int_palette[i] = palette[i].toColor().ToArgb();
+            }
+
+            Type algorithmType = AlgorithmType.MakeGenericType(typeof(double));
+
+            GPUAlgorithmProvider =
+                (IAlgorithmProvider<double>)Activator
+                .CreateInstance(algorithmType);
+
+            GPUAlgorithmProvider.GPUInit(ctx);
+        }
+
+        public void CleanupGPU()
+        {
+            ctx.Dispose();
         }
 
         #endregion
@@ -108,6 +143,27 @@ namespace Mandelbrot.Rendering
 
         #region Rendering Methods
 
+        public void RenderFrameGPU()
+        {
+            FrameStart();
+
+            double xMax = (double)aspectM / Magnification;
+            double yMax = 2 / Magnification;
+
+            int[] raw_image = GPUAlgorithmProvider.GPUFrame(
+                int_palette, Width, Height, 
+                xMax, yMax, 
+                (double)offsetXM, 
+                (double)offsetYM, 
+                MaxIterations);
+
+            CurrentFrame.SetBits(raw_image);
+
+            Bitmap NewFrame = (Bitmap)CurrentFrame.Bitmap.Clone();
+
+            FrameEnd(NewFrame);
+        }
+
         // Frame rendering method, using generic typing to reduce the amount 
         // of code used and to make the algorithm easily applicable to other number types
         public void RenderFrame<T>()
@@ -120,7 +176,7 @@ namespace Mandelbrot.Rendering
             // Initialize Algorithm Provider
             Type algorithmType = AlgorithmType.MakeGenericType(NumType);
 
-            IAlgorithmProvider<T> algorithmProvider = 
+            IAlgorithmProvider<T> algorithmProvider =
                 (IAlgorithmProvider<T>)Activator
                 .CreateInstance(algorithmType);
 
