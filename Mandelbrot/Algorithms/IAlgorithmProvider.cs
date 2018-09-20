@@ -17,6 +17,5 @@ namespace Mandelbrot.Algorithms
 
         void GPUInit(CudaContext ctx);
         int[] GPUFrame(int[] palette, int width, int height, double xMax, double yMax, double offsetX, double offsetY, int maxIter);
-        void GPUCleanup();
     }
 }

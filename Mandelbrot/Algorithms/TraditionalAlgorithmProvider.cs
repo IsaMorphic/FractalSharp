@@ -102,10 +102,5 @@ namespace Mandelbrot.Algorithms
 
             return raw_image;
         }
-
-        public void GPUCleanup()
-        {
-            return;
-        }
     }
 }

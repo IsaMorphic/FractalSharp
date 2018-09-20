@@ -88,6 +88,30 @@ namespace Mandelbrot.Rendering
             AlgorithmType = settings.AlgorithmType;
         }
 
+        public void InitGPU()
+        {
+            ctx = new CudaContext(CudaContext.GetMaxGflopsDeviceId());
+
+            int_palette = new int[palette.Length];
+            for (var i = 0; i < palette.Length; i++)
+            {
+                int_palette[i] = palette[i].toColor().ToArgb();
+            }
+
+            Type algorithmType = AlgorithmType.MakeGenericType(typeof(double));
+
+            GPUAlgorithmProvider =
+                (IAlgorithmProvider<double>)Activator
+                .CreateInstance(algorithmType);
+
+            GPUAlgorithmProvider.GPUInit(ctx);
+        }
+
+        public void CleanupGPU()
+        {
+            ctx.Dispose();
+        }
+
         #endregion
 
         #region Algorithm Methods
@@ -118,25 +142,6 @@ namespace Mandelbrot.Rendering
         #endregion
 
         #region Rendering Methods
-
-        public void InitGPU()
-        {
-            ctx = new CudaContext(CudaContext.GetMaxGflopsDeviceId());
-
-            int_palette = new int[palette.Length];
-            for (var i = 0; i < palette.Length; i++)
-            {
-                int_palette[i] = palette[i].toColor().ToArgb();
-            }
-
-            Type algorithmType = AlgorithmType.MakeGenericType(typeof(double));
-
-            GPUAlgorithmProvider =
-                (IAlgorithmProvider<double>)Activator
-                .CreateInstance(algorithmType);
-
-            GPUAlgorithmProvider.GPUInit(ctx);
-        }
 
         public void RenderFrameGPU()
         {

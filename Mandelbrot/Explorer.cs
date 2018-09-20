@@ -208,6 +208,8 @@ namespace Mandelbrot
         {
             ShouldRestartRender = false;
             ExplorationRenderer.StopRender();
+            timer1.Stop();
+            ExplorationRenderer.CleanupGPU();
         }
 
         private void timer1_Tick(object sender, EventArgs e)
