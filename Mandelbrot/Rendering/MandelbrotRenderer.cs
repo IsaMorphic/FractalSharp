@@ -104,7 +104,7 @@ namespace Mandelbrot.Rendering
                 CudaContext.GetDeviceCount() > 0 &&
                 Environment.Is64BitOperatingSystem;
 
-            return false;       
+            return cudaAvailable;       
         }
 
         public bool InitGPU()
