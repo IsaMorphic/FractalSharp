@@ -16,6 +16,7 @@ using Mandelbrot.Utilities;
 using Mandelbrot.Algorithms;
 using System.IO;
 using Mandelbrot.Properties;
+using ManagedCuda.BasicTypes;
 
 namespace Mandelbrot.Rendering
 {
@@ -27,10 +28,10 @@ namespace Mandelbrot.Rendering
     class MandelbrotRenderer
     {
         private CudaContext ctx;
-
         private GenericMathResolver MathResolver;
-
         private DirectBitmap CurrentFrame;
+
+        private bool isInitialized = false;
 
         private int ThreadCount = Environment.ProcessorCount;
         public int MaxIterations { get; protected set; }
@@ -70,46 +71,80 @@ namespace Mandelbrot.Rendering
 
             palette = newPalette;
 
+            isInitialized = true;
+
             Setup(settings);
         }
 
         public void Setup(RenderSettings settings)
         {
-            Job = new CancellationTokenSource();
+            if (isInitialized)
+            {
+                Job = new CancellationTokenSource();
 
-            offsetXM = settings.offsetX;
-            offsetYM = settings.offsetY;
+                offsetXM = settings.offsetX;
+                offsetYM = settings.offsetY;
 
-            Magnification = settings.Magnification;
-            MaxIterations = settings.MaxIterations;
+                Magnification = settings.Magnification;
+                MaxIterations = settings.MaxIterations;
 
-            ThreadCount = settings.ThreadCount;
+                ThreadCount = settings.ThreadCount;
 
-            AlgorithmType = settings.AlgorithmType;
+                AlgorithmType = settings.AlgorithmType;
+            }
+            else
+            {
+                throw new ApplicationException("Renderer is not Initialized!");
+            }
         }
 
-        public void InitGPU()
+        public bool GPUAvailable()
         {
-            ctx = new CudaContext(CudaContext.GetMaxGflopsDeviceId());
+            bool cudaAvailable = 
+                CudaContext.GetDeviceCount() > 0 &&
+                Environment.Is64BitOperatingSystem;
 
-            int_palette = new int[palette.Length];
-            for (var i = 0; i < palette.Length; i++)
+            return false;       
+        }
+
+        public bool InitGPU()
+        {
+            if (isInitialized)
             {
-                int_palette[i] = palette[i].toColor().ToArgb();
+                if (!GPUAvailable())
+                    return false;
+
+                ctx = new CudaContext(CudaContext.GetMaxGflopsDeviceId());
+
+                int_palette = new int[palette.Length];
+                for (var i = 0; i < palette.Length; i++)
+                {
+                    int_palette[i] = palette[i].toColor().ToArgb();
+                }
+
+                Type algorithmType = AlgorithmType.MakeGenericType(typeof(double));
+
+                GPUAlgorithmProvider =
+                    (IAlgorithmProvider<double>)Activator
+                    .CreateInstance(algorithmType);
+
+                GPUAlgorithmProvider.GPUInit(ctx);
+
+                return true;
             }
-
-            Type algorithmType = AlgorithmType.MakeGenericType(typeof(double));
-
-            GPUAlgorithmProvider =
-                (IAlgorithmProvider<double>)Activator
-                .CreateInstance(algorithmType);
-
-            GPUAlgorithmProvider.GPUInit(ctx);
+            else
+            {
+                throw new ApplicationException("Renderer is not Initialized!");
+            }
         }
 
         public void CleanupGPU()
         {
-            ctx.Dispose();
+            try
+            {
+                ctx.Dispose();
+            }
+            catch (NullReferenceException) { }
         }
 
         #endregion
@@ -145,6 +180,8 @@ namespace Mandelbrot.Rendering
 
         public void RenderFrameGPU()
         {
+            ctx.SetCurrent();
+
             FrameStart();
 
             double xMax = (double)aspectM / Magnification;
@@ -156,6 +193,9 @@ namespace Mandelbrot.Rendering
                 (double)offsetXM, 
                 (double)offsetYM, 
                 MaxIterations);
+
+            if (Job.IsCancellationRequested)
+                return;
 
             CurrentFrame.SetBits(raw_image);
 

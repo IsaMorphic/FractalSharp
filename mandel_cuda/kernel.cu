@@ -129,7 +129,7 @@ extern "C" {
 		} while (zn_magn < 256 && iter < max_iter);
 
 		if (iter == max_iter) {
-			out[index] = 0;
+			out[index] = 255 << 24;
 		}
 		else {
 			out[index] = color_from_iter(iter, zn_magn, palette, paletteLength);
@@ -172,7 +172,7 @@ extern "C" {
 		}
 
 		if (iteration == max_iteration) {
-			out[index] = 0;
+			out[index] = 255 << 24;
 		}
 		else {
 			out[index] = color_from_iter(iteration, xx + yy, palette, paletteLength);

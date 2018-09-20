@@ -153,7 +153,7 @@ BB1_1:
 	@%p3 bra 	BB1_1;
 
 	setp.eq.s32	%p4, %r220, %r64;
-	mov.u32 	%r242, 0;
+	mov.u32 	%r242, -16777216;
 	@%p4 bra 	BB1_53;
 
 	{
@@ -1100,9 +1100,8 @@ BB1_53:
 	div.rn.f64 	%fd73, %fd71, %fd72;
 	sub.f64 	%fd74, %fd73, %fd60;
 	add.f64 	%fd2, %fd74, %fd62;
-	mov.u32 	%r245, 0;
+	mov.u32 	%r223, 0;
 	mov.f64 	%fd284, 0d0000000000000000;
-	mov.u32 	%r223, %r245;
 	setp.lt.s32	%p1, %r66, 1;
 	@%p1 bra 	BB2_5;
 
@@ -1138,6 +1137,7 @@ BB2_3:
 
 BB2_5:
 	setp.eq.s32	%p8, %r223, %r66;
+	mov.u32 	%r245, -16777216;
 	@%p8 bra 	BB2_56;
 
 	{
