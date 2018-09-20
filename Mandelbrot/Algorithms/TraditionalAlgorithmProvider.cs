@@ -1,5 +1,8 @@
-﻿using Mandelbrot.Imaging;
+﻿using ManagedCuda;
+using ManagedCuda.VectorTypes;
+using Mandelbrot.Imaging;
 using Mandelbrot.Mathematics;
+using Mandelbrot.Properties;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +14,8 @@ namespace Mandelbrot.Algorithms
     class TraditionalAlgorithmProvider<T> : IAlgorithmProvider<T>
     {
         private IGenericMath<T> TMath;
+
+        private CudaKernel gpuKernel;
 
         private T Zero;
         private T Two;
@@ -75,5 +80,32 @@ namespace Mandelbrot.Algorithms
             return new PixelData<T>(TMath.Add(xx, yy), iter, iter < MaxIterations);
         }
 
+        public void GPUInit(CudaContext ctx)
+        {
+            gpuKernel = ctx.LoadKernelPTX(Resources.Kernel, "traditional");
+        }
+
+        public int[] GPUFrame(int[] palette, int width, int height, double xMax, double yMax, double offsetX, double offsetY, int maxIter)
+        {
+            gpuKernel.BlockDimensions = new dim3(16, 9);
+            gpuKernel.GridDimensions = new dim3(width / 16, height / 9);
+
+            var dev_image = new CudaDeviceVariable<int>(width * height);
+            CudaDeviceVariable<int> dev_palette = palette;
+
+            gpuKernel.Run(dev_image.DevicePointer, dev_palette.DevicePointer, palette.Length, width, height, xMax, yMax, offsetX, offsetY, maxIter);
+
+            int[] raw_image = dev_image;
+
+            dev_image.Dispose();
+            dev_palette.Dispose();
+
+            return raw_image;
+        }
+
+        public void GPUCleanup()
+        {
+            return;
+        }
     }
 }

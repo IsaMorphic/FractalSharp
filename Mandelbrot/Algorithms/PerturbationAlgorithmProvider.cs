@@ -1,5 +1,8 @@
-﻿using Mandelbrot.Imaging;
+﻿using ManagedCuda;
+using ManagedCuda.VectorTypes;
+using Mandelbrot.Imaging;
 using Mandelbrot.Mathematics;
+using Mandelbrot.Properties;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +15,9 @@ namespace Mandelbrot.Algorithms
     {
         private IGenericMath<T> TMath;
         private List<GenericComplex<T>> pointsList;
+
+        private CudaKernel renderKernel;
+        private CudaKernel pointsKernel;
 
         private T Zero;
         private T OneHalf;
@@ -123,6 +129,47 @@ namespace Mandelbrot.Algorithms
             } while (TMath.LessThan(znMagn, TwoPow8) && iterCount < maxIterations);
 
             return new PixelData<T>(znMagn, iterCount, iterCount < maxIterations);
+        }
+
+        public void GPUInit(CudaContext ctx)
+        {
+            renderKernel = ctx.LoadKernelPTX(Resources.Kernel, "perturbation");
+            pointsKernel = ctx.LoadKernelPTX(Resources.Kernel, "get_points");
+
+            pointsKernel.BlockDimensions = 1;
+            pointsKernel.GridDimensions = 1;
+        }
+
+        public int[] GPUFrame(int[] palette, int width, int height, double xMax, double yMax, double offsetX, double offsetY, int maxIter)
+        {
+            renderKernel.BlockDimensions = new dim3(16, 9);
+            renderKernel.GridDimensions = new dim3(width / 16, height / 9);
+
+            var dev_points = new CudaDeviceVariable<cuDoubleComplex>(maxIter);
+            CudaDeviceVariable<int> dev_pointCount = 0;
+
+            pointsKernel.Run(dev_points.DevicePointer, dev_pointCount.DevicePointer, offsetX, offsetY, maxIter);
+
+            int pointCount = dev_pointCount;
+
+            var dev_image = new CudaDeviceVariable<int>(width * height);
+            CudaDeviceVariable<int> dev_palette = palette;
+
+            renderKernel.Run(dev_image.DevicePointer, dev_palette.DevicePointer, palette.Length, dev_points.DevicePointer, pointCount, width, height, xMax, yMax);
+
+            int[] raw_image = dev_image;
+
+            dev_points.Dispose();
+            dev_pointCount.Dispose();
+            dev_image.Dispose();
+            dev_palette.Dispose();
+
+            return raw_image;
+        }
+
+        public void GPUCleanup()
+        {
+            return;
         }
     }
 }

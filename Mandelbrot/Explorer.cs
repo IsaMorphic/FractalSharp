@@ -19,8 +19,7 @@ namespace Mandelbrot
 {
     public partial class Explorer : Form
     {
-        private int LowIterations = 400;
-        private int HighIterations = 6000;
+        private int Iterations = 400;
 
         private bool ShouldRestartRender = true;
 
@@ -45,11 +44,6 @@ namespace Mandelbrot
 
         private List<GenericComplex<decimal>> PointList;
 
-        private PerturbationAlgorithmProvider<decimal> PointChecker =
-            new PerturbationAlgorithmProvider<decimal>();
-
-        private Pen CrosshairColor = Pens.White;
-
         private Font TextFont = new Font(new FontFamily("Arial"), 8);
 
         public Explorer(string palettePath, decimal offsetX, decimal offsetY)
@@ -63,8 +57,7 @@ namespace Mandelbrot
 
         private void Explorer_KeyDown(object sender, KeyEventArgs e)
         {
-            CrosshairColor = Pens.White;
-            ExplorationSettings.MaxIterations = LowIterations;
+            ExplorationSettings.MaxIterations = Iterations;
             switch (e.KeyCode)
             {
                 case Keys.Left:
@@ -87,25 +80,11 @@ namespace Mandelbrot
                     break;
                 case Keys.Oemplus:
                     ExplorationSettings.MaxIterations =
-                        LowIterations += 100;
+                        Iterations += 100;
                     break;
                 case Keys.OemMinus:
                     ExplorationSettings.MaxIterations =
-                        LowIterations -= 100;
-                    break;
-                case Keys.Enter:
-                    PointChecker.Init(
-                        new DecimalMath(),
-                        ExplorationSettings.offsetX,
-                        ExplorationSettings.offsetY,
-                        1000000);
-                    if (PointChecker.GetSurroundingPoints().Count < HighIterations)
-                        CrosshairColor = Pens.Red;
-                    else
-                    {
-                        CrosshairColor = Pens.Green;
-                        ExplorationSettings.MaxIterations = HighIterations;
-                    }
+                        Iterations -= 100;
                     break;
             }
         }
@@ -146,7 +125,7 @@ namespace Mandelbrot
             ExplorationSettings.Width = 350;
             ExplorationSettings.Height = 250;
 
-            ExplorationSettings.MaxIterations = 256;
+            ExplorationSettings.MaxIterations = Iterations;
 
             ExplorationSettings.ThreadCount = Environment.ProcessorCount - 1;
 
@@ -194,6 +173,7 @@ namespace Mandelbrot
                 g.DrawString("real: " + ExplorationSettings.offsetX, SystemFonts.DefaultFont, Brushes.White, 0, 0);
                 g.DrawString("imag: " + ExplorationSettings.offsetY, SystemFonts.DefaultFont, Brushes.White, 0, 10);
                 g.DrawString("zoom: " + ExplorationSettings.Magnification, SystemFonts.DefaultFont, Brushes.White, 0, 20);
+                g.DrawString("iter: " + ExplorationSettings.MaxIterations, SystemFonts.DefaultFont, Brushes.White, 0, 30);
 
                 g.DrawEllipse(Pens.White, new Rectangle(frame.Width / 2 - 10, frame.Height / 2 - 10, 20, 20));
                 g.DrawEllipse(Pens.White, new Rectangle(frame.Width / 2 - 5, frame.Height / 2 - 5, 10, 10));

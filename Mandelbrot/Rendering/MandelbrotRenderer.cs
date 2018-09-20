@@ -27,7 +27,6 @@ namespace Mandelbrot.Rendering
     class MandelbrotRenderer
     {
         private CudaContext ctx;
-        private CudaKernel gpuKernel;
 
         private GenericMathResolver MathResolver;
 
@@ -47,8 +46,8 @@ namespace Mandelbrot.Rendering
         private RGB[] palette;
         private int[] int_palette;
 
-
         private Type AlgorithmType;
+        private IAlgorithmProvider<double> GPUAlgorithmProvider;
 
         private CancellationTokenSource Job;
 
@@ -70,11 +69,6 @@ namespace Mandelbrot.Rendering
             CurrentFrame = new DirectBitmap(Width, Height);
 
             palette = newPalette;
-            int_palette = new int[palette.Length];
-            for (var i = 0; i < palette.Length; i++)
-            {
-                int_palette[i] = palette[i].toColor().ToArgb();
-            }
 
             Setup(settings);
         }
@@ -129,32 +123,40 @@ namespace Mandelbrot.Rendering
         {
             ctx = new CudaContext(CudaContext.GetMaxGflopsDeviceId());
 
-            gpuKernel = ctx.LoadKernelPTX(Resources.Kernel, "render");
+            int_palette = new int[palette.Length];
+            for (var i = 0; i < palette.Length; i++)
+            {
+                int_palette[i] = palette[i].toColor().ToArgb();
+            }
 
-            gpuKernel.BlockDimensions = new ManagedCuda.VectorTypes.dim3(16, 16);
-            gpuKernel.GridDimensions = new ManagedCuda.VectorTypes.dim3(Width / 16, Height / 16);
+            Type algorithmType = AlgorithmType.MakeGenericType(typeof(double));
+
+            GPUAlgorithmProvider =
+                (IAlgorithmProvider<double>)Activator
+                .CreateInstance(algorithmType);
+
+            GPUAlgorithmProvider.GPUInit(ctx);
         }
 
         public void RenderFrameGPU()
         {
             FrameStart();
-            int[] raw_image = new int[Width * Height];
 
-            // Allocate vectors in device memory and copy vectors from host memory to device memory 
-            // Notice the new syntax with implicit conversion operators: Allocation of device memory and data copy is one operation.
-            CudaDeviceVariable<int> dev_image = new CudaDeviceVariable<int>(raw_image.Length);
-            CudaDeviceVariable<int> dev_palette = int_palette;
+            double xMax = (double)aspectM / Magnification;
+            double yMax = 2 / Magnification;
 
-            gpuKernel.Run(dev_image.DevicePointer, dev_palette.DevicePointer, int_palette.Length, Width, Height, (double)offsetXM, (double)offsetYM, Magnification, MaxIterations);
+            int[] raw_image = GPUAlgorithmProvider.GPUFrame(
+                int_palette, Width, Height, 
+                xMax, yMax, 
+                (double)offsetXM, 
+                (double)offsetYM, 
+                MaxIterations);
 
-            raw_image = dev_image;
             CurrentFrame.SetBits(raw_image);
 
-            dev_image.Dispose();
-            dev_palette.Dispose();
+            Bitmap NewFrame = (Bitmap)CurrentFrame.Bitmap.Clone();
 
-            Bitmap newFrame = (Bitmap)CurrentFrame.Bitmap.Clone();
-            FrameEnd(newFrame);
+            FrameEnd(NewFrame);
         }
 
         // Frame rendering method, using generic typing to reduce the amount 
