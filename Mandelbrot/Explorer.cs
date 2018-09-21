@@ -127,8 +127,8 @@ namespace Mandelbrot
             }
             else
             {
-                ExplorationSettings.Width = 1920;
-                ExplorationSettings.Height = 1080;
+                ExplorationSettings.Width = 640;
+                ExplorationSettings.Height = 360;
             }
 
             Cursor.Hide();
