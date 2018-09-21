@@ -178,27 +178,51 @@ namespace Mandelbrot.Rendering
 
         #region Rendering Methods
 
-        public void RenderFrameGPU()
+        private async Task<int[]> RenderGPUCells()
         {
-            FrameStart();
+            ctx.SetCurrent();
+
+            GPUAlgorithmProvider.GPUPreFrame();
+
+            int cellWidth = Width / 4;
+            int cellHeight = Height / 3;
 
             double xMax = (double)aspectM / Magnification;
             double yMax = 2 / Magnification;
 
-            int[] raw_image = null;
+            CudaDeviceVariable<int> dev_palette = int_palette;
+            CudaDeviceVariable<int> dev_image = new int[Width * Height];
 
-            Task.Run((Action)(() =>
+            for (int cell_x = 0; cell_x < 4; cell_x++)
             {
-                ctx.SetCurrent();
+                for (int cell_y = 0; cell_y < 3; cell_y++)
+                {
+                    GPUAlgorithmProvider.GPUCell(dev_image, dev_palette, cell_x, cell_y, cellWidth, cellHeight, xMax, yMax);
+                }
+            }
 
-                raw_image = GPUAlgorithmProvider.GPUFrame(
-                        int_palette, Width, Height,
-                        xMax, yMax,
-                        (double)offsetXM,
-                        (double)offsetYM,
-                        MaxIterations);
+            int[] raw_image = dev_image;
 
-            }), Job.Token).Wait();
+            GPUAlgorithmProvider.GPUPostFrame();
+
+            dev_palette.Dispose();
+            dev_image.Dispose();
+
+            return raw_image;
+        }
+
+        public void RenderFrameGPU()
+        {
+            FrameStart();
+
+            IGenericMath<double> TMath = MathResolver.CreateMathObject<double>();
+            GPUAlgorithmProvider.Init(TMath, (double)offsetXM, (double)offsetYM, MaxIterations);
+
+            var renderTask = Task.Run(RenderGPUCells, Job.Token);
+
+            renderTask.Wait();
+
+            int[] raw_image = renderTask.Result;
 
             CurrentFrame.SetBits(raw_image);
 
@@ -211,10 +235,10 @@ namespace Mandelbrot.Rendering
         // of code used and to make the algorithm easily applicable to other number types
         public void RenderFrame<T>()
         {
-            Type NumType;
+            Type NumType = typeof(T);
 
             // Initialize Math Object
-            IGenericMath<T> TMath = MathResolver.CreateMathObject<T>(out NumType);
+            IGenericMath<T> TMath = MathResolver.CreateMathObject<T>();
 
             // Initialize Algorithm Provider
             Type algorithmType = AlgorithmType.MakeGenericType(NumType);

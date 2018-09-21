@@ -16,8 +16,8 @@ namespace Mandelbrot.Algorithms
         private IGenericMath<T> TMath;
         private List<GenericComplex<T>> pointsList;
 
-        private CudaKernel renderKernel;
-        private CudaKernel pointsKernel;
+        private CudaKernel gpuKernel;
+        private CudaDeviceVariable<cuDoubleComplex> dev_points;
 
         private T Zero;
         private T OneHalf;
@@ -133,54 +133,45 @@ namespace Mandelbrot.Algorithms
 
         public void GPUInit(CudaContext ctx)
         {
-            renderKernel = ctx.LoadKernelPTX(Resources.Kernel, "perturbation");
-            pointsKernel = ctx.LoadKernelPTX(Resources.Kernel, "get_points");
-
-            pointsKernel.BlockDimensions = 1;
-            pointsKernel.GridDimensions = 1;
+            gpuKernel = ctx.LoadKernelPTX(Resources.Kernel, "perturbation");
         }
 
-        public int[] GPUFrame(int[] palette, int width, int height, double xMax, double yMax, double offsetX, double offsetY, int maxIter)
+        public void GPUPreFrame()
         {
-            int cellWidth = width / 16;
-            int cellHeight = height / 9;
-
-            renderKernel.BlockDimensions = new dim3(4, 4);
-            renderKernel.GridDimensions = new dim3(cellWidth / 4, cellHeight / 4);
-
-            var dev_points = new CudaDeviceVariable<cuDoubleComplex>(maxIter);
-            CudaDeviceVariable<int> dev_pointCount = 0;
-
-            pointsKernel.Run(dev_points.DevicePointer, dev_pointCount.DevicePointer, offsetX, offsetY, maxIter);
-
-            int pointCount = dev_pointCount;
-
-            var dev_image = new CudaDeviceVariable<int>(width * height);
-            CudaDeviceVariable<int> dev_palette = palette;
-
-            for (int cell_x = 0; cell_x < 16; cell_x++)
+            cuDoubleComplex[] cuDoubles =
+                new cuDoubleComplex[pointsList.Count];
+            for (var i = 0; i < cuDoubles.Length; i++)
             {
-                for (int cell_y = 0; cell_y < 9; cell_y++)
-                {
-                    renderKernel.Run(
-                        dev_image.DevicePointer, 
-                        dev_palette.DevicePointer, palette.Length, 
-                        dev_points.DevicePointer, pointCount, 
-                        cell_x, cell_y, 
-                        cellWidth, cellHeight, 
-                        width, height, 
-                        xMax, yMax);
-                }
+                GenericComplex<T> complex = pointsList[i];
+                cuDoubles[i] = new cuDoubleComplex(
+                        TMath.toDouble(complex.real),
+                        TMath.toDouble(complex.imag));
             }
 
-            int[] raw_image = dev_image;
+            dev_points = cuDoubles;
+        }
 
+        public void GPUPostFrame()
+        {
             dev_points.Dispose();
-            dev_pointCount.Dispose();
-            dev_image.Dispose();
-            dev_palette.Dispose();
+        }
 
-            return raw_image;
+        public void GPUCell(
+            CudaDeviceVariable<int> dev_image,
+            CudaDeviceVariable<int> dev_palette,
+            int cell_x, int cell_y,
+            int cellWidth, int cellHeight,
+            double xMax, double yMax)
+        {
+            gpuKernel.BlockDimensions = new dim3(4, 3);
+            gpuKernel.GridDimensions = new dim3(cellWidth / 4, cellHeight / 3);
+            gpuKernel.Run(
+                dev_image.DevicePointer,
+                dev_palette.DevicePointer, dev_palette.Size,
+                dev_points.DevicePointer, dev_points.Size,
+                cell_x, cell_y,
+                cellWidth, cellHeight,
+                xMax, yMax);
         }
     }
 }

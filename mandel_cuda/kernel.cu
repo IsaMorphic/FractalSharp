@@ -87,11 +87,14 @@ extern "C" {
 		cuDoubleComplex *points, int pointCount, 
 		int cell_x, int cell_y, 
 		int cellWidth, int cellHeight, 
-		int frameWidth, int frameHeight, 
 		double xMax, double yMax) {
 
 		unsigned int x_dim = cell_x * cellWidth + blockIdx.x * blockDim.x + threadIdx.x;
 		unsigned int y_dim = cell_y * cellHeight + blockIdx.y * blockDim.y + threadIdx.y;
+
+		unsigned int frameWidth = cellWidth * 4;
+		unsigned int frameHeight = cellHeight * 3;
+
 		int index = frameWidth * y_dim + x_dim;
 
 
@@ -144,16 +147,20 @@ extern "C" {
 	}
 
 	__global__ void traditional(
-		int *out, int *palette, int paletteLength, 
+		int *out, int *palette, 
+		int paletteLength, 
 		int cell_x, int cell_y, 
 		int cellWidth, int cellHeight, 
-		int frameWidth, int frameHeight, 
 		double xMax, double yMax, 
 		double offset_x, double offset_y, 
 		int max_iteration) {
 
 		unsigned int x_dim = cell_x * cellWidth + blockIdx.x * blockDim.x + threadIdx.x;
 		unsigned int y_dim = cell_y * cellHeight + blockIdx.y * blockDim.y + threadIdx.y;
+
+		unsigned int frameWidth = cellWidth * 4;
+		unsigned int frameHeight = cellHeight * 3;
+
 		int index = frameWidth * y_dim + x_dim;
 
 		double x_origin = map(x_dim, 0, frameWidth, -xMax, xMax) + offset_x;

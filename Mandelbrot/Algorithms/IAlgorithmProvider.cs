@@ -16,6 +16,14 @@ namespace Mandelbrot.Algorithms
         PixelData<T> Run(T x0, T y0);
 
         void GPUInit(CudaContext ctx);
-        int[] GPUFrame(int[] palette, int width, int height, double xMax, double yMax, double offsetX, double offsetY, int maxIter);
+        void GPUPreFrame();
+        void GPUPostFrame();
+        void GPUCell(
+            CudaDeviceVariable<int> dev_image, 
+            CudaDeviceVariable<int> dev_palette, 
+            int cell_x, int cell_y, 
+            int cellWidth, int cellHeight, 
+            double xMax, double yMax);
+
     }
 }

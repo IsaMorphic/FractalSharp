@@ -85,31 +85,29 @@ namespace Mandelbrot.Algorithms
             gpuKernel = ctx.LoadKernelPTX(Resources.Kernel, "traditional");
         }
 
-        public int[] GPUFrame(int[] palette, int width, int height, double xMax, double yMax, double offsetX, double offsetY, int maxIter)
-        {
-            int cellWidth = width / 4;
-            int cellHeight = height / 3;
+        public void GPUPreFrame() { return; }
 
+        public void GPUPostFrame() { return; }
+
+        public void GPUCell(
+            CudaDeviceVariable<int> dev_image,
+            CudaDeviceVariable<int> dev_palette,
+            int cell_x, int cell_y,
+            int cellWidth, int cellHeight,
+            double xMax, double yMax)
+        {
             gpuKernel.BlockDimensions = new dim3(4, 3);
             gpuKernel.GridDimensions = new dim3(cellWidth / 4, cellHeight / 3);
 
-            var dev_image = new CudaDeviceVariable<int>(width * height);
-            CudaDeviceVariable<int> dev_palette = palette;
-
-            for (int cell_x = 0; cell_x < 4; cell_x++)
-            {
-                for (int cell_y = 0; cell_y < 3; cell_y++)
-                {
-                    gpuKernel.Run(dev_image.DevicePointer, dev_palette.DevicePointer, palette.Length, cell_x, cell_y, cellWidth, cellHeight, width, height, xMax, yMax, offsetX, offsetY, maxIter);
-                }
-            }
-
-            int[] raw_image = dev_image;
-
-            dev_image.Dispose();
-            dev_palette.Dispose();
-
-            return raw_image;
+            gpuKernel.Run(
+                dev_image.DevicePointer,
+                dev_palette.DevicePointer,
+                dev_palette.Size,
+                cell_x, cell_y,
+                cellWidth, cellHeight,
+                xMax, yMax,
+                offsetX, offsetY,
+                MaxIterations);
         }
     }
 }

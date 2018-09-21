@@ -21,9 +21,9 @@ namespace Mandelbrot.Utilities
             Assemblies = assemblies;
         }
 
-        public IGenericMath<T> CreateMathObject<T>(out Type NumType)
+        public IGenericMath<T> CreateMathObject<T>()
         {
-            NumType = typeof(T);
+            Type NumType = typeof(T);
 
             Type NumResolved = null;
 
