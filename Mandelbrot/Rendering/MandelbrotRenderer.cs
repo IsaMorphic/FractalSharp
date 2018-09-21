@@ -128,7 +128,7 @@ namespace Mandelbrot.Rendering
                     (IAlgorithmProvider<double>)Activator
                     .CreateInstance(algorithmType);
 
-                GPUAlgorithmProvider.GPUInit(ctx);
+                GPUAlgorithmProvider.GPUInit(ctx, Resources.Kernel, new dim3(Width / 16, Height / 9), new dim3(4, 3));
 
                 return true;
             }
@@ -197,7 +197,13 @@ namespace Mandelbrot.Rendering
             {
                 for (int cell_y = 0; cell_y < 3; cell_y++)
                 {
-                    GPUAlgorithmProvider.GPUCell(dev_image, dev_palette, cell_x, cell_y, cellWidth, cellHeight, xMax, yMax);
+                    GPUAlgorithmProvider.GPUCell(
+                        dev_image, 
+                        dev_palette, 
+                        cell_x, cell_y, 
+                        cellWidth, cellHeight, 
+                        4, 3,
+                        xMax, yMax);
                 }
             }
 

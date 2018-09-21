@@ -80,9 +80,12 @@ namespace Mandelbrot.Algorithms
             return new PixelData<T>(TMath.Add(xx, yy), iter, iter < MaxIterations);
         }
 
-        public void GPUInit(CudaContext ctx)
+        public void GPUInit(CudaContext ctx, byte[] ptxImage, dim3 gridDim, dim3 blockDim)
         {
-            gpuKernel = ctx.LoadKernelPTX(Resources.Kernel, "traditional");
+            gpuKernel = ctx.LoadKernelPTX(ptxImage, "traditional");
+
+            gpuKernel.GridDimensions = gridDim;
+            gpuKernel.BlockDimensions = blockDim;
         }
 
         public void GPUPreFrame() { return; }
@@ -94,17 +97,16 @@ namespace Mandelbrot.Algorithms
             CudaDeviceVariable<int> dev_palette,
             int cell_x, int cell_y,
             int cellWidth, int cellHeight,
+            int totalCells_x, int totalCells_y,
             double xMax, double yMax)
         {
-            gpuKernel.BlockDimensions = new dim3(4, 3);
-            gpuKernel.GridDimensions = new dim3(cellWidth / 4, cellHeight / 3);
-
             gpuKernel.Run(
                 dev_image.DevicePointer,
                 dev_palette.DevicePointer,
                 dev_palette.Size,
                 cell_x, cell_y,
                 cellWidth, cellHeight,
+                totalCells_x, totalCells_y,
                 xMax, yMax,
                 offsetX, offsetY,
                 MaxIterations);
