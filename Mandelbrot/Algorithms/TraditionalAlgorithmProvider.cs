@@ -87,13 +87,22 @@ namespace Mandelbrot.Algorithms
 
         public int[] GPUFrame(int[] palette, int width, int height, double xMax, double yMax, double offsetX, double offsetY, int maxIter)
         {
-            gpuKernel.BlockDimensions = new dim3(16, 9);
-            gpuKernel.GridDimensions = new dim3(width / 16, height / 9);
+            int cellWidth = width / 16;
+            int cellHeight = height / 9;
+
+            gpuKernel.BlockDimensions = new dim3(4, 4);
+            gpuKernel.GridDimensions = new dim3(cellWidth / 4, cellHeight / 4);
 
             var dev_image = new CudaDeviceVariable<int>(width * height);
             CudaDeviceVariable<int> dev_palette = palette;
 
-            gpuKernel.Run(dev_image.DevicePointer, dev_palette.DevicePointer, palette.Length, width, height, xMax, yMax, offsetX, offsetY, maxIter);
+            for (int cell_x = 0; cell_x < 16; cell_x++)
+            {
+                for (int cell_y = 0; cell_y < 9; cell_y++)
+                {
+                    gpuKernel.Run(dev_image.DevicePointer, dev_palette.DevicePointer, palette.Length, cell_x, cell_y, cellWidth, cellHeight, width, height, xMax, yMax, offsetX, offsetY, maxIter);
+                }
+            }
 
             int[] raw_image = dev_image;
 
