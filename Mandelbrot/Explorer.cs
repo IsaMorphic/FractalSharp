@@ -226,10 +226,5 @@ namespace Mandelbrot
             ShouldRestartRender = false;
             ExplorationRenderer.StopRender();
         }
-
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            NextFrame();
-        }
     }
 }
