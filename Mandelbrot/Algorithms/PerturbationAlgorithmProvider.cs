@@ -142,8 +142,11 @@ namespace Mandelbrot.Algorithms
 
         public int[] GPUFrame(int[] palette, int width, int height, double xMax, double yMax, double offsetX, double offsetY, int maxIter)
         {
-            renderKernel.BlockDimensions = new dim3(16, 9);
-            renderKernel.GridDimensions = new dim3(width / 16, height / 9);
+            int cellWidth = width / 16;
+            int cellHeight = height / 9;
+
+            renderKernel.BlockDimensions = new dim3(4, 4);
+            renderKernel.GridDimensions = new dim3(cellWidth / 4, cellHeight / 4);
 
             var dev_points = new CudaDeviceVariable<cuDoubleComplex>(maxIter);
             CudaDeviceVariable<int> dev_pointCount = 0;
@@ -155,7 +158,20 @@ namespace Mandelbrot.Algorithms
             var dev_image = new CudaDeviceVariable<int>(width * height);
             CudaDeviceVariable<int> dev_palette = palette;
 
-            renderKernel.Run(dev_image.DevicePointer, dev_palette.DevicePointer, palette.Length, dev_points.DevicePointer, pointCount, width, height, xMax, yMax);
+            for (int cell_x = 0; cell_x < 16; cell_x++)
+            {
+                for (int cell_y = 0; cell_y < 9; cell_y++)
+                {
+                    renderKernel.Run(
+                        dev_image.DevicePointer, 
+                        dev_palette.DevicePointer, palette.Length, 
+                        dev_points.DevicePointer, pointCount, 
+                        cell_x, cell_y, 
+                        cellWidth, cellHeight, 
+                        width, height, 
+                        xMax, yMax);
+                }
+            }
 
             int[] raw_image = dev_image;
 

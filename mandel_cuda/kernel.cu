@@ -82,14 +82,21 @@ extern "C" {
 		*pointsCount = i;
 	}
 
-	__global__ void perturbation(int *out, int *palette, int paletteLength, cuDoubleComplex *points, int pointCount, int width, int height, double xMax, double yMax) {
-		unsigned int x_dim = blockIdx.x*blockDim.x + threadIdx.x;
-		unsigned int y_dim = blockIdx.y*blockDim.y + threadIdx.y;
-		int index = width * y_dim + x_dim;
+	__global__ void perturbation(
+		int *out, int *palette, int paletteLength, 
+		cuDoubleComplex *points, int pointCount, 
+		int cell_x, int cell_y, 
+		int cellWidth, int cellHeight, 
+		int frameWidth, int frameHeight, 
+		double xMax, double yMax) {
+
+		unsigned int x_dim = cell_x * cellWidth + blockIdx.x * blockDim.x + threadIdx.x;
+		unsigned int y_dim = cell_y * cellHeight + blockIdx.y * blockDim.y + threadIdx.y;
+		int index = frameWidth * y_dim + x_dim;
 
 
-		double x_origin = map(x_dim, 0, width, -xMax, xMax);
-		double y_origin = map(y_dim, 0, height, -yMax, yMax);
+		double x_origin = map(x_dim, 0, frameWidth, -xMax, xMax);
+		double y_origin = map(y_dim, 0, frameHeight, -yMax, yMax);
 
 		int iter = 0;
 		
@@ -145,8 +152,8 @@ extern "C" {
 		double offset_x, double offset_y, 
 		int max_iteration) {
 
-		unsigned int x_dim = cell_x * cellWidth + blockIdx.x*blockDim.x + threadIdx.x;
-		unsigned int y_dim = cell_y * cellHeight + blockIdx.y*blockDim.y + threadIdx.y;
+		unsigned int x_dim = cell_x * cellWidth + blockIdx.x * blockDim.x + threadIdx.x;
+		unsigned int y_dim = cell_y * cellHeight + blockIdx.y * blockDim.y + threadIdx.y;
 		int index = frameWidth * y_dim + x_dim;
 
 		double x_origin = map(x_dim, 0, frameWidth, -xMax, xMax) + offset_x;

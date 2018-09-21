@@ -22,7 +22,7 @@ namespace Mandelbrot
         private int Iterations = 400;
 
         private bool ShouldRestartRender = true;
-        private bool UseCPU = false;
+        private bool UseGPU = true;
 
         private bool MovingUp;
         private bool MovingDown;
@@ -123,12 +123,12 @@ namespace Mandelbrot
                 MessageBox.Show("A CUDA supporting device is not present.  The exploration feature may be slow if you choose to continue.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 ExplorationSettings.Width = 426;
                 ExplorationSettings.Height = 240;
-                UseCPU = true;
+                UseGPU = false;
             }
             else
             {
-                ExplorationSettings.Width = 640;
-                ExplorationSettings.Height = 360;
+                ExplorationSettings.Width = 1920;
+                ExplorationSettings.Height = 1080;
             }
 
             Cursor.Hide();
@@ -146,11 +146,10 @@ namespace Mandelbrot
                 ColorPalette,
                 MathResolver);
 
-            if(!UseCPU)
-            {
+            if (UseGPU)
                 ExplorationRenderer.InitGPU();
-            }
-            timer1.Start();
+
+            Task.Run((Action)NextFrame);
         }
 
         private void ExplorationRenderer_FrameStart()
@@ -189,6 +188,8 @@ namespace Mandelbrot
                 g.DrawEllipse(Pens.White, new Rectangle(frame.Width / 2 - 5, frame.Height / 2 - 5, 10, 10));
             }
             pictureBox1.Image = frame;
+
+            NextFrame();
         }
 
         private void ExplorationRenderer_RenderHalted()
@@ -197,14 +198,16 @@ namespace Mandelbrot
             {
                 ExplorationSettings.Magnification /= 1.2;
             }
+            if (UseGPU)
+                ExplorationRenderer.CleanupGPU();
         }
 
         private void NextFrame()
         {
-            if (UseCPU)
-                ExplorationRenderer.RenderFrame<double>();
-            else
+            if (UseGPU)
                 ExplorationRenderer.RenderFrameGPU();
+            else
+                ExplorationRenderer.RenderFrame<double>();
         }
 
         public decimal GetXOffset()
@@ -219,17 +222,9 @@ namespace Mandelbrot
 
         private void Explorer_FormClosing(object sender, FormClosingEventArgs e)
         {
-            timer1.Stop();
             Cursor.Show();
-            if (UseCPU)
-            {
-                ShouldRestartRender = false;
-                ExplorationRenderer.StopRender();
-            }
-            else
-            {
-                ExplorationRenderer.CleanupGPU();
-            }
+            ShouldRestartRender = false;
+            ExplorationRenderer.StopRender();
         }
 
         private void timer1_Tick(object sender, EventArgs e)

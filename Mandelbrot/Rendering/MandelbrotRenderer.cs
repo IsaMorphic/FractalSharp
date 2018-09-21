@@ -100,11 +100,11 @@ namespace Mandelbrot.Rendering
 
         public bool GPUAvailable()
         {
-            bool cudaAvailable = 
+            bool cudaAvailable =
                 CudaContext.GetDeviceCount() > 0 &&
                 Environment.Is64BitOperatingSystem;
 
-            return cudaAvailable;       
+            return cudaAvailable;
         }
 
         public bool InitGPU()
@@ -180,22 +180,25 @@ namespace Mandelbrot.Rendering
 
         public void RenderFrameGPU()
         {
-            ctx.SetCurrent();
-
             FrameStart();
 
             double xMax = (double)aspectM / Magnification;
             double yMax = 2 / Magnification;
 
-            int[] raw_image = GPUAlgorithmProvider.GPUFrame(
-                int_palette, Width, Height, 
-                xMax, yMax, 
-                (double)offsetXM, 
-                (double)offsetYM, 
-                MaxIterations);
+            int[] raw_image = null;
 
-            if (Job.IsCancellationRequested)
-                return;
+            Task.Run((Action)(() =>
+            {
+                ctx.SetCurrent();
+
+                raw_image = GPUAlgorithmProvider.GPUFrame(
+                        int_palette, Width, Height,
+                        xMax, yMax,
+                        (double)offsetXM,
+                        (double)offsetYM,
+                        MaxIterations);
+
+            }), Job.Token).Wait();
 
             CurrentFrame.SetBits(raw_image);
 
