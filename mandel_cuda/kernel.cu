@@ -60,10 +60,14 @@ extern "C" {
 		int cell_x, int cell_y,
 		int cellWidth, int cellHeight,
 		int totalCells_x, int totalCells_y,
-		double xMax, double yMax) {
+		double xMax, double yMax,
+		int chunkSize, int maxChunkSize) {
 
 		unsigned int x_dim = cell_x * cellWidth + blockIdx.x * blockDim.x + threadIdx.x;
 		unsigned int y_dim = cell_y * cellHeight + blockIdx.y * blockDim.y + threadIdx.y;
+
+		if (x_dim % chunkSize != 0 || y_dim % chunkSize != 0)
+			return;
 
 		unsigned int frameWidth = cellWidth * totalCells_x;
 		unsigned int frameHeight = cellHeight * totalCells_y;
@@ -91,6 +95,8 @@ extern "C" {
 		double zn_magn = 0;
 
 		// Mandelbrot algorithm
+		if ((x_dim / chunkSize) % 2 == 0 && (y_dim / chunkSize) % 2 == 0 && chunkSize != maxChunkSize)
+			return;
 		do
 		{
 			// dn *= iter_list[iter] + dn
@@ -111,11 +117,21 @@ extern "C" {
 
 		} while (zn_magn < 256 && iter < max_iter);
 
+		int color = 0;
 		if (iter == max_iter) {
-			out[index] = 255 << 24;
+			color = 255 << 24;
 		}
 		else {
-			out[index] = color_from_iter(iter, zn_magn, palette, paletteLength);
+			color = color_from_iter(iter, zn_magn, palette, paletteLength);
+		}
+		for (int j = y_dim; j < y_dim + chunkSize; j++)
+		{
+			for (int i = x_dim; i < x_dim + chunkSize; i++)
+			{
+				int index = i + j * frameWidth;
+				if(index < frameWidth * frameHeight)
+					out[i + j * frameWidth] = color;
+			}
 		}
 	}
 
@@ -127,7 +143,8 @@ extern "C" {
 		int totalCells_x, int totalCells_y,
 		double xMax, double yMax,
 		double offset_x, double offset_y,
-		int max_iteration, int chunkSize) {
+		int max_iteration, 
+		int chunkSize, int maxChunkSize) {
 
 		unsigned int x_dim = cell_x * cellWidth + blockIdx.x * blockDim.x + threadIdx.x;
 		unsigned int y_dim = cell_y * cellHeight + blockIdx.y * blockDim.y + threadIdx.y;
@@ -148,6 +165,9 @@ extern "C" {
 		double yy = 0.0;
 
 		int iteration = 0;
+
+		if ((x_dim / chunkSize) % 2 == 0 && (y_dim / chunkSize) % 2 == 0 && chunkSize != maxChunkSize)
+			return;
 
 		while (xx + yy <= 4 && iteration < max_iteration) {
 			double xtemp = xx - yy + x_origin;
@@ -178,7 +198,9 @@ extern "C" {
 		{
 			for (int i = x_dim; i < x_dim + chunkSize; i++)
 			{
-				out[i + j * frameWidth] = color;
+				int index = i + j * frameWidth;
+				if(index < frameWidth * frameHeight)
+					out[index] = color;
 			}
 		}
 	}

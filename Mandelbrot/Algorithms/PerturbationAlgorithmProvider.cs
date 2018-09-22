@@ -163,7 +163,7 @@ namespace Mandelbrot.Algorithms
             int cellWidth, int cellHeight,
             int totalCells_x, int totalCells_y,
             double xMax, double yMax, 
-            int chunkSize)
+            int chunkSize, int maxChunkSize)
         {
             gpuKernel.Run(
                 dev_image.DevicePointer,
@@ -172,7 +172,8 @@ namespace Mandelbrot.Algorithms
                 cell_x, cell_y,
                 cellWidth, cellHeight,
                 totalCells_x, totalCells_y,
-                xMax, yMax);
+                xMax, yMax, 
+                chunkSize, maxChunkSize);
         }
     }
 }

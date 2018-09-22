@@ -1,4 +1,4 @@
-﻿using Mandelbrot.Algorithms;
+using Mandelbrot.Algorithms;
 using Mandelbrot.Imaging;
 using Mandelbrot.Mathematics;
 using Mandelbrot.Rendering;
@@ -51,6 +51,15 @@ namespace Mandelbrot
             ColorPalette = Utils.LoadPallete(palettePath);
             ExplorationSettings.offsetX = offsetX;
             ExplorationSettings.offsetY = offsetY;
+
+            ExplorationSettings.Gradual = true;
+
+            ExplorationSettings.MaxChunkSizes = new int[12]
+            {
+                8, 4, 4, 8,
+                4, 2, 2, 4,
+                8, 4, 4, 8,
+            };
 
             InitializeComponent();
         }

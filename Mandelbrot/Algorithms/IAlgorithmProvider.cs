@@ -26,7 +26,7 @@ namespace Mandelbrot.Algorithms
             int cellWidth, int cellHeight,
             int totalCells_x, int totalCells_y,
             double xMax, double yMax, 
-            int chunkSize);
+            int chunkSize, int maxChunkSize);
 
     }
 }

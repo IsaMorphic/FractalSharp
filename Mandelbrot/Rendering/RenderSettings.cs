@@ -23,5 +23,14 @@ namespace Mandelbrot.Rendering
 
         public int Width  = 960;
         public int Height = 540;
+
+        public bool Gradual = false;
+
+        public int[] MaxChunkSizes = new int[12] 
+        {
+            1, 1, 1, 1,
+            1, 1, 1, 1,
+            1, 1, 1, 1,
+        };
     }
 }

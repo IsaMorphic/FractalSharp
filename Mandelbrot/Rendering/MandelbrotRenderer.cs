@@ -33,7 +33,6 @@ namespace Mandelbrot.Rendering
         private int cell_y;
 
         private bool Gradual = true;
-        private bool Successive = true;
 
         private GenericMathResolver MathResolver;
         private DirectBitmap CurrentFrame;
@@ -51,7 +50,8 @@ namespace Mandelbrot.Rendering
         private int Width;
         private int Height;
 
-        private int[] chunkSizes = new int[12];
+        private int[] ChunkSizes = new int[12];
+        private int[] MaxChunkSizes = new int[12];
 
         private RGB[] palette;
         private int[] int_palette;
@@ -107,14 +107,15 @@ namespace Mandelbrot.Rendering
 
                 AlgorithmType = settings.AlgorithmType;
 
+                Gradual = settings.Gradual;
+
+                MaxChunkSizes = settings.MaxChunkSizes;
+
                 if (hasChanged)
                 {
-                    for (var i = 0; i < chunkSizes.Length; i++)
+                    for (var i = 0; i < ChunkSizes.Length; i++)
                     {
-                        if (Successive && (i < 5 || i > 6))
-                            chunkSizes[i] = 4;
-                        else
-                            chunkSizes[i] = 2;
+                        ChunkSizes[i] = MaxChunkSizes[i];
                     }
                 }
             }
@@ -223,36 +224,39 @@ namespace Mandelbrot.Rendering
 
             CudaDeviceVariable<int> dev_palette = int_palette;
             CudaDeviceVariable<int> dev_image = CurrentFrame.Bits;
-            Action loops = delegate
+
+            bool exit = false;
+            for (int tmpcell_x = 0; tmpcell_x < 4 && !exit; tmpcell_x++)
             {
-                for (int tmpcell_x = 0; tmpcell_x < 4; tmpcell_x++)
+                for (int tmpcell_y = 0; tmpcell_y < 3 && !exit; tmpcell_y++)
                 {
-                    for (int tmpcell_y = 0; tmpcell_y < 3; tmpcell_y++)
+                    if (!Gradual)
                     {
-                        int index = cell_x + cell_y * 4;
-                        int chunkSize = chunkSizes[index];
-
-                        GPUAlgorithmProvider.GPUCell(
-                            dev_image,
-                            dev_palette,
-                            cell_x, cell_y,
-                            cellWidth, cellHeight,
-                            4, 3,
-                            xMax, yMax,
-                            chunkSize);
-
-                        if (chunkSize > 1)
-                            chunkSizes[index] = chunkSize / 2;
-
-                        if (Gradual)
-                            return;
-
                         cell_x = tmpcell_x;
                         cell_y = tmpcell_y;
                     }
+                    else
+                    {
+                        exit = true;
+                    }
+
+                    int index = cell_x + cell_y * 4;
+                    int chunkSize = ChunkSizes[index];
+                    int maxChunkSize = MaxChunkSizes[index];
+
+                    GPUAlgorithmProvider.GPUCell(
+                        dev_image,
+                        dev_palette,
+                        cell_x, cell_y,
+                        cellWidth, cellHeight,
+                        4, 3,
+                        xMax, yMax,
+                        chunkSize, maxChunkSize);
+
+                    if (chunkSize > 1)
+                        ChunkSizes[index] = chunkSize / 2;
                 }
-            };
-            loops();
+            }
 
             int[] raw_image = dev_image;
 
