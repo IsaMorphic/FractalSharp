@@ -26,14 +26,14 @@ namespace Mandelbrot.Algorithms
         private T TwoPow10;
         private T NegTwoPow10;
 
-        private T center_real;
-        private T center_imag;
+        private decimal center_real;
+        private decimal center_imag;
 
         private int MaxIterations;
 
         // Perturbation Theory Algorithm, 
         // produces a list of iteration values used to compute the surrounding points
-        public void Init(IGenericMath<T> TMath, T offsetX, T offsetY, int maxIterations)
+        public void Init(IGenericMath<T> TMath, decimal offsetX, decimal offsetY, int maxIterations)
         {
             this.TMath = TMath;
             MaxIterations = maxIterations;
@@ -53,37 +53,34 @@ namespace Mandelbrot.Algorithms
 
         public List<GenericComplex<T>> GetSurroundingPoints()
         {
-            T xn_r = center_real;
-            T xn_i = center_imag;
+            decimal xn_r = center_real;
+            decimal xn_i = center_imag;
 
             var x = new List<GenericComplex<T>>();
 
             for (int i = 0; i < MaxIterations; i++)
             {
                 // pre multiply by two
-                T real = TMath.Add(xn_r, xn_r);
-                T imag = TMath.Add(xn_i, xn_i);
+                decimal real = xn_r + xn_r;
+                decimal imag = xn_i + xn_i;
 
-                T xn_r2 = TMath.Multiply(xn_r, xn_r);
-                T xn_i2 = TMath.Multiply(xn_i, xn_i);
+                decimal xn_r2 = xn_r * xn_r;
+                decimal xn_i2 = xn_i * xn_i;
 
-                GenericComplex<T> c = new GenericComplex<T>(real, imag);
+                GenericComplex<T> c = new GenericComplex<T>(TMath.fromDecimal(real), TMath.fromDecimal(imag));
 
                 x.Add(c);
 
                 // make sure our numbers don't get too big
 
-                // real > 1024 || imag > 1024 || real < -1024 || imag < -1024
-                if (TMath.GreaterThan(real, TwoPow10) || TMath.GreaterThan(imag, TwoPow10) ||
-                    TMath.LessThan(real, NegTwoPow10) || TMath.LessThan(imag, NegTwoPow10))
+                if (real >  1024 || imag >  1024 ||
+                    real < -1024 || imag < -1024)
                     break;
 
                 // calculate next iteration, remember real = 2 * xn_r
 
-                // xn_r = xn_r^2 - xn_i^2 + center_r
-                xn_r = TMath.Add(TMath.Subtract(xn_r2, xn_i2), center_real);
-                // xn_i = re * xn_i + center_i
-                xn_i = TMath.Add(TMath.Multiply(real, xn_i), center_imag);
+                xn_r = xn_r2 - xn_i2 + center_real;
+                xn_i = real * xn_i + center_imag;
             }
             return x;
         }
@@ -165,7 +162,8 @@ namespace Mandelbrot.Algorithms
             int cell_x, int cell_y,
             int cellWidth, int cellHeight,
             int totalCells_x, int totalCells_y,
-            double xMax, double yMax)
+            double xMax, double yMax, 
+            int chunkSize)
         {
             gpuKernel.Run(
                 dev_image.DevicePointer,

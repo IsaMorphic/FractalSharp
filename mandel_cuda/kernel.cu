@@ -55,10 +55,10 @@ __device__ int color_from_iter(int iterCount, double znMagn, int *palette, int p
 
 extern "C" {
 	__global__ void perturbation(
-		int *out, int *palette, int paletteLength, 
-		cuDoubleComplex *points, int pointCount, 
-		int cell_x, int cell_y, 
-		int cellWidth, int cellHeight, 
+		int *out, int *palette, int paletteLength,
+		cuDoubleComplex *points, int pointCount,
+		int cell_x, int cell_y,
+		int cellWidth, int cellHeight,
 		int totalCells_x, int totalCells_y,
 		double xMax, double yMax) {
 
@@ -75,7 +75,7 @@ extern "C" {
 		double y_origin = map(y_dim, 0, frameHeight, -yMax, yMax);
 
 		int iter = 0;
-		
+
 		int max_iter = pointCount;
 
 		// Initialize some variables...
@@ -120,22 +120,23 @@ extern "C" {
 	}
 
 	__global__ void traditional(
-		int *out, int *palette, 
-		int paletteLength, 
-		int cell_x, int cell_y, 
-		int cellWidth, int cellHeight, 
+		int *out, int *palette,
+		int paletteLength,
+		int cell_x, int cell_y,
+		int cellWidth, int cellHeight,
 		int totalCells_x, int totalCells_y,
-		double xMax, double yMax, 
-		double offset_x, double offset_y, 
-		int max_iteration) {
+		double xMax, double yMax,
+		double offset_x, double offset_y,
+		int max_iteration, int chunkSize) {
 
 		unsigned int x_dim = cell_x * cellWidth + blockIdx.x * blockDim.x + threadIdx.x;
 		unsigned int y_dim = cell_y * cellHeight + blockIdx.y * blockDim.y + threadIdx.y;
 
+		if (x_dim % chunkSize != 0 || y_dim % chunkSize != 0)
+			return;
+
 		unsigned int frameWidth = cellWidth * totalCells_x;
 		unsigned int frameHeight = cellHeight * totalCells_y;
-
-		int index = frameWidth * y_dim + x_dim;
 
 		double x_origin = map(x_dim, 0, frameWidth, -xMax, xMax) + offset_x;
 		double y_origin = map(y_dim, 0, frameHeight, -yMax, yMax) + offset_y;
@@ -147,11 +148,12 @@ extern "C" {
 		double yy = 0.0;
 
 		int iteration = 0;
+
 		while (xx + yy <= 4 && iteration < max_iteration) {
 			double xtemp = xx - yy + x_origin;
 			double ytemp = 2 * x * y + y_origin;
 
-			if (x == xtemp && y == ytemp) 
+			if (x == xtemp && y == ytemp)
 			{
 				iteration = max_iteration;
 				break;
@@ -165,12 +167,19 @@ extern "C" {
 
 			iteration++;
 		}
-
+		int color = 0;
 		if (iteration == max_iteration) {
-			out[index] = 255 << 24;
+			color = 255 << 24;
 		}
 		else {
-			out[index] = color_from_iter(iteration, xx + yy, palette, paletteLength);
+			color = color_from_iter(iteration, xx + yy, palette, paletteLength);
+		}
+		for (int j = y_dim; j < y_dim + chunkSize; j++)
+		{
+			for (int i = x_dim; i < x_dim + chunkSize; i++)
+			{
+				out[i + j * frameWidth] = color;
+			}
 		}
 	}
 }

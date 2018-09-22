@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -36,6 +37,8 @@ namespace Mandelbrot
         private MandelbrotRenderer ExplorationRenderer = new MandelbrotRenderer();
 
         private RGB[] ColorPalette;
+
+        private DirectBitmap directBitmap;
 
         private GenericMathResolver MathResolver =
             new GenericMathResolver(new Assembly[]
@@ -131,6 +134,8 @@ namespace Mandelbrot
                 ExplorationSettings.Height = 360;
             }
 
+            directBitmap = new DirectBitmap(ExplorationSettings.Width, ExplorationSettings.Height);
+
             Cursor.Hide();
 
             ExplorationSettings.MaxIterations = Iterations;
@@ -156,7 +161,7 @@ namespace Mandelbrot
         {
             TimeSpan renderTime = DateTime.Now - RenderStartTime;
 
-            decimal stepAmount = .03M / (decimal)ExplorationSettings.Magnification;
+            decimal stepAmount = .01M / (decimal)ExplorationSettings.Magnification;
             if (MovingUp)
                 ExplorationSettings.offsetY -= stepAmount;
             if (MovingDown)
@@ -166,9 +171,9 @@ namespace Mandelbrot
             if (MovingRight)
                 ExplorationSettings.offsetX += stepAmount;
             if (ZoomingIn)
-                ExplorationSettings.Magnification *= 1.2;
+                ExplorationSettings.Magnification *= 1.05;
             if (ZoomingOut)
-                ExplorationSettings.Magnification /= 1.2;
+                ExplorationSettings.Magnification /= 1.05;
 
             ExplorationRenderer.Setup(ExplorationSettings);
 
@@ -177,7 +182,8 @@ namespace Mandelbrot
 
         private void ExplorationRenderer_FrameEnd(Bitmap frame)
         {
-            using (var g = Graphics.FromImage(frame))
+            Bitmap newFrame = (Bitmap)frame.Clone();
+            using (var g = Graphics.FromImage(newFrame))
             {
                 g.DrawString("real: " + ExplorationSettings.offsetX, SystemFonts.DefaultFont, Brushes.White, 0, 0);
                 g.DrawString("imag: " + ExplorationSettings.offsetY, SystemFonts.DefaultFont, Brushes.White, 0, 10);
@@ -187,9 +193,10 @@ namespace Mandelbrot
                 g.DrawEllipse(Pens.White, new Rectangle(frame.Width / 2 - 10, frame.Height / 2 - 10, 20, 20));
                 g.DrawEllipse(Pens.White, new Rectangle(frame.Width / 2 - 5, frame.Height / 2 - 5, 10, 10));
             }
-            pictureBox1.Image = frame;
 
-            NextFrame();
+            pictureBox1.Image = newFrame;
+
+            Task.Run((Action)NextFrame);
         }
 
         private void ExplorationRenderer_RenderHalted()

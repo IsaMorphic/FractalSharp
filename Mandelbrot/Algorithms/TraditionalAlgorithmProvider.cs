@@ -26,13 +26,13 @@ namespace Mandelbrot.Algorithms
 
         private int MaxIterations;
 
-        public void Init(IGenericMath<T> TMath, T offsetX, T offsetY, int maxIterations)
+        public void Init(IGenericMath<T> TMath, decimal offsetX, decimal offsetY, int maxIterations)
         {
             this.TMath = TMath;
             MaxIterations = maxIterations;
 
-            this.offsetX = offsetX;
-            this.offsetY = offsetY;
+            this.offsetX = TMath.fromDecimal(offsetX);
+            this.offsetY = TMath.fromDecimal(offsetY);
 
             Zero = TMath.fromInt32(0);
             Two = TMath.fromInt32(2);
@@ -98,7 +98,8 @@ namespace Mandelbrot.Algorithms
             int cell_x, int cell_y,
             int cellWidth, int cellHeight,
             int totalCells_x, int totalCells_y,
-            double xMax, double yMax)
+            double xMax, double yMax,
+            int chunkSize)
         {
             gpuKernel.Run(
                 dev_image.DevicePointer,
@@ -109,7 +110,7 @@ namespace Mandelbrot.Algorithms
                 totalCells_x, totalCells_y,
                 xMax, yMax,
                 offsetX, offsetY,
-                MaxIterations);
+                MaxIterations, chunkSize);
         }
     }
 }

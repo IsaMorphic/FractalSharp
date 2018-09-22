@@ -12,7 +12,7 @@ namespace Mandelbrot.Algorithms
 {
     interface IAlgorithmProvider<T>
     {
-        void Init(IGenericMath<T> TMath, T offsetX, T offsetY, int maxIterations);
+        void Init(IGenericMath<T> TMath, decimal offsetX, decimal offsetY, int maxIterations);
 
         PixelData<T> Run(T x0, T y0);
 
@@ -25,7 +25,8 @@ namespace Mandelbrot.Algorithms
             int cell_x, int cell_y,
             int cellWidth, int cellHeight,
             int totalCells_x, int totalCells_y,
-            double xMax, double yMax);
+            double xMax, double yMax, 
+            int chunkSize);
 
     }
 }
