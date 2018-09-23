@@ -201,6 +201,14 @@ namespace Mandelbrot.Rendering
             return final.toColor();
         }
 
+        public void GetPointFromFrameLocation(int x, int y, out decimal offsetX, out decimal offsetY)
+        {
+            decimal xRange = aspectM / (decimal)Magnification;
+            decimal yRange = 2 / (decimal)Magnification;
+            offsetX = Utils.Map<decimal>(new DecimalMath(), x, 0, Width, -xRange + offsetXM, xRange + offsetXM);
+            offsetY = Utils.Map<decimal>(new DecimalMath(), y, 0, Height, -yRange + offsetYM, yRange + offsetYM);
+        }
+
         #endregion
 
         #region Rendering Methods
@@ -381,6 +389,5 @@ namespace Mandelbrot.Rendering
         }
 
         #endregion
-
     }
 }
