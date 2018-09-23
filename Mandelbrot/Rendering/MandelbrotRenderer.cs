@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -28,6 +28,12 @@ namespace Mandelbrot.Rendering
     class MandelbrotRenderer
     {
         private CudaContext ctx;
+
+        private int cell_x;
+        private int cell_y;
+
+        private bool Gradual = true;
+
         private GenericMathResolver MathResolver;
         private DirectBitmap CurrentFrame;
 
@@ -43,6 +49,9 @@ namespace Mandelbrot.Rendering
 
         private int Width;
         private int Height;
+
+        private int[] ChunkSizes = new int[12];
+        private int[] MaxChunkSizes = new int[12];
 
         private RGB[] palette;
         private int[] int_palette;
@@ -80,6 +89,12 @@ namespace Mandelbrot.Rendering
         {
             if (isInitialized)
             {
+                bool hasChanged = (
+                    offsetXM != settings.offsetX ||
+                    offsetYM != settings.offsetY ||
+                    Magnification != settings.Magnification ||
+                    MaxIterations != settings.MaxIterations);
+
                 Job = new CancellationTokenSource();
 
                 offsetXM = settings.offsetX;
@@ -91,6 +106,18 @@ namespace Mandelbrot.Rendering
                 ThreadCount = settings.ThreadCount;
 
                 AlgorithmType = settings.AlgorithmType;
+
+                Gradual = settings.Gradual;
+
+                MaxChunkSizes = settings.MaxChunkSizes;
+
+                if (hasChanged)
+                {
+                    for (var i = 0; i < ChunkSizes.Length; i++)
+                    {
+                        ChunkSizes[i] = MaxChunkSizes[i];
+                    }
+                }
             }
             else
             {
@@ -100,11 +127,11 @@ namespace Mandelbrot.Rendering
 
         public bool GPUAvailable()
         {
-            bool cudaAvailable = 
+            bool cudaAvailable =
                 CudaContext.GetDeviceCount() > 0 &&
                 Environment.Is64BitOperatingSystem;
 
-            return cudaAvailable;       
+            return cudaAvailable;
         }
 
         public bool InitGPU()
@@ -128,7 +155,7 @@ namespace Mandelbrot.Rendering
                     (IAlgorithmProvider<double>)Activator
                     .CreateInstance(algorithmType);
 
-                GPUAlgorithmProvider.GPUInit(ctx);
+                GPUAlgorithmProvider.GPUInit(ctx, Resources.Kernel, new dim3(Width / 16, Height / 9), new dim3(4, 3));
 
                 return true;
             }
@@ -178,24 +205,81 @@ namespace Mandelbrot.Rendering
 
         #region Rendering Methods
 
-        public void RenderFrameGPU()
+
+        protected async Task<int[]> RenderGPUCells()
         {
             ctx.SetCurrent();
 
-            FrameStart();
+            GPUAlgorithmProvider.GPUPreFrame();
+
+            if (cell_x < 3) { cell_x++; }
+            else if (cell_y < 2) { cell_x = 0; cell_y++; }
+            else { cell_x = 0; cell_y = 0; }
+
+            int cellWidth = Width / 4;
+            int cellHeight = Height / 3;
 
             double xMax = (double)aspectM / Magnification;
             double yMax = 2 / Magnification;
 
-            int[] raw_image = GPUAlgorithmProvider.GPUFrame(
-                int_palette, Width, Height, 
-                xMax, yMax, 
-                (double)offsetXM, 
-                (double)offsetYM, 
-                MaxIterations);
+            CudaDeviceVariable<int> dev_palette = int_palette;
+            CudaDeviceVariable<int> dev_image = CurrentFrame.Bits;
 
-            if (Job.IsCancellationRequested)
-                return;
+            bool exit = false;
+            for (int tmpcell_x = 0; tmpcell_x < 4 && !exit; tmpcell_x++)
+            {
+                for (int tmpcell_y = 0; tmpcell_y < 3 && !exit; tmpcell_y++)
+                {
+                    if (!Gradual)
+                    {
+                        cell_x = tmpcell_x;
+                        cell_y = tmpcell_y;
+                    }
+                    else
+                    {
+                        exit = true;
+                    }
+
+                    int index = cell_x + cell_y * 4;
+                    int chunkSize = ChunkSizes[index];
+                    int maxChunkSize = MaxChunkSizes[index];
+
+                    GPUAlgorithmProvider.GPUCell(
+                        dev_image,
+                        dev_palette,
+                        cell_x, cell_y,
+                        cellWidth, cellHeight,
+                        4, 3,
+                        xMax, yMax,
+                        chunkSize, maxChunkSize);
+
+                    if (chunkSize > 1)
+                        ChunkSizes[index] = chunkSize / 2;
+                }
+            }
+
+            int[] raw_image = dev_image;
+
+            GPUAlgorithmProvider.GPUPostFrame();
+
+            dev_palette.Dispose();
+            dev_image.Dispose();
+
+            return raw_image;
+        }
+
+        public void RenderFrameGPU()
+        {
+            FrameStart();
+
+            IGenericMath<double> TMath = MathResolver.CreateMathObject<double>();
+            GPUAlgorithmProvider.Init(TMath, offsetXM, offsetYM, MaxIterations);
+
+            var renderTask = Task.Run(RenderGPUCells, Job.Token);
+
+            renderTask.Wait();
+
+            int[] raw_image = renderTask.Result;
 
             CurrentFrame.SetBits(raw_image);
 
@@ -208,10 +292,10 @@ namespace Mandelbrot.Rendering
         // of code used and to make the algorithm easily applicable to other number types
         public void RenderFrame<T>()
         {
-            Type NumType;
+            Type NumType = typeof(T);
 
             // Initialize Math Object
-            IGenericMath<T> TMath = MathResolver.CreateMathObject<T>(out NumType);
+            IGenericMath<T> TMath = MathResolver.CreateMathObject<T>();
 
             // Initialize Algorithm Provider
             Type algorithmType = AlgorithmType.MakeGenericType(NumType);
@@ -233,9 +317,6 @@ namespace Mandelbrot.Rendering
 
             T zoom = TMath.fromDouble(Magnification);
 
-            T offsetX = TMath.fromDecimal(offsetXM);
-            T offsetY = TMath.fromDecimal(offsetYM);
-
             T scaleFactor = TMath.fromDecimal(aspectM);
 
             // Predefine minimum and maximum values of the plane, 
@@ -251,7 +332,7 @@ namespace Mandelbrot.Rendering
             T yMin = TMath.Divide(TMath.fromInt32(-2), zoom);
             T yMax = TMath.Divide(TMath.fromInt32(2), zoom);
 
-            algorithmProvider.Init(TMath, offsetX, offsetY, MaxIterations);
+            algorithmProvider.Init(TMath, offsetXM, offsetYM, MaxIterations);
 
             var loop = Parallel.For(0, Width, new ParallelOptions { CancellationToken = Job.Token, MaxDegreeOfParallelism = ThreadCount }, px =>
             {

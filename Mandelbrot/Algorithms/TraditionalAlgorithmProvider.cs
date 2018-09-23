@@ -26,13 +26,13 @@ namespace Mandelbrot.Algorithms
 
         private int MaxIterations;
 
-        public void Init(IGenericMath<T> TMath, T offsetX, T offsetY, int maxIterations)
+        public void Init(IGenericMath<T> TMath, decimal offsetX, decimal offsetY, int maxIterations)
         {
             this.TMath = TMath;
             MaxIterations = maxIterations;
 
-            this.offsetX = offsetX;
-            this.offsetY = offsetY;
+            this.offsetX = TMath.fromDecimal(offsetX);
+            this.offsetY = TMath.fromDecimal(offsetY);
 
             Zero = TMath.fromInt32(0);
             Two = TMath.fromInt32(2);
@@ -80,27 +80,38 @@ namespace Mandelbrot.Algorithms
             return new PixelData<T>(TMath.Add(xx, yy), iter, iter < MaxIterations);
         }
 
-        public void GPUInit(CudaContext ctx)
+        public void GPUInit(CudaContext ctx, byte[] ptxImage, dim3 gridDim, dim3 blockDim)
         {
-            gpuKernel = ctx.LoadKernelPTX(Resources.Kernel, "traditional");
+            gpuKernel = ctx.LoadKernelPTX(ptxImage, "traditional");
+
+            gpuKernel.GridDimensions = gridDim;
+            gpuKernel.BlockDimensions = blockDim;
         }
 
-        public int[] GPUFrame(int[] palette, int width, int height, double xMax, double yMax, double offsetX, double offsetY, int maxIter)
+        public void GPUPreFrame() { return; }
+
+        public void GPUPostFrame() { return; }
+
+        public void GPUCell(
+            CudaDeviceVariable<int> dev_image,
+            CudaDeviceVariable<int> dev_palette,
+            int cell_x, int cell_y,
+            int cellWidth, int cellHeight,
+            int totalCells_x, int totalCells_y,
+            double xMax, double yMax,
+            int chunkSize, int maxChunkSize)
         {
-            gpuKernel.BlockDimensions = new dim3(16, 9);
-            gpuKernel.GridDimensions = new dim3(width / 16, height / 9);
-
-            var dev_image = new CudaDeviceVariable<int>(width * height);
-            CudaDeviceVariable<int> dev_palette = palette;
-
-            gpuKernel.Run(dev_image.DevicePointer, dev_palette.DevicePointer, palette.Length, width, height, xMax, yMax, offsetX, offsetY, maxIter);
-
-            int[] raw_image = dev_image;
-
-            dev_image.Dispose();
-            dev_palette.Dispose();
-
-            return raw_image;
+            gpuKernel.Run(
+                dev_image.DevicePointer,
+                dev_palette.DevicePointer,
+                dev_palette.Size,
+                cell_x, cell_y,
+                cellWidth, cellHeight,
+                totalCells_x, totalCells_y,
+                xMax, yMax,
+                offsetX, offsetY,
+                MaxIterations, 
+                chunkSize, maxChunkSize);
         }
     }
 }

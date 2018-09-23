@@ -1,4 +1,4 @@
-﻿using Mandelbrot.Algorithms;
+using Mandelbrot.Algorithms;
 using Mandelbrot.Imaging;
 using Mandelbrot.Mathematics;
 using Mandelbrot.Rendering;
@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -22,7 +23,7 @@ namespace Mandelbrot
         private int Iterations = 400;
 
         private bool ShouldRestartRender = true;
-        private bool UseCPU = false;
+        private bool UseGPU = true;
 
         private bool MovingUp;
         private bool MovingDown;
@@ -37,6 +38,8 @@ namespace Mandelbrot
 
         private RGB[] ColorPalette;
 
+        private DirectBitmap directBitmap;
+
         private GenericMathResolver MathResolver =
             new GenericMathResolver(new Assembly[]
             { Assembly.GetExecutingAssembly() });
@@ -48,6 +51,15 @@ namespace Mandelbrot
             ColorPalette = Utils.LoadPallete(palettePath);
             ExplorationSettings.offsetX = offsetX;
             ExplorationSettings.offsetY = offsetY;
+
+            ExplorationSettings.Gradual = true;
+
+            ExplorationSettings.MaxChunkSizes = new int[12]
+            {
+                8, 4, 4, 8,
+                4, 2, 2, 4,
+                8, 4, 4, 8,
+            };
 
             InitializeComponent();
         }
@@ -123,13 +135,15 @@ namespace Mandelbrot
                 MessageBox.Show("A CUDA supporting device is not present.  The exploration feature may be slow if you choose to continue.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 ExplorationSettings.Width = 426;
                 ExplorationSettings.Height = 240;
-                UseCPU = true;
+                UseGPU = false;
             }
             else
             {
                 ExplorationSettings.Width = 640;
                 ExplorationSettings.Height = 360;
             }
+
+            directBitmap = new DirectBitmap(ExplorationSettings.Width, ExplorationSettings.Height);
 
             Cursor.Hide();
 
@@ -146,18 +160,17 @@ namespace Mandelbrot
                 ColorPalette,
                 MathResolver);
 
-            if(!UseCPU)
-            {
+            if (UseGPU)
                 ExplorationRenderer.InitGPU();
-            }
-            timer1.Start();
+
+            Task.Run((Action)NextFrame);
         }
 
         private void ExplorationRenderer_FrameStart()
         {
             TimeSpan renderTime = DateTime.Now - RenderStartTime;
 
-            decimal stepAmount = .03M / (decimal)ExplorationSettings.Magnification;
+            decimal stepAmount = .01M / (decimal)ExplorationSettings.Magnification;
             if (MovingUp)
                 ExplorationSettings.offsetY -= stepAmount;
             if (MovingDown)
@@ -167,9 +180,9 @@ namespace Mandelbrot
             if (MovingRight)
                 ExplorationSettings.offsetX += stepAmount;
             if (ZoomingIn)
-                ExplorationSettings.Magnification *= 1.2;
+                ExplorationSettings.Magnification *= 1.05;
             if (ZoomingOut)
-                ExplorationSettings.Magnification /= 1.2;
+                ExplorationSettings.Magnification /= 1.05;
 
             ExplorationRenderer.Setup(ExplorationSettings);
 
@@ -178,7 +191,8 @@ namespace Mandelbrot
 
         private void ExplorationRenderer_FrameEnd(Bitmap frame)
         {
-            using (var g = Graphics.FromImage(frame))
+            Bitmap newFrame = (Bitmap)frame.Clone();
+            using (var g = Graphics.FromImage(newFrame))
             {
                 g.DrawString("real: " + ExplorationSettings.offsetX, SystemFonts.DefaultFont, Brushes.White, 0, 0);
                 g.DrawString("imag: " + ExplorationSettings.offsetY, SystemFonts.DefaultFont, Brushes.White, 0, 10);
@@ -188,7 +202,10 @@ namespace Mandelbrot
                 g.DrawEllipse(Pens.White, new Rectangle(frame.Width / 2 - 10, frame.Height / 2 - 10, 20, 20));
                 g.DrawEllipse(Pens.White, new Rectangle(frame.Width / 2 - 5, frame.Height / 2 - 5, 10, 10));
             }
-            pictureBox1.Image = frame;
+
+            pictureBox1.Image = newFrame;
+
+            Task.Run((Action)NextFrame);
         }
 
         private void ExplorationRenderer_RenderHalted()
@@ -197,14 +214,16 @@ namespace Mandelbrot
             {
                 ExplorationSettings.Magnification /= 1.2;
             }
+            if (UseGPU)
+                ExplorationRenderer.CleanupGPU();
         }
 
         private void NextFrame()
         {
-            if (UseCPU)
-                ExplorationRenderer.RenderFrame<double>();
-            else
+            if (UseGPU)
                 ExplorationRenderer.RenderFrameGPU();
+            else
+                ExplorationRenderer.RenderFrame<double>();
         }
 
         public decimal GetXOffset()
@@ -219,22 +238,9 @@ namespace Mandelbrot
 
         private void Explorer_FormClosing(object sender, FormClosingEventArgs e)
         {
-            timer1.Stop();
             Cursor.Show();
-            if (UseCPU)
-            {
-                ShouldRestartRender = false;
-                ExplorationRenderer.StopRender();
-            }
-            else
-            {
-                ExplorationRenderer.CleanupGPU();
-            }
-        }
-
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            NextFrame();
+            ShouldRestartRender = false;
+            ExplorationRenderer.StopRender();
         }
     }
 }

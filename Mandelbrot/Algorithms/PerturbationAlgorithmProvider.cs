@@ -16,8 +16,8 @@ namespace Mandelbrot.Algorithms
         private IGenericMath<T> TMath;
         private List<GenericComplex<T>> pointsList;
 
-        private CudaKernel renderKernel;
-        private CudaKernel pointsKernel;
+        private CudaKernel gpuKernel;
+        private CudaDeviceVariable<cuDoubleComplex> dev_points;
 
         private T Zero;
         private T OneHalf;
@@ -26,14 +26,14 @@ namespace Mandelbrot.Algorithms
         private T TwoPow10;
         private T NegTwoPow10;
 
-        private T center_real;
-        private T center_imag;
+        private decimal center_real;
+        private decimal center_imag;
 
         private int MaxIterations;
 
         // Perturbation Theory Algorithm, 
         // produces a list of iteration values used to compute the surrounding points
-        public void Init(IGenericMath<T> TMath, T offsetX, T offsetY, int maxIterations)
+        public void Init(IGenericMath<T> TMath, decimal offsetX, decimal offsetY, int maxIterations)
         {
             this.TMath = TMath;
             MaxIterations = maxIterations;
@@ -53,37 +53,34 @@ namespace Mandelbrot.Algorithms
 
         public List<GenericComplex<T>> GetSurroundingPoints()
         {
-            T xn_r = center_real;
-            T xn_i = center_imag;
+            decimal xn_r = center_real;
+            decimal xn_i = center_imag;
 
             var x = new List<GenericComplex<T>>();
 
             for (int i = 0; i < MaxIterations; i++)
             {
                 // pre multiply by two
-                T real = TMath.Add(xn_r, xn_r);
-                T imag = TMath.Add(xn_i, xn_i);
+                decimal real = xn_r + xn_r;
+                decimal imag = xn_i + xn_i;
 
-                T xn_r2 = TMath.Multiply(xn_r, xn_r);
-                T xn_i2 = TMath.Multiply(xn_i, xn_i);
+                decimal xn_r2 = xn_r * xn_r;
+                decimal xn_i2 = xn_i * xn_i;
 
-                GenericComplex<T> c = new GenericComplex<T>(real, imag);
+                GenericComplex<T> c = new GenericComplex<T>(TMath.fromDecimal(real), TMath.fromDecimal(imag));
 
                 x.Add(c);
 
                 // make sure our numbers don't get too big
 
-                // real > 1024 || imag > 1024 || real < -1024 || imag < -1024
-                if (TMath.GreaterThan(real, TwoPow10) || TMath.GreaterThan(imag, TwoPow10) ||
-                    TMath.LessThan(real, NegTwoPow10) || TMath.LessThan(imag, NegTwoPow10))
+                if (real >  1024 || imag >  1024 ||
+                    real < -1024 || imag < -1024)
                     break;
 
                 // calculate next iteration, remember real = 2 * xn_r
 
-                // xn_r = xn_r^2 - xn_i^2 + center_r
-                xn_r = TMath.Add(TMath.Subtract(xn_r2, xn_i2), center_real);
-                // xn_i = re * xn_i + center_i
-                xn_i = TMath.Add(TMath.Multiply(real, xn_i), center_imag);
+                xn_r = xn_r2 - xn_i2 + center_real;
+                xn_i = real * xn_i + center_imag;
             }
             return x;
         }
@@ -131,40 +128,52 @@ namespace Mandelbrot.Algorithms
             return new PixelData<T>(znMagn, iterCount, iterCount < maxIterations);
         }
 
-        public void GPUInit(CudaContext ctx)
+        public void GPUInit(CudaContext ctx, byte[] ptxImage, dim3 gridDim, dim3 blockDim)
         {
-            renderKernel = ctx.LoadKernelPTX(Resources.Kernel, "perturbation");
-            pointsKernel = ctx.LoadKernelPTX(Resources.Kernel, "get_points");
+            gpuKernel = ctx.LoadKernelPTX(Resources.Kernel, "perturbation");
 
-            pointsKernel.BlockDimensions = 1;
-            pointsKernel.GridDimensions = 1;
+            gpuKernel.GridDimensions = gridDim;
+            gpuKernel.BlockDimensions = blockDim;
         }
 
-        public int[] GPUFrame(int[] palette, int width, int height, double xMax, double yMax, double offsetX, double offsetY, int maxIter)
+        public void GPUPreFrame()
         {
-            renderKernel.BlockDimensions = new dim3(16, 9);
-            renderKernel.GridDimensions = new dim3(width / 16, height / 9);
+            cuDoubleComplex[] cuDoubles =
+                new cuDoubleComplex[pointsList.Count];
+            for (var i = 0; i < cuDoubles.Length; i++)
+            {
+                GenericComplex<T> complex = pointsList[i];
+                cuDoubles[i] = new cuDoubleComplex(
+                        TMath.toDouble(complex.real),
+                        TMath.toDouble(complex.imag));
+            }
 
-            var dev_points = new CudaDeviceVariable<cuDoubleComplex>(maxIter);
-            CudaDeviceVariable<int> dev_pointCount = 0;
+            dev_points = cuDoubles;
+        }
 
-            pointsKernel.Run(dev_points.DevicePointer, dev_pointCount.DevicePointer, offsetX, offsetY, maxIter);
-
-            int pointCount = dev_pointCount;
-
-            var dev_image = new CudaDeviceVariable<int>(width * height);
-            CudaDeviceVariable<int> dev_palette = palette;
-
-            renderKernel.Run(dev_image.DevicePointer, dev_palette.DevicePointer, palette.Length, dev_points.DevicePointer, pointCount, width, height, xMax, yMax);
-
-            int[] raw_image = dev_image;
-
+        public void GPUPostFrame()
+        {
             dev_points.Dispose();
-            dev_pointCount.Dispose();
-            dev_image.Dispose();
-            dev_palette.Dispose();
+        }
 
-            return raw_image;
+        public void GPUCell(
+            CudaDeviceVariable<int> dev_image,
+            CudaDeviceVariable<int> dev_palette,
+            int cell_x, int cell_y,
+            int cellWidth, int cellHeight,
+            int totalCells_x, int totalCells_y,
+            double xMax, double yMax, 
+            int chunkSize, int maxChunkSize)
+        {
+            gpuKernel.Run(
+                dev_image.DevicePointer,
+                dev_palette.DevicePointer, dev_palette.Size,
+                dev_points.DevicePointer, dev_points.Size,
+                cell_x, cell_y,
+                cellWidth, cellHeight,
+                totalCells_x, totalCells_y,
+                xMax, yMax, 
+                chunkSize, maxChunkSize);
         }
     }
 }
