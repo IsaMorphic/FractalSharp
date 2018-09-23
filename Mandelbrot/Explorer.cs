@@ -252,9 +252,14 @@ namespace Mandelbrot
             MandelbrotRenderer PhotoRenderer = new MandelbrotRenderer();
             PhotoRenderer.FrameStart += () => { return; };
             PhotoRenderer.FrameEnd += PhotoRenderer_FrameEnd;
-            ExplorationSettings.Width = 1920;
-            ExplorationSettings.Height = 1080;
-            PhotoRenderer.Initialize(ExplorationSettings, ColorPalette, MathResolver);
+            RenderSettings PhotoSettings = new RenderSettings();
+            PhotoSettings.offsetX = ExplorationSettings.offsetX;
+            PhotoSettings.offsetY = ExplorationSettings.offsetY;
+            PhotoSettings.Magnification = ExplorationSettings.Magnification;
+            PhotoSettings.MaxIterations = ExplorationSettings.MaxIterations;
+            PhotoSettings.Width = 1920;
+            PhotoSettings.Height = 1080;
+            PhotoRenderer.Initialize(PhotoSettings, ColorPalette, MathResolver);
             if (UseGPU)
             {
                 PhotoRenderer.InitGPU();
@@ -269,10 +274,19 @@ namespace Mandelbrot
 
         private void PhotoRenderer_FrameEnd(Bitmap frame)
         {
-            frame.Save(Path.Combine(
-                    "Photos", 
-                    DateTime.Now.ToShortDateString().Replace('/', '-'))
-                    + ".bmp");
+            int count = 1;
+
+            string fileNameOnly = DateTime.Now.ToShortDateString().Replace('/', '-');
+            string extension = ".bmp";
+            string path = "Photos";
+            string newFullPath = Path.Combine(path, fileNameOnly + extension);
+
+            while (File.Exists(newFullPath))
+            {
+                string tempFileName = string.Format("{0}({1})", fileNameOnly, count++);
+                newFullPath = Path.Combine(path, tempFileName + extension);
+            }
+            frame.Save(newFullPath);
         }
 
         public decimal GetXOffset()
