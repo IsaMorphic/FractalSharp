@@ -273,7 +273,7 @@ namespace Mandelbrot
             int count = 1;
 
             string fileNameOnly = DateTime.Now.ToShortDateString().Replace('/', '-');
-            string extension = ".bmp";
+            string extension = ".png";
             string path = "Photos";
             string newFullPath = Path.Combine(path, fileNameOnly + extension);
 
@@ -282,7 +282,7 @@ namespace Mandelbrot
                 string tempFileName = string.Format("{0}({1})", fileNameOnly, count++);
                 newFullPath = Path.Combine(path, tempFileName + extension);
             }
-            frame.Save(newFullPath);
+            frame.Save(newFullPath, ImageFormat.Png);
         }
 
         public decimal GetXOffset()
