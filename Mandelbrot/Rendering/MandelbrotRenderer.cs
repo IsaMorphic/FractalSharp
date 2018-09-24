@@ -1,22 +1,20 @@
+using ManagedCuda;
+using ManagedCuda.BasicTypes;
+using ManagedCuda.VectorTypes;
+using Mandelbrot.Algorithms;
+using Mandelbrot.Imaging;
+using Mandelbrot.Mathematics;
+using Mandelbrot.Properties;
+using Mandelbrot.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-using ManagedCuda;
-using ManagedCuda.VectorTypes;
-
-using Mandelbrot.Imaging;
-using Mandelbrot.Mathematics;
-using Mandelbrot.Utilities;
-using Mandelbrot.Algorithms;
-using System.IO;
-using Mandelbrot.Properties;
-using ManagedCuda.BasicTypes;
 
 namespace Mandelbrot.Rendering
 {
@@ -29,8 +27,8 @@ namespace Mandelbrot.Rendering
     {
         private CudaContext ctx;
 
-        private int cell_x;
-        private int cell_y;
+        private int CellX;
+        private int CellY;
 
         private bool Gradual = true;
 
@@ -49,6 +47,12 @@ namespace Mandelbrot.Rendering
 
         private int Width;
         private int Height;
+
+        private int TotalCellsX = 4;
+        private int TotalCellsY = 3;
+
+        private int CellWidth;
+        private int CellHeight;
 
         private int[] ChunkSizes = new int[12];
         private int[] MaxChunkSizes = new int[12];
@@ -73,6 +77,9 @@ namespace Mandelbrot.Rendering
 
             Width = settings.Width;
             Height = settings.Height;
+
+            CellWidth = Width / TotalCellsX;
+            CellHeight = Height / TotalCellsY;
 
             aspectM = ((decimal)Width / (decimal)Height) * 2;
 
@@ -131,7 +138,7 @@ namespace Mandelbrot.Rendering
                 CudaContext.GetDeviceCount() > 0 &&
                 Environment.Is64BitOperatingSystem;
 
-            return cudaAvailable;
+            return false;
         }
 
         public bool InitGPU()
@@ -213,56 +220,57 @@ namespace Mandelbrot.Rendering
 
         #region Rendering Methods
 
+        private void IncrementCellCoords()
+        {
+            if (CellX < TotalCellsX - 1) { CellX++; }
+            else if (CellY < TotalCellsY - 1) { CellX = 0; CellY++; }
+            else { CellX = 0; CellY = 0; }
+        }
 
-        protected async Task<int[]> RenderGPUCells()
+
+        private void RenderGPUCell(CudaDeviceVariable<int> dev_image, CudaDeviceVariable<int> dev_palette)
+        {
+            int index = CellX + CellY * 4;
+            int chunkSize = ChunkSizes[index];
+            int maxChunkSize = MaxChunkSizes[index];
+
+            double xMax = (double)aspectM / Magnification;
+            double yMax = 2 / Magnification;
+
+            GPUAlgorithmProvider.GPUCell(
+                dev_image,
+                dev_palette,
+                CellX, CellY,
+                CellWidth, CellHeight,
+                TotalCellsX, TotalCellsY,
+                xMax, yMax,
+                chunkSize, maxChunkSize);
+
+            if (chunkSize > 1)
+                ChunkSizes[index] = chunkSize / 2;
+        }
+
+        private async Task<int[]> RenderGPUCells()
         {
             ctx.SetCurrent();
 
             GPUAlgorithmProvider.GPUPreFrame();
 
-            if (cell_x < 3) { cell_x++; }
-            else if (cell_y < 2) { cell_x = 0; cell_y++; }
-            else { cell_x = 0; cell_y = 0; }
-
-            int cellWidth = Width / 4;
-            int cellHeight = Height / 3;
-
-            double xMax = (double)aspectM / Magnification;
-            double yMax = 2 / Magnification;
-
             CudaDeviceVariable<int> dev_palette = int_palette;
             CudaDeviceVariable<int> dev_image = CurrentFrame.Bits;
 
-            bool exit = false;
-            for (int tmpcell_x = 0; tmpcell_x < 4 && !exit; tmpcell_x++)
+            if (Gradual)
             {
-                for (int tmpcell_y = 0; tmpcell_y < 3 && !exit; tmpcell_y++)
+                IncrementCellCoords();
+                RenderGPUCell(dev_image, dev_palette);
+            }
+            else {
+                for (CellX = 0; CellX < TotalCellsX; CellX++)
                 {
-                    if (!Gradual)
+                    for (CellY = 0; CellY < TotalCellsY; CellY++)
                     {
-                        cell_x = tmpcell_x;
-                        cell_y = tmpcell_y;
+                        RenderGPUCell(dev_image, dev_palette);
                     }
-                    else
-                    {
-                        exit = true;
-                    }
-
-                    int index = cell_x + cell_y * 4;
-                    int chunkSize = ChunkSizes[index];
-                    int maxChunkSize = MaxChunkSizes[index];
-
-                    GPUAlgorithmProvider.GPUCell(
-                        dev_image,
-                        dev_palette,
-                        cell_x, cell_y,
-                        cellWidth, cellHeight,
-                        4, 3,
-                        xMax, yMax,
-                        chunkSize, maxChunkSize);
-
-                    if (chunkSize > 1)
-                        ChunkSizes[index] = chunkSize / 2;
                 }
             }
 
@@ -296,26 +304,13 @@ namespace Mandelbrot.Rendering
             FrameEnd(NewFrame);
         }
 
-        // Frame rendering method, using generic typing to reduce the amount 
-        // of code used and to make the algorithm easily applicable to other number types
-        public void RenderFrame<T>()
+        public void RenderCell<T>(IGenericMath<T> TMath, IAlgorithmProvider<T> algorithmProvider)
         {
-            Type NumType = typeof(T);
-
-            // Initialize Math Object
-            IGenericMath<T> TMath = MathResolver.CreateMathObject<T>();
-
-            // Initialize Algorithm Provider
-            Type algorithmType = AlgorithmType.MakeGenericType(NumType);
-
-            IAlgorithmProvider<T> algorithmProvider =
-                (IAlgorithmProvider<T>)Activator
-                .CreateInstance(algorithmType);
-
-            // Fire frame start event
-            FrameStart();
-
             int in_set = 0;
+
+            int index = CellX + CellY * 4;
+            int chunkSize = ChunkSizes[index];
+            int maxChunkSize = MaxChunkSizes[index];
 
             T Zero = TMath.fromInt32(0);
 
@@ -342,12 +337,19 @@ namespace Mandelbrot.Rendering
 
             algorithmProvider.Init(TMath, offsetXM, offsetYM, MaxIterations);
 
-            var loop = Parallel.For(0, Width, new ParallelOptions { CancellationToken = Job.Token, MaxDegreeOfParallelism = ThreadCount }, px =>
+            var loop = Parallel.For(CellX * CellWidth, (CellX + 1) * CellWidth, new ParallelOptions { CancellationToken = Job.Token, MaxDegreeOfParallelism = ThreadCount }, px =>
             {
                 T x0 = Utils.Map<T>(TMath, TMath.fromInt32(px), Zero, FrameWidth, xMin, xMax);
 
-                for (int py = 0; py < Height; py++)
+                for (int py = CellY * CellHeight; py < (CellY + 1) * CellHeight; py++)
                 {
+                    if ((px % chunkSize != 0      || 
+                         py % chunkSize != 0)     ||
+                       ((px / chunkSize) % 2 == 0 && 
+                        (py / chunkSize) % 2 == 0 &&
+                        maxChunkSize != chunkSize))
+                        continue;
+
                     T y0 = Utils.Map<T>(TMath, TMath.fromInt32(py), Zero, FrameHeight, yMin, yMax);
 
 
@@ -359,23 +361,74 @@ namespace Mandelbrot.Rendering
                     int iterCount = pixelData.GetIterCount();
                     bool isBelowMaxIter = pixelData.GetBelowMaxIter();
 
+                    Color PixelColor;
+
                     // if zn's magnitude surpasses the 
                     // bailout radius, give it a fancy color.
                     if (isBelowMaxIter) // itercount
                     {
-                        Color PixelColor = GetColorFromIterationCount(iterCount, TMath.toDouble(znMagn));
-                        CurrentFrame.SetPixel(px, py, PixelColor);
+                        PixelColor = GetColorFromIterationCount(iterCount, TMath.toDouble(znMagn));
                     }
                     // Otherwise, make the pixel black, as it is in the set.  
                     else
                     {
-                        CurrentFrame.SetPixel(px, py, Color.Black);
+                        PixelColor = Color.Black;
                         Interlocked.Increment(ref in_set);
+                    }
+
+                    for (var i = px; i < px + chunkSize; i++)
+                    {
+                        for (var j = py; j < py + chunkSize; j++)
+                        {
+                            if (i < Width && j < Height)
+                            {
+                                CurrentFrame.SetPixel(i, j, PixelColor);
+                            }
+                        }
                     }
                 }
             });
 
+            if(chunkSize > 1)
+                ChunkSizes[index] /= 2;
+
             if (in_set == Width * Height) StopRender();
+        }
+
+        // Frame rendering method, using generic typing to reduce the amount 
+        // of code used and to make the algorithm easily applicable to other number types
+        public void RenderFrame<T>()
+        {
+            Type NumType = typeof(T);
+
+            // Initialize Math Object
+            IGenericMath<T> TMath = MathResolver.CreateMathObject<T>();
+
+            // Initialize Algorithm Provider
+            Type algorithmType = AlgorithmType.MakeGenericType(NumType);
+
+            IAlgorithmProvider<T> algorithmProvider =
+                (IAlgorithmProvider<T>)Activator
+                .CreateInstance(algorithmType);
+
+            // Fire frame start event
+            FrameStart();
+
+            if (Gradual)
+            {
+                IncrementCellCoords();
+                RenderCell<T>(TMath, algorithmProvider);
+            }
+            else
+            {
+                for (CellX = 0; CellX < TotalCellsX; CellX++)
+                {
+                    for (CellY = 0; CellY < TotalCellsY; CellY++)
+                    {
+                        RenderCell<T>(TMath, algorithmProvider);
+                    }
+                }
+            }
 
             Bitmap newFrame = (Bitmap)CurrentFrame.Bitmap.Clone();
             FrameEnd(newFrame);
