@@ -36,6 +36,7 @@
             // pictureBox1
             // 
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pictureBox1.Enabled = false;
             this.pictureBox1.Location = new System.Drawing.Point(0, 0);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(582, 403);
@@ -59,6 +60,9 @@
             this.Load += new System.EventHandler(this.Explorer_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Explorer_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Explorer_KeyUp);
+            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Explorer_MouseDown);
+            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Explorer_MouseMove);
+            this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.Explorer_MouseUp);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
