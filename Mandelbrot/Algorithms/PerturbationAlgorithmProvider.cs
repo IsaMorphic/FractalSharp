@@ -11,12 +11,11 @@ using System.Threading.Tasks;
 
 namespace Mandelbrot.Algorithms
 {
-    class PerturbationAlgorithmProvider<T> : IAlgorithmProvider<T>
+    class PerturbationAlgorithmProvider<T> : GPUAlgorithmProvider<T>
     {
         private IGenericMath<T> TMath;
         private List<GenericComplex<T>> pointsList;
 
-        private CudaKernel gpuKernel;
         private CudaDeviceVariable<cuDoubleComplex> dev_points;
 
         private T Zero;
@@ -33,7 +32,7 @@ namespace Mandelbrot.Algorithms
 
         // Perturbation Theory Algorithm, 
         // produces a list of iteration values used to compute the surrounding points
-        public void Init(IGenericMath<T> TMath, decimal offsetX, decimal offsetY, int maxIterations)
+        public override void Init(IGenericMath<T> TMath, decimal offsetX, decimal offsetY, int maxIterations)
         {
             this.TMath = TMath;
             MaxIterations = maxIterations;
@@ -87,7 +86,7 @@ namespace Mandelbrot.Algorithms
 
         // Non-Traditional Mandelbrot algorithm, 
         // Iterates a point over its neighbors to approximate an iteration count.
-        public PixelData<T> Run(T x0, T y0)
+        public override PixelData<T> Run(T x0, T y0)
         {
             ComplexMath<T> CMath = new ComplexMath<T>(TMath);
 
@@ -128,7 +127,7 @@ namespace Mandelbrot.Algorithms
             return new PixelData<T>(znMagn, iterCount, iterCount < maxIterations);
         }
 
-        public void GPUInit(CudaContext ctx, byte[] ptxImage, dim3 gridDim, dim3 blockDim)
+        public override void GPUInit(CudaContext ctx, byte[] ptxImage, dim3 gridDim, dim3 blockDim)
         {
             gpuKernel = ctx.LoadKernelPTX(Resources.Kernel, "perturbation");
 
@@ -136,7 +135,7 @@ namespace Mandelbrot.Algorithms
             gpuKernel.BlockDimensions = blockDim;
         }
 
-        public void GPUPreFrame()
+        public override void GPUPreFrame()
         {
             cuDoubleComplex[] cuDoubles =
                 new cuDoubleComplex[pointsList.Count];
@@ -151,18 +150,18 @@ namespace Mandelbrot.Algorithms
             dev_points = cuDoubles;
         }
 
-        public void GPUPostFrame()
+        public override void GPUPostFrame()
         {
             dev_points.Dispose();
         }
 
-        public void GPUCell(
+        public override void GPUCell(
             CudaDeviceVariable<int> dev_image,
             CudaDeviceVariable<int> dev_palette,
             int cell_x, int cell_y,
             int cellWidth, int cellHeight,
             int totalCells_x, int totalCells_y,
-            double xMax, double yMax, 
+            double xMax, double yMax,
             int chunkSize, int maxChunkSize)
         {
             gpuKernel.Run(
@@ -172,7 +171,7 @@ namespace Mandelbrot.Algorithms
                 cell_x, cell_y,
                 cellWidth, cellHeight,
                 totalCells_x, totalCells_y,
-                xMax, yMax, 
+                xMax, yMax,
                 chunkSize, maxChunkSize);
         }
     }
