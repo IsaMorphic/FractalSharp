@@ -144,15 +144,11 @@ namespace Mandelbrot
             if (!ExplorationRenderer.GPUAvailable())
             {
                 MessageBox.Show("A CUDA supporting device is not present.  The exploration feature may be slow if you choose to continue.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                ExplorationSettings.Width = 426;
-                ExplorationSettings.Height = 240;
                 UseGPU = false;
             }
-            else
-            {
-                ExplorationSettings.Width = 1280;
-                ExplorationSettings.Height = 720;
-            }
+
+            ExplorationSettings.Width = 1280;
+            ExplorationSettings.Height = 720;
 
             DeltaX = Bounds.Width / (float)ExplorationSettings.Width;
             DeltaY = Bounds.Height / (float)ExplorationSettings.Height;
@@ -277,7 +273,7 @@ namespace Mandelbrot
             int count = 1;
 
             string fileNameOnly = DateTime.Now.ToShortDateString().Replace('/', '-');
-            string extension = ".bmp";
+            string extension = ".png";
             string path = "Photos";
             string newFullPath = Path.Combine(path, fileNameOnly + extension);
 
@@ -286,7 +282,7 @@ namespace Mandelbrot
                 string tempFileName = string.Format("{0}({1})", fileNameOnly, count++);
                 newFullPath = Path.Combine(path, tempFileName + extension);
             }
-            frame.Save(newFullPath);
+            frame.Save(newFullPath, ImageFormat.Png);
         }
 
         public decimal GetXOffset()
@@ -334,8 +330,8 @@ namespace Mandelbrot
             ExplorationSettings.Magnification *= ExplorationSettings.Height / rectHeight;
             Point centerPoint = new Point(cornerX + rectWidth / 2, cornerY + rectHeight / 2);
             ExplorationRenderer.GetPointFromFrameLocation(
-                centerPoint.X, centerPoint.Y, 
-                out ExplorationSettings.offsetX, 
+                centerPoint.X, centerPoint.Y,
+                out ExplorationSettings.offsetX,
                 out ExplorationSettings.offsetY);
 
             MousePressed = false;
