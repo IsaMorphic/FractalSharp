@@ -61,7 +61,7 @@ namespace Mandelbrot.Rendering
         private int[] int_palette;
 
         private Type AlgorithmType;
-        private IAlgorithmProvider<double> GPUAlgorithmProvider;
+        private GPUAlgorithmProvider<double> GPUAlgorithmProvider;
 
         private CancellationTokenSource Job;
 
@@ -158,9 +158,16 @@ namespace Mandelbrot.Rendering
 
                 Type algorithmType = AlgorithmType.MakeGenericType(typeof(double));
 
-                GPUAlgorithmProvider =
-                    (IAlgorithmProvider<double>)Activator
-                    .CreateInstance(algorithmType);
+                try
+                {
+                    GPUAlgorithmProvider =
+                        (GPUAlgorithmProvider<double>)Activator
+                        .CreateInstance(algorithmType);
+                }
+                catch (InvalidCastException)
+                {
+                    throw new ApplicationException("The selected algorithm does not support GPU Acceleration");
+                }
 
                 GPUAlgorithmProvider.GPUInit(ctx, Resources.Kernel, new dim3(Width / 16, Height / 9), new dim3(4, 3));
 
@@ -168,7 +175,7 @@ namespace Mandelbrot.Rendering
             }
             else
             {
-                throw new ApplicationException("Renderer is not Initialized!");
+                throw new ApplicationException("Renderer is not Initialized");
             }
         }
 
@@ -264,7 +271,8 @@ namespace Mandelbrot.Rendering
                 IncrementCellCoords();
                 RenderGPUCell(dev_image, dev_palette);
             }
-            else {
+            else
+            {
                 for (CellX = 0; CellX < TotalCellsX; CellX++)
                 {
                     for (CellY = 0; CellY < TotalCellsY; CellY++)
@@ -343,9 +351,9 @@ namespace Mandelbrot.Rendering
 
                 for (int py = CellY * CellHeight; py < (CellY + 1) * CellHeight; py++)
                 {
-                    if ((px % chunkSize != 0      || 
-                         py % chunkSize != 0)     ||
-                       ((px / chunkSize) % 2 == 0 && 
+                    if ((px % chunkSize != 0 ||
+                         py % chunkSize != 0) ||
+                       ((px / chunkSize) % 2 == 0 &&
                         (py / chunkSize) % 2 == 0 &&
                         maxChunkSize != chunkSize))
                         continue;
@@ -389,7 +397,7 @@ namespace Mandelbrot.Rendering
                 }
             });
 
-            if(chunkSize > 1)
+            if (chunkSize > 1)
                 ChunkSizes[index] /= 2;
 
             if (in_set == Width * Height) StopRender();

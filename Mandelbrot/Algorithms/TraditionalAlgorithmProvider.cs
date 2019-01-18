@@ -11,11 +11,9 @@ using System.Threading.Tasks;
 
 namespace Mandelbrot.Algorithms
 {
-    class TraditionalAlgorithmProvider<T> : IAlgorithmProvider<T>
+    class TraditionalAlgorithmProvider<T> : GPUAlgorithmProvider<T>
     {
         private IGenericMath<T> TMath;
-
-        private CudaKernel gpuKernel;
 
         private T Zero;
         private T Two;
@@ -26,7 +24,7 @@ namespace Mandelbrot.Algorithms
 
         private int MaxIterations;
 
-        public void Init(IGenericMath<T> TMath, decimal offsetX, decimal offsetY, int maxIterations)
+        public override void Init(IGenericMath<T> TMath, decimal offsetX, decimal offsetY, int maxIterations)
         {
             this.TMath = TMath;
             MaxIterations = maxIterations;
@@ -39,7 +37,7 @@ namespace Mandelbrot.Algorithms
             Four = TMath.fromInt32(4);
         }
 
-        public PixelData<T> Run(T px, T py)
+        public override PixelData<T> Run(T px, T py)
         {
             T x0 = TMath.Add(px, offsetX);
             T y0 = TMath.Add(py, offsetY);
@@ -80,7 +78,7 @@ namespace Mandelbrot.Algorithms
             return new PixelData<T>(TMath.Add(xx, yy), iter, iter < MaxIterations);
         }
 
-        public void GPUInit(CudaContext ctx, byte[] ptxImage, dim3 gridDim, dim3 blockDim)
+        public override void GPUInit(CudaContext ctx, byte[] ptxImage, dim3 gridDim, dim3 blockDim)
         {
             gpuKernel = ctx.LoadKernelPTX(ptxImage, "traditional");
 
@@ -88,11 +86,11 @@ namespace Mandelbrot.Algorithms
             gpuKernel.BlockDimensions = blockDim;
         }
 
-        public void GPUPreFrame() { return; }
+        public override void GPUPreFrame() { return; }
 
-        public void GPUPostFrame() { return; }
+        public override void GPUPostFrame() { return; }
 
-        public void GPUCell(
+        public override void GPUCell(
             CudaDeviceVariable<int> dev_image,
             CudaDeviceVariable<int> dev_palette,
             int cell_x, int cell_y,
