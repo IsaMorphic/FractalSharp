@@ -112,7 +112,8 @@ namespace Mandelbrot
             }));
 
             // Calculate zoom... using math.pow to keep the zoom rate constant.
-            if (Renderer.Magnification > ExtraPrecisionThreshold)
+            if (Renderer.Magnification > ExtraPrecisionThreshold && 
+                RenderSettings.AlgorithmType != perturbationAlgorithm)
             {
                 RenderMethod = Renderer.RenderFrame<decimal>;
                 PrecisionSwitched = true;
