@@ -60,7 +60,7 @@ namespace Mandelbrot
 
         // Fractal loading and saving properties.  
         private bool RenderActive = false;
-        private bool LoadingFile = false;
+        private bool LoadedFile = false;
 
         private string VideoPath;
         private string SettingsPath;
@@ -173,17 +173,22 @@ namespace Mandelbrot
         {
             FrameStart();
 
-            Renderer.SetFrame(Renderer.NumFrames + 1);
-
             if (Renderer.NumFrames < videoReader.FrameCount - 1)
             {
-                Bitmap frame = videoReader.ReadVideoFrame();
-                videoWriter.WriteVideoFrame(frame);
-                Task.Run(new Action(GrabFrame));
+                try
+                {
+                    Bitmap frame = videoReader.ReadVideoFrame();
+                    videoWriter.WriteVideoFrame(frame);
+                    Renderer.SetFrame(Renderer.NumFrames + 1);
+                }
+                catch {
+                    Console.WriteLine("Failed to read/write frame");
+                }
+                Task.Run((Action)GrabFrame);
             }
             else
             {
-                LoadingFile = false;
+                LoadedFile = false;
                 videoReader.Close();
                 Task.Run(RenderMethod);
             }
@@ -237,19 +242,20 @@ namespace Mandelbrot
                 {
                     standardPrecisionToolStripMenuItem.Checked = true;
                     extraPrescisionToolStripMenuItem.Checked = false;
-                    RenderMethod = Renderer.RenderFrame<decimal>;
+                    RenderMethod = Renderer.RenderFrame<double>;
                 }
 
 
                 startFrameInput.Value = RenderSettings.NumFrames;
                 iterationCountInput.Value = RenderSettings.MaxIterations;
 
+                threadCountInput.Value = RenderSettings.ThreadCount;
+
                 xOffInput.Value = RenderSettings.offsetX;
                 yOffInput.Value = RenderSettings.offsetY;
 
                 int bitrate = RenderSettings.Width * RenderSettings.Height * 32 * 3 * 8; // 80 percent quality, explained below
-                videoReader.Open(String.Format(VideoPath, RenderSettings.Version));
-                videoWriter.Open(String.Format(VideoPath, RenderSettings.Version + 1), RenderSettings.Width, RenderSettings.Height, 30, VideoCodec.MPEG4, bitrate);
+                videoWriter.Open(String.Format(VideoPath, RenderSettings.Version), RenderSettings.Width, RenderSettings.Height, 30, VideoCodec.MPEG4, bitrate);
 
                 loaded = true;
             }
@@ -274,7 +280,8 @@ namespace Mandelbrot
             string jsonData = File.ReadAllText(SettingsPath);
 
             JavaScriptSerializer js = new JavaScriptSerializer();
-            RenderSettings = js.Deserialize<ZoomMovieSettings>(jsonData);
+
+            RenderSettings.NumFrames = Renderer.NumFrames;
 
             RenderSettings.Version++;
 
@@ -328,7 +335,7 @@ namespace Mandelbrot
         {
             if (LoadFractal())
             {
-                LoadingFile = true;
+                LoadedFile = true;
 
                 newRenderToolStripMenuItem.Enabled = false;
                 loadRenderToolStripMenuItem.Enabled = false;
@@ -348,6 +355,8 @@ namespace Mandelbrot
             loadRenderToolStripMenuItem.Enabled = true;
             ResolutionToolStripMenuItem.Enabled = true;
             loadPaletteToolStripMenuItem.Enabled = true;
+
+            UpdateFractal();
 
             videoWriter.Close();
         }
@@ -373,25 +382,23 @@ namespace Mandelbrot
                 RenderSettings.NumFrames = (int)startFrameInput.Value;
                 RenderSettings.ThreadCount = (int)threadCountInput.Value;
 
-                Renderer.Setup(RenderSettings);
-
-                if (!LoadingFile)
+                if (!LoadedFile)
                 {
+                    Renderer.Setup(RenderSettings);
                     if (!RenderActive)
                     {
                         RenderActive = true;
                         SaveFractal();
                     }
-                    Task.Run(RenderMethod);
                 }
                 else
                 {
-                    UpdateFractal();
                     RGB[] palette = Utils.LoadPallete(RenderSettings.PalettePath);
                     Renderer.Initialize(RenderSettings, palette, MathResolver);
                     Renderer.Setup(RenderSettings);
-                    Task.Run((Action)GrabFrame);
                 }
+                Task.Run(RenderMethod);
+
                 intervalTimer.Start();
                 algorithmToolStripMenuItem.Enabled = false;
                 presicionStripMenuItem.Enabled = false;
@@ -432,14 +439,12 @@ namespace Mandelbrot
         {
             perturbationToolStripMenuItem.Checked = false;
             RenderSettings.AlgorithmType = traditionalAlgorithm;
-            Renderer.Setup(RenderSettings);
         }
 
         private void perturbationToolStripMenuItem_Click(object sender, EventArgs e)
         {
             traditionalToolStripMenuItem.Checked = false;
             RenderSettings.AlgorithmType = perturbationAlgorithm;
-            Renderer.Setup(RenderSettings);
         }
 
         private void x540ToolStripMenuItem_Click(object sender, EventArgs e)

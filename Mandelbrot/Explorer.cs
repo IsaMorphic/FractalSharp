@@ -329,11 +329,13 @@ namespace Mandelbrot
 
             ExplorationSettings.Magnification *= ExplorationSettings.Height / rectHeight;
             Point centerPoint = new Point(cornerX + rectWidth / 2, cornerY + rectHeight / 2);
+            decimal offsetX, offsetY;
             ExplorationRenderer.GetPointFromFrameLocation(
                 centerPoint.X, centerPoint.Y,
-                out ExplorationSettings.offsetX,
-                out ExplorationSettings.offsetY);
-
+                out offsetX,
+                out offsetY);
+            ExplorationSettings.offsetX = offsetX;
+            ExplorationSettings.offsetY = offsetY;
             MousePressed = false;
         }
     }

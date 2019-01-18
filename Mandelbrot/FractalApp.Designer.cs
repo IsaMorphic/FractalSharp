@@ -37,6 +37,7 @@
             this.loadRenderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeCurrentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.exploreFractalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadPaletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.renderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -74,7 +75,7 @@
             this.RenderSaveDialog = new System.Windows.Forms.SaveFileDialog();
             this.intervalTimer = new System.Windows.Forms.Timer(this.components);
             this.TrayIcon = new System.Windows.Forms.NotifyIcon(this.components);
-            this.exploreFractalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.hardwareAccelerationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.ViewControl.SuspendLayout();
@@ -106,7 +107,8 @@
             this.renderToolStripMenuItem,
             this.presicionStripMenuItem,
             this.algorithmToolStripMenuItem,
-            this.ResolutionToolStripMenuItem});
+            this.ResolutionToolStripMenuItem,
+            this.hardwareAccelerationToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(622, 28);
@@ -129,14 +131,14 @@
             // newRenderToolStripMenuItem
             // 
             this.newRenderToolStripMenuItem.Name = "newRenderToolStripMenuItem";
-            this.newRenderToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
+            this.newRenderToolStripMenuItem.Size = new System.Drawing.Size(182, 26);
             this.newRenderToolStripMenuItem.Text = "New Render";
             this.newRenderToolStripMenuItem.Click += new System.EventHandler(this.newRenderToolStripMenuItem_Click);
             // 
             // loadRenderToolStripMenuItem
             // 
             this.loadRenderToolStripMenuItem.Name = "loadRenderToolStripMenuItem";
-            this.loadRenderToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
+            this.loadRenderToolStripMenuItem.Size = new System.Drawing.Size(182, 26);
             this.loadRenderToolStripMenuItem.Text = "Load Render";
             this.loadRenderToolStripMenuItem.Click += new System.EventHandler(this.loadRenderToolStripMenuItem_Click);
             // 
@@ -144,19 +146,26 @@
             // 
             this.closeCurrentToolStripMenuItem.Enabled = false;
             this.closeCurrentToolStripMenuItem.Name = "closeCurrentToolStripMenuItem";
-            this.closeCurrentToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
+            this.closeCurrentToolStripMenuItem.Size = new System.Drawing.Size(182, 26);
             this.closeCurrentToolStripMenuItem.Text = "Close Current";
             this.closeCurrentToolStripMenuItem.Click += new System.EventHandler(this.closeCurrentToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(213, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(179, 6);
+            // 
+            // exploreFractalToolStripMenuItem
+            // 
+            this.exploreFractalToolStripMenuItem.Name = "exploreFractalToolStripMenuItem";
+            this.exploreFractalToolStripMenuItem.Size = new System.Drawing.Size(182, 26);
+            this.exploreFractalToolStripMenuItem.Text = "Explore Fractal";
+            this.exploreFractalToolStripMenuItem.Click += new System.EventHandler(this.exploreFractalToolStripMenuItem_Click);
             // 
             // loadPaletteToolStripMenuItem
             // 
             this.loadPaletteToolStripMenuItem.Name = "loadPaletteToolStripMenuItem";
-            this.loadPaletteToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
+            this.loadPaletteToolStripMenuItem.Size = new System.Drawing.Size(182, 26);
             this.loadPaletteToolStripMenuItem.Text = "Load Palette";
             this.loadPaletteToolStripMenuItem.Click += new System.EventHandler(this.loadPaletteToolStripMenuItem_Click);
             // 
@@ -174,7 +183,7 @@
             // 
             this.startToolStripMenuItem.Enabled = false;
             this.startToolStripMenuItem.Name = "startToolStripMenuItem";
-            this.startToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
+            this.startToolStripMenuItem.Size = new System.Drawing.Size(115, 26);
             this.startToolStripMenuItem.Text = "Start";
             this.startToolStripMenuItem.Click += new System.EventHandler(this.startToolStripMenuItem_Click);
             // 
@@ -182,7 +191,7 @@
             // 
             this.stopToolStripMenuItem.Enabled = false;
             this.stopToolStripMenuItem.Name = "stopToolStripMenuItem";
-            this.stopToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
+            this.stopToolStripMenuItem.Size = new System.Drawing.Size(115, 26);
             this.stopToolStripMenuItem.Text = "Stop";
             this.stopToolStripMenuItem.Click += new System.EventHandler(this.stopToolStripMenuItem_Click);
             // 
@@ -531,12 +540,12 @@
             this.TrayIcon.Text = "Mandelbrot Renderer";
             this.TrayIcon.Click += new System.EventHandler(this.TrayIcon_Click);
             // 
-            // exploreFractalToolStripMenuItem
+            // hardwareAccelerationToolStripMenuItem
             // 
-            this.exploreFractalToolStripMenuItem.Name = "exploreFractalToolStripMenuItem";
-            this.exploreFractalToolStripMenuItem.Size = new System.Drawing.Size(216, 26);
-            this.exploreFractalToolStripMenuItem.Text = "Explore Fractal";
-            this.exploreFractalToolStripMenuItem.Click += new System.EventHandler(this.exploreFractalToolStripMenuItem_Click);
+            this.hardwareAccelerationToolStripMenuItem.CheckOnClick = true;
+            this.hardwareAccelerationToolStripMenuItem.Name = "hardwareAccelerationToolStripMenuItem";
+            this.hardwareAccelerationToolStripMenuItem.Size = new System.Drawing.Size(173, 24);
+            this.hardwareAccelerationToolStripMenuItem.Text = "Hardware Acceleration";
             // 
             // FractalApp
             // 
@@ -618,6 +627,7 @@
         private System.Windows.Forms.ToolStripMenuItem traditionalToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem perturbationToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exploreFractalToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem hardwareAccelerationToolStripMenuItem;
     }
 }
 
