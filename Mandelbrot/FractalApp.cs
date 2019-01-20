@@ -20,9 +20,7 @@ using Mandelbrot.Utilities;
 using Mandelbrot.Algorithms;
 
 using Mandelbrot.Movies;
-using SharpAvi;
-using SharpAvi.Output;
-using SharpAvi.Codecs;
+
 using System.Reflection;
 
 namespace Mandelbrot
@@ -35,9 +33,6 @@ namespace Mandelbrot
         private Type perturbationAlgorithm =
             typeof(PerturbationAlgorithmProvider<>);
 
-        // Video file properties
-        private AviWriter videoWriter;
-        private IAviVideoStream videoStream;
         // Process statistics
         private DateTime currentFrameStartTime;
         private int coreCount = Environment.ProcessorCount;
@@ -51,7 +46,7 @@ namespace Mandelbrot
             typeof(TraditionalAlgorithmProvider<>);
 
         private GenericMathResolver MathResolver =
-            new GenericMathResolver(new Assembly[] 
+            new GenericMathResolver(new Assembly[]
             { Assembly.GetExecutingAssembly() });
 
         private MandelbrotMovieRenderer Renderer = new MandelbrotMovieRenderer();
@@ -60,8 +55,9 @@ namespace Mandelbrot
         private Action RenderMethod;
 
         // Fractal loading and saving properties.  
-        private bool RenderActive = false;
+        private bool RenderHasBeenStarted = false;
         private bool LoadedFile = false;
+        private bool SequenceOpen = false;
 
         private string VideoPath;
         private string SettingsPath;
@@ -113,7 +109,7 @@ namespace Mandelbrot
             }));
 
             // Calculate zoom... using math.pow to keep the zoom rate constant.
-            if (Renderer.Magnification > ExtraPrecisionThreshold && 
+            if (Renderer.Magnification > ExtraPrecisionThreshold &&
                 RenderSettings.AlgorithmType != perturbationAlgorithm)
             {
                 RenderMethod = Renderer.RenderFrame<decimal>;
@@ -125,8 +121,7 @@ namespace Mandelbrot
         {
             try
             {
-                var bits = Utils.BitmapToByteArray(frame);
-                videoStream.WriteFrame(true, bits, 0, bits.Length);
+                frame.Save(String.Format(VideoPath, Renderer.NumFrames), ImageFormat.Png);
                 if (livePreviewCheckBox.Checked)
                 {
                     pictureBox1.Image = frame;
@@ -171,7 +166,7 @@ namespace Mandelbrot
 
         private bool LoadFractal()
         {
-            bool loaded = false;
+            bool success = false;
             FileLoadDialog.InitialDirectory = Path.Combine(Application.StartupPath, "Renders");
             if (FileLoadDialog.ShowDialog() == DialogResult.OK)
             {
@@ -225,12 +220,9 @@ namespace Mandelbrot
                 xOffInput.Value = RenderSettings.offsetX;
                 yOffInput.Value = RenderSettings.offsetY;
 
-                videoWriter = new AviWriter(String.Format(VideoPath, RenderSettings.Version)) { FramesPerSecond = 30 };
-                videoStream = videoWriter.AddMotionJpegVideoStream(RenderSettings.Width, RenderSettings.Height, 100);
-
-                loaded = true;
+                success = true;
             }
-            return loaded;
+            return success;
         }
 
         private void SaveFractal()
@@ -239,6 +231,8 @@ namespace Mandelbrot
             string fractalDate = DateTime.Now.ToShortDateString().Replace('/', '-');
             string fileName = String.Format("{0}_{1}.fractal", fractalName, fractalDate);
             string filePath = Path.Combine(Application.StartupPath, "Renders", fileName);
+
+            SettingsPath = filePath;
 
             JavaScriptSerializer js = new JavaScriptSerializer();
             string jsonData = js.Serialize(RenderSettings);
@@ -282,15 +276,14 @@ namespace Mandelbrot
             string videoDirectory = Path.GetDirectoryName(VideoPath);
             string videoName = Path.GetFileNameWithoutExtension(VideoPath);
 
-            if (!videoName.EndsWith("_{0}.avi"))
-                videoName += "_{0}.avi";
+            if (!videoName.EndsWith("_{0}.png"))
+                videoName += "_{0}.png";
 
             VideoPath = Path.Combine(videoDirectory, videoName);
 
             RenderSettings.VideoPath = VideoPath;
 
-            videoWriter = new AviWriter(String.Format(VideoPath, RenderSettings.Version)) { FramesPerSecond = 30 };
-            videoStream = videoWriter.AddMotionJpegVideoStream(RenderSettings.Width, RenderSettings.Height, 100);
+            SequenceOpen = true;
 
             newRenderToolStripMenuItem.Enabled = false;
             loadRenderToolStripMenuItem.Enabled = false;
@@ -323,13 +316,10 @@ namespace Mandelbrot
             loadRenderToolStripMenuItem.Enabled = true;
             ResolutionToolStripMenuItem.Enabled = true;
             loadPaletteToolStripMenuItem.Enabled = true;
-            if (LoadedFile)
-            {
-                UpdateFractal();
-            }
 
-            videoWriter.Close();
-            videoWriter = null;
+            SequenceOpen = false;
+
+            UpdateFractal();
         }
 
         private void loadPaletteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -356,9 +346,9 @@ namespace Mandelbrot
                 if (!LoadedFile)
                 {
                     Renderer.Setup(RenderSettings);
-                    if (!RenderActive)
+                    if (!RenderHasBeenStarted)
                     {
-                        RenderActive = true;
+                        RenderHasBeenStarted = true;
                         SaveFractal();
                     }
                 }
@@ -459,7 +449,7 @@ namespace Mandelbrot
 
         private void FractalApp_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (videoWriter != null)
+            if (SequenceOpen)
             {
                 e.Cancel = true;
                 TrayIcon.Visible = true;

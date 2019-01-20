@@ -64,9 +64,6 @@
     <Reference Include="ManagedCuda">
       <HintPath>Dependencies\ManagedCuda.dll</HintPath>
     </Reference>
-    <Reference Include="SharpAvi, Version=2.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpAvi.2.1.1\lib\net45\SharpAvi.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -133,7 +130,6 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <None Include="Dependencies\Kernel.ptx" />
-    <None Include="packages.config" />
     <None Include="Palettes\altern.map">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
