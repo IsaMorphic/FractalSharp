@@ -298,6 +298,8 @@ namespace Mandelbrot
             {
                 LoadedFile = true;
 
+				SequenceOpen = true;
+
                 newRenderToolStripMenuItem.Enabled = false;
                 loadRenderToolStripMenuItem.Enabled = false;
                 ResolutionToolStripMenuItem.Enabled = false;
