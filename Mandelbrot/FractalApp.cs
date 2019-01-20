@@ -19,8 +19,10 @@ using Mandelbrot.Rendering;
 using Mandelbrot.Utilities;
 using Mandelbrot.Algorithms;
 
-using Accord.Video.FFMPEG;
 using Mandelbrot.Movies;
+using SharpAvi;
+using SharpAvi.Output;
+using SharpAvi.Codecs;
 using System.Reflection;
 
 namespace Mandelbrot
@@ -34,9 +36,8 @@ namespace Mandelbrot
             typeof(PerturbationAlgorithmProvider<>);
 
         // Video file properties
-        private VideoFileReader videoReader = new VideoFileReader();
-        private VideoFileWriter videoWriter = new VideoFileWriter();
-
+        private AviWriter videoWriter;
+        private IAviVideoStream videoStream;
         // Process statistics
         private DateTime currentFrameStartTime;
         private int coreCount = Environment.ProcessorCount;
@@ -124,7 +125,8 @@ namespace Mandelbrot
         {
             try
             {
-                videoWriter.WriteVideoFrame(frame);
+                var bits = Utils.BitmapToByteArray(frame);
+                videoStream.WriteFrame(true, bits, 0, bits.Length);
                 if (livePreviewCheckBox.Checked)
                 {
                     pictureBox1.Image = frame;
@@ -161,37 +163,6 @@ namespace Mandelbrot
                     RenderMethod = Renderer.RenderFrame<decimal>;
                 }
             }));
-        }
-
-        #endregion
-
-        #region Main-task Render Methods
-
-        // Simple method that reads a frame 
-        // from an old video file and saves it to a new one.  
-        private void GrabFrame()
-        {
-            FrameStart();
-
-            if (Renderer.NumFrames < videoReader.FrameCount - 1)
-            {
-                try
-                {
-                    Bitmap frame = videoReader.ReadVideoFrame();
-                    videoWriter.WriteVideoFrame(frame);
-                    Renderer.SetFrame(Renderer.NumFrames + 1);
-                }
-                catch {
-                    Console.WriteLine("Failed to read/write frame");
-                }
-                Task.Run((Action)GrabFrame);
-            }
-            else
-            {
-                LoadedFile = false;
-                videoReader.Close();
-                Task.Run(RenderMethod);
-            }
         }
 
         #endregion
@@ -254,8 +225,8 @@ namespace Mandelbrot
                 xOffInput.Value = RenderSettings.offsetX;
                 yOffInput.Value = RenderSettings.offsetY;
 
-                int bitrate = RenderSettings.Width * RenderSettings.Height * 32 * 3 * 8; // 80 percent quality, explained below
-                videoWriter.Open(String.Format(VideoPath, RenderSettings.Version), RenderSettings.Width, RenderSettings.Height, 30, VideoCodec.MPEG4, bitrate);
+                videoWriter = new AviWriter(String.Format(VideoPath, RenderSettings.Version)) { FramesPerSecond = 30 };
+                videoStream = videoWriter.AddMotionJpegVideoStream(RenderSettings.Width, RenderSettings.Height, 100);
 
                 loaded = true;
             }
@@ -318,11 +289,8 @@ namespace Mandelbrot
 
             RenderSettings.VideoPath = VideoPath;
 
-            // width and height multiplied by 32, 32 bpp
-            // then multiply by framerate divided by ten, after multiplying by eight yeilds 80% of the normal amount of bits per second.  
-            // Note: we're assuming that there is no audio in the video.  Otherwise we would have to accomidate for that as well.  
-            int bitrate = RenderSettings.Width * RenderSettings.Height * 32 * 3 * 8; // 80 percent quality
-            videoWriter.Open(String.Format(VideoPath, RenderSettings.Version), RenderSettings.Width, RenderSettings.Height, 30, VideoCodec.MPEG4, bitrate);
+            videoWriter = new AviWriter(String.Format(VideoPath, RenderSettings.Version)) { FramesPerSecond = 30 };
+            videoStream = videoWriter.AddMotionJpegVideoStream(RenderSettings.Width, RenderSettings.Height, 100);
 
             newRenderToolStripMenuItem.Enabled = false;
             loadRenderToolStripMenuItem.Enabled = false;
@@ -355,10 +323,13 @@ namespace Mandelbrot
             loadRenderToolStripMenuItem.Enabled = true;
             ResolutionToolStripMenuItem.Enabled = true;
             loadPaletteToolStripMenuItem.Enabled = true;
-
-            UpdateFractal();
+            if (LoadedFile)
+            {
+                UpdateFractal();
+            }
 
             videoWriter.Close();
+            videoWriter = null;
         }
 
         private void loadPaletteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -488,7 +459,7 @@ namespace Mandelbrot
 
         private void FractalApp_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (videoWriter.IsOpen)
+            if (videoWriter != null)
             {
                 e.Cancel = true;
                 TrayIcon.Visible = true;
