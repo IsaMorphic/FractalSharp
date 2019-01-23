@@ -17,7 +17,7 @@ namespace Mandelbrot.Movies
         private int _version;
 
         [ScriptIgnore]
-        public override Type AlgorithmType { get => _AlgorithmType; set => _AlgorithmType = value; }
+        public override Type AlgorithmType { get => base.AlgorithmType; set => base.AlgorithmType = value; }
 
         public int NumFrames { get => _numFrames; set => _numFrames = value; }
 
