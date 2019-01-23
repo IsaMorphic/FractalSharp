@@ -19,8 +19,8 @@ using Mandelbrot.Rendering;
 using Mandelbrot.Utilities;
 using Mandelbrot.Algorithms;
 
-using Accord.Video.FFMPEG;
 using Mandelbrot.Movies;
+
 using System.Reflection;
 
 namespace Mandelbrot
@@ -32,10 +32,6 @@ namespace Mandelbrot
 
         private Type perturbationAlgorithm =
             typeof(PerturbationAlgorithmProvider<>);
-
-        // Video file properties
-        private VideoFileReader videoReader = new VideoFileReader();
-        private VideoFileWriter videoWriter = new VideoFileWriter();
 
         // Process statistics
         private DateTime currentFrameStartTime;
@@ -50,7 +46,7 @@ namespace Mandelbrot
             typeof(TraditionalAlgorithmProvider<>);
 
         private GenericMathResolver MathResolver =
-            new GenericMathResolver(new Assembly[] 
+            new GenericMathResolver(new Assembly[]
             { Assembly.GetExecutingAssembly() });
 
         private MandelbrotMovieRenderer Renderer = new MandelbrotMovieRenderer();
@@ -59,8 +55,9 @@ namespace Mandelbrot
         private Action RenderMethod;
 
         // Fractal loading and saving properties.  
-        private bool RenderActive = false;
-        private bool LoadingFile = false;
+        private bool RenderHasBeenStarted = false;
+        private bool LoadedFile = false;
+        private bool SequenceOpen = false;
 
         private string VideoPath;
         private string SettingsPath;
@@ -112,7 +109,8 @@ namespace Mandelbrot
             }));
 
             // Calculate zoom... using math.pow to keep the zoom rate constant.
-            if (Renderer.Magnification > ExtraPrecisionThreshold)
+            if (Renderer.Magnification > ExtraPrecisionThreshold &&
+                RenderSettings.AlgorithmType != perturbationAlgorithm)
             {
                 RenderMethod = Renderer.RenderFrame<decimal>;
                 PrecisionSwitched = true;
@@ -123,7 +121,7 @@ namespace Mandelbrot
         {
             try
             {
-                videoWriter.WriteVideoFrame(frame);
+                frame.Save(String.Format(VideoPath, Renderer.NumFrames), ImageFormat.Png);
                 if (livePreviewCheckBox.Checked)
                 {
                     pictureBox1.Image = frame;
@@ -164,37 +162,11 @@ namespace Mandelbrot
 
         #endregion
 
-        #region Main-task Render Methods
-
-        // Simple method that reads a frame 
-        // from an old video file and saves it to a new one.  
-        private void GrabFrame()
-        {
-            FrameStart();
-
-            Renderer.SetFrame(Renderer.NumFrames + 1);
-
-            if (Renderer.NumFrames < videoReader.FrameCount - 1)
-            {
-                Bitmap frame = videoReader.ReadVideoFrame();
-                videoWriter.WriteVideoFrame(frame);
-                Task.Run(new Action(GrabFrame));
-            }
-            else
-            {
-                LoadingFile = false;
-                videoReader.Close();
-                Task.Run(RenderMethod);
-            }
-        }
-
-        #endregion
-
         #region Fractal Configuration Methods
 
         private bool LoadFractal()
         {
-            bool loaded = false;
+            bool success = false;
             FileLoadDialog.InitialDirectory = Path.Combine(Application.StartupPath, "Renders");
             if (FileLoadDialog.ShowDialog() == DialogResult.OK)
             {
@@ -236,23 +208,21 @@ namespace Mandelbrot
                 {
                     standardPrecisionToolStripMenuItem.Checked = true;
                     extraPrescisionToolStripMenuItem.Checked = false;
-                    RenderMethod = Renderer.RenderFrame<decimal>;
+                    RenderMethod = Renderer.RenderFrame<double>;
                 }
 
 
                 startFrameInput.Value = RenderSettings.NumFrames;
                 iterationCountInput.Value = RenderSettings.MaxIterations;
 
+                threadCountInput.Value = RenderSettings.ThreadCount;
+
                 xOffInput.Value = RenderSettings.offsetX;
                 yOffInput.Value = RenderSettings.offsetY;
 
-                int bitrate = RenderSettings.Width * RenderSettings.Height * 32 * 3 * 8; // 80 percent quality, explained below
-                videoReader.Open(String.Format(VideoPath, RenderSettings.Version));
-                videoWriter.Open(String.Format(VideoPath, RenderSettings.Version + 1), RenderSettings.Width, RenderSettings.Height, 30, VideoCodec.MPEG4, bitrate);
-
-                loaded = true;
+                success = true;
             }
-            return loaded;
+            return success;
         }
 
         private void SaveFractal()
@@ -261,6 +231,8 @@ namespace Mandelbrot
             string fractalDate = DateTime.Now.ToShortDateString().Replace('/', '-');
             string fileName = String.Format("{0}_{1}.fractal", fractalName, fractalDate);
             string filePath = Path.Combine(Application.StartupPath, "Renders", fileName);
+
+            SettingsPath = filePath;
 
             JavaScriptSerializer js = new JavaScriptSerializer();
             string jsonData = js.Serialize(RenderSettings);
@@ -273,7 +245,8 @@ namespace Mandelbrot
             string jsonData = File.ReadAllText(SettingsPath);
 
             JavaScriptSerializer js = new JavaScriptSerializer();
-            RenderSettings = js.Deserialize<ZoomMovieSettings>(jsonData);
+
+            RenderSettings.NumFrames = Renderer.NumFrames;
 
             RenderSettings.Version++;
 
@@ -303,18 +276,14 @@ namespace Mandelbrot
             string videoDirectory = Path.GetDirectoryName(VideoPath);
             string videoName = Path.GetFileNameWithoutExtension(VideoPath);
 
-            if (!videoName.EndsWith("_{0}.avi"))
-                videoName += "_{0}.avi";
+            if (!videoName.EndsWith("_{0}.png"))
+                videoName += "_{0}.png";
 
             VideoPath = Path.Combine(videoDirectory, videoName);
 
             RenderSettings.VideoPath = VideoPath;
 
-            // width and height multiplied by 32, 32 bpp
-            // then multiply by framerate divided by ten, after multiplying by eight yeilds 80% of the normal amount of bits per second.  
-            // Note: we're assuming that there is no audio in the video.  Otherwise we would have to accomidate for that as well.  
-            int bitrate = RenderSettings.Width * RenderSettings.Height * 32 * 3 * 8; // 80 percent quality
-            videoWriter.Open(String.Format(VideoPath, RenderSettings.Version), RenderSettings.Width, RenderSettings.Height, 30, VideoCodec.MPEG4, bitrate);
+            SequenceOpen = true;
 
             newRenderToolStripMenuItem.Enabled = false;
             loadRenderToolStripMenuItem.Enabled = false;
@@ -327,7 +296,9 @@ namespace Mandelbrot
         {
             if (LoadFractal())
             {
-                LoadingFile = true;
+                LoadedFile = true;
+
+				SequenceOpen = true;
 
                 newRenderToolStripMenuItem.Enabled = false;
                 loadRenderToolStripMenuItem.Enabled = false;
@@ -348,7 +319,9 @@ namespace Mandelbrot
             ResolutionToolStripMenuItem.Enabled = true;
             loadPaletteToolStripMenuItem.Enabled = true;
 
-            videoWriter.Close();
+            SequenceOpen = false;
+
+            UpdateFractal();
         }
 
         private void loadPaletteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -372,25 +345,23 @@ namespace Mandelbrot
                 RenderSettings.NumFrames = (int)startFrameInput.Value;
                 RenderSettings.ThreadCount = (int)threadCountInput.Value;
 
-                Renderer.Setup(RenderSettings);
-
-                if (!LoadingFile)
+                if (!LoadedFile)
                 {
-                    if (!RenderActive)
+                    Renderer.Setup(RenderSettings);
+                    if (!RenderHasBeenStarted)
                     {
-                        RenderActive = true;
+                        RenderHasBeenStarted = true;
                         SaveFractal();
                     }
-                    Task.Run(RenderMethod);
                 }
                 else
                 {
-                    UpdateFractal();
                     RGB[] palette = Utils.LoadPallete(RenderSettings.PalettePath);
                     Renderer.Initialize(RenderSettings, palette, MathResolver);
                     Renderer.Setup(RenderSettings);
-                    Task.Run((Action)GrabFrame);
                 }
+                Task.Run(RenderMethod);
+
                 intervalTimer.Start();
                 algorithmToolStripMenuItem.Enabled = false;
                 presicionStripMenuItem.Enabled = false;
@@ -431,14 +402,12 @@ namespace Mandelbrot
         {
             perturbationToolStripMenuItem.Checked = false;
             RenderSettings.AlgorithmType = traditionalAlgorithm;
-            Renderer.Setup(RenderSettings);
         }
 
         private void perturbationToolStripMenuItem_Click(object sender, EventArgs e)
         {
             traditionalToolStripMenuItem.Checked = false;
             RenderSettings.AlgorithmType = perturbationAlgorithm;
-            Renderer.Setup(RenderSettings);
         }
 
         private void x540ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -482,7 +451,7 @@ namespace Mandelbrot
 
         private void FractalApp_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (videoWriter.IsOpen)
+            if (SequenceOpen)
             {
                 e.Cancel = true;
                 TrayIcon.Visible = true;

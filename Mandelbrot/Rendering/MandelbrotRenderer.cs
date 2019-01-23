@@ -367,13 +367,13 @@ namespace Mandelbrot.Rendering
 
                     T znMagn = pixelData.GetZnMagn();
                     int iterCount = pixelData.GetIterCount();
-                    bool isBelowMaxIter = pixelData.GetBelowMaxIter();
+                    bool pointEscaped = pixelData.Escaped();
 
                     Color PixelColor;
 
                     // if zn's magnitude surpasses the 
                     // bailout radius, give it a fancy color.
-                    if (isBelowMaxIter) // itercount
+                    if (pointEscaped) // itercount
                     {
                         PixelColor = GetColorFromIterationCount(iterCount, TMath.toDouble(znMagn));
                     }

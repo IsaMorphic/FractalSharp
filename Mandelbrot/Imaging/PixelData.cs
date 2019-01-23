@@ -22,7 +22,7 @@ namespace Mandelbrot.Imaging
             return IterCount;
         }
 
-        public bool GetBelowMaxIter()
+        public bool Escaped()
         {
             return BelowMaxIter;
         }
