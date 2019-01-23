@@ -43,7 +43,7 @@ namespace Mandelbrot
         private float DeltaY;
 
         private RenderSettings ExplorationSettings = new RenderSettings();
-        private MandelbrotRenderer ExplorationRenderer = new MandelbrotRenderer();
+        private GpuRenderer ExplorationRenderer = new GpuRenderer();
 
 
         private RGB[] ColorPalette;
@@ -245,7 +245,7 @@ namespace Mandelbrot
 
         private void RenderPhoto()
         {
-            MandelbrotRenderer PhotoRenderer = new MandelbrotRenderer();
+            GpuRenderer PhotoRenderer = new GpuRenderer();
             PhotoRenderer.FrameStart += () => { return; };
             PhotoRenderer.FrameEnd += PhotoRenderer_FrameEnd;
             RenderSettings PhotoSettings = new RenderSettings();
