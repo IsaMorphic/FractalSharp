@@ -86,8 +86,8 @@ namespace Mandelbrot
             threadCountInput.Value = RenderSettings.ThreadCount / 2;
             threadCountInput.Maximum = RenderSettings.ThreadCount - 1;
 
-            Renderer.FrameStart += FrameStart;
-            Renderer.FrameEnd += FrameEnd;
+            Renderer.FrameStarted += FrameStart;
+            Renderer.FrameFinished += FrameEnd;
 
             Renderer.RenderHalted += Shutdown;
 

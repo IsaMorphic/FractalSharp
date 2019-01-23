@@ -157,8 +157,8 @@ namespace Mandelbrot
 
             ExplorationSettings.ThreadCount = Environment.ProcessorCount - 1;
 
-            ExplorationRenderer.FrameStart += ExplorationRenderer_FrameStart;
-            ExplorationRenderer.FrameEnd += ExplorationRenderer_FrameEnd;
+            ExplorationRenderer.FrameStarted += ExplorationRenderer_FrameStart;
+            ExplorationRenderer.FrameFinished += ExplorationRenderer_FrameEnd;
             ExplorationRenderer.RenderHalted += ExplorationRenderer_RenderHalted;
 
             ExplorationRenderer.Initialize(
@@ -246,8 +246,8 @@ namespace Mandelbrot
         private void RenderPhoto()
         {
             GpuRenderer PhotoRenderer = new GpuRenderer();
-            PhotoRenderer.FrameStart += () => { return; };
-            PhotoRenderer.FrameEnd += PhotoRenderer_FrameEnd;
+            PhotoRenderer.FrameStarted += () => { return; };
+            PhotoRenderer.FrameFinished += PhotoRenderer_FrameEnd;
             RenderSettings PhotoSettings = new RenderSettings();
             PhotoSettings.offsetX = ExplorationSettings.offsetX;
             PhotoSettings.offsetY = ExplorationSettings.offsetY;

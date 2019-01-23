@@ -134,7 +134,7 @@ namespace Mandelbrot.Rendering
 
         public void RenderFrameGPU()
         {
-            StartFrame();
+            FrameStart();
 
             IGenericMath<double> TMath = MathResolver.CreateMathObject<double>();
             GPUAlgorithmProvider.Init(TMath, offsetXM, offsetYM, MaxIterations);
@@ -149,7 +149,7 @@ namespace Mandelbrot.Rendering
 
             Bitmap NewFrame = (Bitmap)CurrentFrame.Bitmap.Clone();
 
-            EndFrame(NewFrame);
+            FrameEnd(NewFrame);
         }
     }
 }

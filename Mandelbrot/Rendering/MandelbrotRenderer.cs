@@ -62,18 +62,18 @@ namespace Mandelbrot.Rendering
 
         protected CancellationTokenSource Job;
 
-        public event FrameStartDelegate FrameStart;
-        public event FrameStopDelegate FrameEnd;
+        public event FrameStartDelegate FrameStarted;
+        public event FrameStopDelegate FrameFinished;
         public event RenderStopDelegate RenderHalted;
 
-        protected virtual void StartFrame()
+        protected virtual void FrameStart()
         {
-            FrameStart();
+            FrameStarted();
         }
 
-        protected virtual void EndFrame(Bitmap frame)
+        protected virtual void FrameEnd(Bitmap frame)
         {
-            FrameEnd(frame);
+            FrameFinished(frame);
         }
 
         #region Initialization and Configuration Methods
