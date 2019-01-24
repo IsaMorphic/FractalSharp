@@ -14,12 +14,15 @@ namespace Mandelbrot.Algorithms
     class PerturbationAlgorithmProvider<T> : GPUAlgorithmProvider<T>
     {
         private IGenericMath<T> TMath;
-        private List<GenericComplex<T>> pointsList;
+        private ComplexMath<T> CMath;
+        private List<GenericComplex<T>> X, TwoX, A, B, C;
 
         private CudaDeviceVariable<cuDoubleComplex> dev_points;
 
         private T Zero;
         private T OneHalf;
+        private T One;
+        private T Two;
         private T TwoPow8;
         private T NegTwoPow8;
         private T TwoPow10;
@@ -29,16 +32,20 @@ namespace Mandelbrot.Algorithms
         private decimal center_imag;
 
         private int MaxIterations;
+        private int SkippedIterations;
 
         // Perturbation Theory Algorithm, 
         // produces a list of iteration values used to compute the surrounding points
         public override void Init(IGenericMath<T> TMath, decimal offsetX, decimal offsetY, int maxIterations)
         {
             this.TMath = TMath;
+            CMath = new ComplexMath<T>(TMath);
             MaxIterations = maxIterations;
 
             Zero = TMath.fromInt32(0);
             OneHalf = TMath.fromDouble(0.5);
+            One = TMath.fromInt32(1);
+            Two = TMath.fromInt32(2);
             TwoPow8 = TMath.fromInt32(256);
             NegTwoPow8 = TMath.fromInt32(-256);
             TwoPow10 = TMath.fromInt32(1024);
@@ -47,15 +54,23 @@ namespace Mandelbrot.Algorithms
             center_real = offsetX;
             center_imag = offsetY;
 
-            pointsList = GetSurroundingPoints();
+            A = new List<GenericComplex<T>>();
+            B = new List<GenericComplex<T>>();
+            C = new List<GenericComplex<T>>();
+            X = new List<GenericComplex<T>>();
+            TwoX = new List<GenericComplex<T>>();
+
+            GetSurroundingPoints();
+            A.Add(new GenericComplex<T>(One, Zero));
+            B.Add(new GenericComplex<T>(Zero, Zero));
+            C.Add(new GenericComplex<T>(Zero, Zero));
+            SkippedIterations = ApproximateSeries();
         }
 
-        public List<GenericComplex<T>> GetSurroundingPoints()
+        public void GetSurroundingPoints()
         {
             decimal xn_r = center_real;
             decimal xn_i = center_imag;
-
-            var x = new List<GenericComplex<T>>();
 
             for (int i = 0; i < MaxIterations; i++)
             {
@@ -66,42 +81,95 @@ namespace Mandelbrot.Algorithms
                 decimal xn_r2 = xn_r * xn_r;
                 decimal xn_i2 = xn_i * xn_i;
 
-                GenericComplex<T> c = new GenericComplex<T>(TMath.fromDecimal(real), TMath.fromDecimal(imag));
+                GenericComplex<T> c = new GenericComplex<T>(TMath.fromDecimal(xn_r), TMath.fromDecimal(xn_i));
+                GenericComplex<T> two_c = new GenericComplex<T>(TMath.fromDecimal(real), TMath.fromDecimal(imag));
 
-                x.Add(c);
-
-                // make sure our numbers don't get too big
-
-                if (real >  1024 || imag >  1024 ||
-                    real < -1024 || imag < -1024)
-                    break;
+                X.Add(c);
+                TwoX.Add(two_c);
 
                 // calculate next iteration, remember real = 2 * xn_r
 
                 xn_r = xn_r2 - xn_i2 + center_real;
                 xn_i = real * xn_i + center_imag;
             }
-            return x;
+        }
+
+        private void IterateA(int n)
+        {
+            A.Add(
+                CMath.Add(
+                    CMath.Multiply(
+                        CMath.Multiply(X[n - 1], A[n - 1]),
+                    Two),
+                new GenericComplex<T>(One, Zero)));
+        }
+
+        private void IterateB(int n)
+        {
+            B.Add(
+                CMath.Add(
+                    CMath.Multiply(
+                        CMath.Multiply(X[n - 1], B[n - 1]),
+                    Two),
+                CMath.Multiply(A[n - 1], A[n - 1])));
+        }
+
+        private void IterateC(int n)
+        {
+            C.Add(
+                CMath.Multiply(
+                    CMath.Add(
+                        CMath.Multiply(X[n - 1], C[n - 1]),
+                        CMath.Multiply(A[n - 1], B[n - 1])),
+                Two));
+        }
+
+        private int ApproximateSeries()
+        {
+            for (int n = 1; n < X.Count; n++)
+            {
+                IterateA(n);
+                IterateB(n);
+                IterateC(n);
+                if (TMath.LessThan(CMath.MagnitudeSquared(B[n]), CMath.MagnitudeSquared(C[n])))
+                {
+                    return Math.Max(n - 3, 0);
+                }
+            }
+
+            return X.Count - 1;
         }
 
         // Non-Traditional Mandelbrot algorithm, 
         // Iterates a point over its neighbors to approximate an iteration count.
         public override PixelData<T> Run(T x0, T y0)
         {
-            ComplexMath<T> CMath = new ComplexMath<T>(TMath);
 
             // Get max iterations.  
-            int maxIterations = pointsList.Count - 1;
+            int maxIterations = X.Count - 1;
 
             // Initialize our iteration count.
-            int iterCount = 0;
+            int n = SkippedIterations;
 
             // Initialize some variables...
             GenericComplex<T> zn;
 
             GenericComplex<T> d0 = new GenericComplex<T>(x0, y0);
 
-            GenericComplex<T> dn = d0;
+            GenericComplex<T>[] d0_tothe = new GenericComplex<T>[4];
+
+            d0_tothe[1] = d0;
+
+            for (int i = 2; i < d0_tothe.Length; i++)
+            {
+                d0_tothe[i] = CMath.Multiply(d0_tothe[i - 1], d0_tothe[1]);
+            }
+
+            GenericComplex<T> dn = CMath.Add(
+                CMath.Multiply(A[n], d0_tothe[1]),
+                CMath.Add(CMath.Multiply(B[n], d0_tothe[2]),
+                CMath.Multiply(C[n], d0_tothe[3])));
+
 
             T znMagn = Zero;
 
@@ -109,22 +177,22 @@ namespace Mandelbrot.Algorithms
             do
             {
 
-                // dn *= iter_list[iter] + dn
-                dn = CMath.Multiply(dn, CMath.Add(pointsList[iterCount], dn));
+                // dn *= 2*Xn + dn
+                dn = CMath.Multiply(dn, CMath.Add(TwoX[n], dn));
 
                 // dn += d0
                 dn = CMath.Add(dn, d0);
 
-                iterCount++;
+                n++;
 
                 // zn = x[iter] * 0.5 + dn
-                zn = CMath.Add(CMath.Multiply(pointsList[iterCount], OneHalf), dn);
+                zn = CMath.Add(X[n], dn);
 
                 znMagn = CMath.MagnitudeSquared(zn);
 
-            } while (TMath.LessThan(znMagn, TwoPow8) && iterCount < maxIterations);
+            } while (TMath.LessThan(znMagn, TwoPow8) && n < maxIterations);
 
-            return new PixelData<T>(znMagn, iterCount, iterCount < maxIterations);
+            return new PixelData<T>(znMagn, n, n < maxIterations);
         }
 
         public override void GPUInit(CudaContext ctx, byte[] ptxImage, dim3 gridDim, dim3 blockDim)
@@ -138,10 +206,10 @@ namespace Mandelbrot.Algorithms
         public override void GPUPreFrame()
         {
             cuDoubleComplex[] cuDoubles =
-                new cuDoubleComplex[pointsList.Count];
+                new cuDoubleComplex[X.Count];
             for (var i = 0; i < cuDoubles.Length; i++)
             {
-                GenericComplex<T> complex = pointsList[i];
+                GenericComplex<T> complex = X[i];
                 cuDoubles[i] = new cuDoubleComplex(
                         TMath.toDouble(complex.real),
                         TMath.toDouble(complex.imag));
