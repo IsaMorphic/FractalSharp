@@ -211,12 +211,10 @@ namespace Mandelbrot.Rendering
             T xMin = TMath.Divide(TMath.Negate(scaleFactor), zoom);
             T xMax = TMath.Divide(scaleFactor, zoom);
 
-            // y_min = -1 / zoom
-            // y_max =  1 / zoom
+            // y_min = -2 / zoom
+            // y_max =  2 / zoom
             T yMin = TMath.Divide(TMath.fromInt32(-2), zoom);
             T yMax = TMath.Divide(TMath.fromInt32(2), zoom);
-
-            algorithmProvider.Init(TMath, offsetXM, offsetYM, MaxIterations);
 
             var loop = Parallel.For(CellX * CellWidth, (CellX + 1) * CellWidth, new ParallelOptions { CancellationToken = Job.Token, MaxDegreeOfParallelism = ThreadCount }, px =>
             {
@@ -294,6 +292,8 @@ namespace Mandelbrot.Rendering
 
             // Fire frame start event
             FrameStart();
+
+            algorithmProvider.Init(TMath, new RenderSettings { Magnification = Magnification, offsetX = offsetXM, offsetY = offsetYM, MaxIterations = MaxIterations });
 
             if (Gradual)
             {

@@ -2,6 +2,7 @@
 using ManagedCuda.VectorTypes;
 using Mandelbrot.Imaging;
 using Mandelbrot.Mathematics;
+using Mandelbrot.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +27,7 @@ namespace Mandelbrot.Algorithms
             double xMax, double yMax,
             int chunkSize, int maxChunkSize);
 
-        public abstract void Init(IGenericMath<T> TMath, decimal offsetX, decimal offsetY, int maxIterations);
+        public abstract void Init(IGenericMath<T> TMath, RenderSettings settings);
         public abstract PixelData<T> Run(T x0, T y0);
     }
 }

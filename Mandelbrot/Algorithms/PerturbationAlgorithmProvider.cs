@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Numerics;
+using Mandelbrot.Rendering;
 
 namespace Mandelbrot.Algorithms
 {
@@ -17,8 +18,9 @@ namespace Mandelbrot.Algorithms
         private IGenericMath<T> TMath;
         private ComplexMath<T> CMath;
         private List<Complex> X, TwoX, A, B, C;
+        private List<Complex>[] ProbePoints = new List<Complex>[20];
 
-        private CudaDeviceVariable<cuDoubleComplex> dev_points;
+        //private CudaDeviceVariable<cuDoubleComplex> dev_points;
 
         private T Zero;
         private T OneHalf;
@@ -35,6 +37,8 @@ namespace Mandelbrot.Algorithms
         private int MaxIterations;
         private int SkippedIterations;
 
+        private double Magnification;
+
         private double MagnitudeSquared(Complex a)
         {
             return a.Real * a.Real + a.Imaginary * a.Imaginary;
@@ -42,11 +46,12 @@ namespace Mandelbrot.Algorithms
 
         // Perturbation Theory Algorithm, 
         // produces a list of iteration values used to compute the surrounding points
-        public void Init(IGenericMath<T> TMath, decimal offsetX, decimal offsetY, int maxIterations)
+        public void Init(IGenericMath<T> TMath, RenderSettings settings)
         {
             this.TMath = TMath;
             CMath = new ComplexMath<T>(TMath);
-            MaxIterations = maxIterations;
+            MaxIterations = settings.MaxIterations;
+            Magnification = settings.Magnification;
 
             Zero = TMath.fromInt32(0);
             OneHalf = TMath.fromDouble(0.5);
@@ -57,8 +62,8 @@ namespace Mandelbrot.Algorithms
             TwoPow10 = TMath.fromInt32(1024);
             NegTwoPow10 = TMath.fromInt32(-1024);
 
-            center_real = TMath.fromDecimal(offsetX);
-            center_imag = TMath.fromDecimal(offsetY);
+            center_real = TMath.fromDecimal(settings.offsetX);
+            center_imag = TMath.fromDecimal(settings.offsetY);
 
             A = new List<Complex>();
             B = new List<Complex>();
@@ -66,11 +71,19 @@ namespace Mandelbrot.Algorithms
             X = new List<Complex>();
             TwoX = new List<Complex>();
 
+            Random random = new Random();
+            for (var i = 0; i < ProbePoints.Length; i++)
+            {
+                ProbePoints[i] = new List<Complex>();
+                ProbePoints[i].Add(new Complex((random.NextDouble() * 4 - 2) / Magnification, (random.NextDouble() * 4 - 2) / Magnification));
+            }
+
             GetSurroundingPoints();
             A.Add(new Complex(1, 0));
             B.Add(new Complex(0, 0));
             C.Add(new Complex(0, 0));
-            SkippedIterations = ApproximateSeries();
+            ApproximateSeries();
+            Console.WriteLine(SkippedIterations);
         }
 
         public void GetSurroundingPoints()
@@ -92,11 +105,26 @@ namespace Mandelbrot.Algorithms
 
                 X.Add(c);
                 TwoX.Add(two_c);
-
                 // calculate next iteration, remember real = 2 * xn_r
+                if (MagnitudeSquared(X[i]) > 4)
+                    break;
+
 
                 xn_r = TMath.Add(TMath.Subtract(xn_r2, xn_i2), center_real);
                 xn_i = TMath.Add(TMath.Multiply(real, xn_i), center_imag);
+            }
+        }
+
+        private void IterateProbePoints(int n)
+        {
+            foreach (var P in ProbePoints)
+            {
+                var d0 = P[0];
+                var dn = P[n - 1];
+                dn *= TwoX[n] + dn;
+                // dn += d0
+                dn += d0;
+                P.Add(dn);
             }
         }
 
@@ -115,20 +143,29 @@ namespace Mandelbrot.Algorithms
             C.Add(2 * X[n - 1] * C[n - 1] + 2 * A[n - 1] * B[n - 1]);
         }
 
-        private int ApproximateSeries()
+        private void ApproximateSeries()
         {
             for (int n = 1; n < X.Count; n++)
             {
                 IterateA(n);
                 IterateB(n);
                 IterateC(n);
-                if (MagnitudeSquared(B[n]) < MagnitudeSquared(C[n]))
+                IterateProbePoints(n);
+
+                double error = 0;
+                foreach (var P in ProbePoints) {
+                    error += MagnitudeSquared((A[n] * P[0] + B[n] * P[0] * P[0] + C[n] * P[0] * P[0] * P[0]) - P[n]);
+                }
+                error /= ProbePoints.Length;
+                if (error > 1 / Magnification)
                 {
-                    return Math.Max(n - 3, 0);
+                    SkippedIterations = Math.Max(n - 5, 0);
+                    return;
                 }
             }
 
-            return X.Count - 1;
+            SkippedIterations = X.Count - 1;
+            return;
         }
 
         // Non-Traditional Mandelbrot algorithm, 

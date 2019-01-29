@@ -137,7 +137,7 @@ namespace Mandelbrot.Rendering
             FrameStart();
 
             IGenericMath<double> TMath = MathResolver.CreateMathObject<double>();
-            GPUAlgorithmProvider.Init(TMath, offsetXM, offsetYM, MaxIterations);
+            GPUAlgorithmProvider.Init(TMath, new RenderSettings { Magnification = Magnification, offsetX = offsetXM, offsetY = offsetYM, MaxIterations = MaxIterations });
 
             var renderTask = Task.Run(RenderGPUCells, Job.Token);
 
