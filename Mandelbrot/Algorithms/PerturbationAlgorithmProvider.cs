@@ -18,18 +18,13 @@ namespace Mandelbrot.Algorithms
         private IGenericMath<T> TMath;
         private ComplexMath<T> CMath;
         private List<Complex> X, TwoX, A, B, C;
-        private List<Complex>[] ProbePoints = new List<Complex>[20];
+        private List<Complex[]>[] ProbePoints = new List<Complex[]>[20];
 
         //private CudaDeviceVariable<cuDoubleComplex> dev_points;
 
         private T Zero;
-        private T OneHalf;
-        private T One;
-        private T Two;
         private T TwoPow8;
-        private T NegTwoPow8;
         private T TwoPow10;
-        private T NegTwoPow10;
 
         private T center_real;
         private T center_imag;
@@ -54,13 +49,8 @@ namespace Mandelbrot.Algorithms
             Magnification = settings.Magnification;
 
             Zero = TMath.fromInt32(0);
-            OneHalf = TMath.fromDouble(0.5);
-            One = TMath.fromInt32(1);
-            Two = TMath.fromInt32(2);
             TwoPow8 = TMath.fromInt32(256);
-            NegTwoPow8 = TMath.fromInt32(-256);
             TwoPow10 = TMath.fromInt32(1024);
-            NegTwoPow10 = TMath.fromInt32(-1024);
 
             center_real = TMath.fromDecimal(settings.offsetX);
             center_imag = TMath.fromDecimal(settings.offsetY);
@@ -72,10 +62,11 @@ namespace Mandelbrot.Algorithms
             TwoX = new List<Complex>();
 
             Random random = new Random();
-            for (var i = 0; i < ProbePoints.Length; i++)
+            for (int i = 0; i < ProbePoints.Length; i++)
             {
-                ProbePoints[i] = new List<Complex>();
-                ProbePoints[i].Add(new Complex((random.NextDouble() * 4 - 2) / Magnification, (random.NextDouble() * 4 - 2) / Magnification));
+                ProbePoints[i] = new List<Complex[]>();
+                var point = new Complex((random.NextDouble() * 4 - 2) / Magnification, (random.NextDouble() * 4 - 2) / Magnification);
+                ProbePoints[i].Add(new Complex[3] { point, point * point, point * point * point });
             }
 
             GetSurroundingPoints();
@@ -83,7 +74,6 @@ namespace Mandelbrot.Algorithms
             B.Add(new Complex(0, 0));
             C.Add(new Complex(0, 0));
             ApproximateSeries();
-            Console.WriteLine(SkippedIterations);
         }
 
         public void GetSurroundingPoints()
@@ -119,12 +109,12 @@ namespace Mandelbrot.Algorithms
         {
             foreach (var P in ProbePoints)
             {
-                var d0 = P[0];
-                var dn = P[n - 1];
+                var d0 = P[0][0];
+                var dn = P[n - 1][0];
                 dn *= TwoX[n] + dn;
                 // dn += d0
                 dn += d0;
-                P.Add(dn);
+                P.Add(new Complex[] { dn });
             }
         }
 
@@ -153,13 +143,14 @@ namespace Mandelbrot.Algorithms
                 IterateProbePoints(n);
 
                 double error = 0;
-                foreach (var P in ProbePoints) {
-                    error += MagnitudeSquared((A[n] * P[0] + B[n] * P[0] * P[0] + C[n] * P[0] * P[0] * P[0]) - P[n]);
+                foreach (var P in ProbePoints)
+                {
+                    error += MagnitudeSquared((A[n] * P[0][0] + B[n] * P[0][1] + C[n] * P[0][2]) - P[n][0]);
                 }
                 error /= ProbePoints.Length;
                 if (error > 1 / Magnification)
                 {
-                    SkippedIterations = Math.Max(n - 5, 0);
+                    SkippedIterations = Math.Max(n - 3, 0);
                     return;
                 }
             }
@@ -184,16 +175,7 @@ namespace Mandelbrot.Algorithms
 
             Complex d0 = new Complex(TMath.toDouble(x0), TMath.toDouble(y0));
 
-            Complex[] d0_tothe = new Complex[4];
-
-            d0_tothe[1] = d0;
-
-            for (int i = 2; i < d0_tothe.Length; i++)
-            {
-                d0_tothe[i] = d0_tothe[i - 1] * d0_tothe[1];
-            }
-
-            Complex dn = A[n] * d0_tothe[1] + B[n] * d0_tothe[2] + C[n] * d0_tothe[3];
+            Complex dn = A[n] * d0 + B[n] * d0 * d0 + C[n] * d0 * d0 * d0;
 
 
             T znMagn = Zero;
