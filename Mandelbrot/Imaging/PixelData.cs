@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 
 namespace Mandelbrot.Imaging
 {
-    class PixelData<T>
+    class PixelData
     {
-        private T ZnMagn;
+        double Magnitude;
         private int IterCount;
-        private bool BelowMaxIter;
+        private bool Escaped;
 
-        public T GetZnMagn()
+        public double GetMagnitude()
         {
-            return ZnMagn;
+            return Magnitude;
         }
 
         public int GetIterCount()
@@ -22,16 +22,16 @@ namespace Mandelbrot.Imaging
             return IterCount;
         }
 
-        public bool Escaped()
+        public bool GetEscaped()
         {
-            return BelowMaxIter;
+            return Escaped;
         }
 
-        public PixelData(T ZnMagn, int IterCount, bool BelowMaxIter)
+        public PixelData(double Magnitude, int IterCount, bool Escaped)
         {
-            this.ZnMagn = ZnMagn;
+            this.Magnitude = Magnitude;
             this.IterCount = IterCount;
-            this.BelowMaxIter = BelowMaxIter;
+            this.Escaped = Escaped;
         }
     }
 }

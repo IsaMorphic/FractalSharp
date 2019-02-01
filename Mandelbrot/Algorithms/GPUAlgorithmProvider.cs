@@ -28,6 +28,6 @@ namespace Mandelbrot.Algorithms
             int chunkSize, int maxChunkSize);
 
         public abstract void Init(IGenericMath<T> TMath, RenderSettings settings);
-        public abstract PixelData<T> Run(T x0, T y0);
+        public abstract PixelData Run(T x0, T y0);
     }
 }

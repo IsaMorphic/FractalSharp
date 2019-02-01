@@ -38,7 +38,7 @@ namespace Mandelbrot.Algorithms
             Four = TMath.fromInt32(4);
         }
 
-        public override PixelData<T> Run(T px, T py)
+        public override PixelData Run(T px, T py)
         {
             T x0 = TMath.Add(px, offsetX);
             T y0 = TMath.Add(py, offsetY);
@@ -76,7 +76,7 @@ namespace Mandelbrot.Algorithms
 
                 iter++;
             }
-            return new PixelData<T>(TMath.Add(xx, yy), iter, iter < MaxIterations);
+            return new PixelData(TMath.toDouble(TMath.Add(xx, yy)), iter, iter < MaxIterations);
         }
 
         public override void GPUInit(CudaContext ctx, byte[] ptxImage, dim3 gridDim, dim3 blockDim)

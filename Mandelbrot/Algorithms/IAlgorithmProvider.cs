@@ -13,6 +13,6 @@ namespace Mandelbrot.Algorithms
     {
         void Init(IGenericMath<T> TMath, RenderSettings settings);
 
-        PixelData<T> Run(T x0, T y0);
+        PixelData Run(T x0, T y0);
     }
 }

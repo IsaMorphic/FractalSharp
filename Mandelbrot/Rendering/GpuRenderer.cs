@@ -81,7 +81,7 @@ namespace Mandelbrot.Rendering
             int chunkSize = ChunkSizes[index];
             int maxChunkSize = MaxChunkSizes[index];
 
-            double xMax = (double)(aspectM / Magnification);
+            double xMax = (double)(aspect / Magnification);
             double yMax = (double)(2 / Magnification);
 
             GPUAlgorithmProvider.GPUCell(
@@ -137,7 +137,7 @@ namespace Mandelbrot.Rendering
             FrameStart();
 
             IGenericMath<double> TMath = MathResolver.CreateMathObject<double>();
-            GPUAlgorithmProvider.Init(TMath, new RenderSettings { Magnification = Magnification, offsetX = offsetXM, offsetY = offsetYM, MaxIterations = MaxIterations });
+            GPUAlgorithmProvider.Init(TMath, new RenderSettings { Magnification = Magnification, offsetX = offsetX, offsetY = offsetY, MaxIterations = MaxIterations });
 
             var renderTask = Task.Run(RenderGPUCells, Job.Token);
 
