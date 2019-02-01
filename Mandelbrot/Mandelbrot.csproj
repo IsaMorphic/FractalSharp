@@ -109,7 +109,6 @@
     <Compile Include="Rendering\MandelbrotRenderer.cs" />
     <Compile Include="Rendering\RenderSettings.cs" />
     <Compile Include="Mathematics\ComplexMath.cs" />
-    <Compile Include="Mathematics\DecimalMath.cs" />
     <Compile Include="Mathematics\DoubleMath.cs" />
     <Compile Include="Mathematics\GenericComplex.cs" />
     <Compile Include="Mathematics\IGenericMath.cs" />

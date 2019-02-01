@@ -80,8 +80,8 @@ namespace Mandelbrot
             startFrameInput.Value = RenderSettings.NumFrames;
             iterationCountInput.Value = RenderSettings.MaxIterations;
 
-            xOffInput.Value = RenderSettings.offsetX;
-            yOffInput.Value = RenderSettings.offsetY;
+            xOffInput.Value = (decimal)RenderSettings.offsetX;
+            yOffInput.Value = (decimal)RenderSettings.offsetY;
 
             threadCountInput.Value = RenderSettings.ThreadCount / 2;
             threadCountInput.Maximum = RenderSettings.ThreadCount - 1;
@@ -112,7 +112,7 @@ namespace Mandelbrot
             if (Renderer.Magnification > ExtraPrecisionThreshold &&
                 RenderSettings.AlgorithmType != perturbationAlgorithm)
             {
-                RenderMethod = Renderer.RenderFrame<decimal>;
+                RenderMethod = Renderer.RenderFrame<BigDecimal>;
                 PrecisionSwitched = true;
             }
         }
@@ -155,7 +155,7 @@ namespace Mandelbrot
                 {
                     standardPrecisionToolStripMenuItem.Checked = false;
                     extraPrescisionToolStripMenuItem.Checked = true;
-                    RenderMethod = Renderer.RenderFrame<decimal>;
+                    RenderMethod = Renderer.RenderFrame<BigDecimal>;
                 }
             }));
         }
@@ -202,7 +202,7 @@ namespace Mandelbrot
                 {
                     standardPrecisionToolStripMenuItem.Checked = false;
                     extraPrescisionToolStripMenuItem.Checked = true;
-                    RenderMethod = Renderer.RenderFrame<decimal>;
+                    RenderMethod = Renderer.RenderFrame<BigDecimal>;
                 }
                 else
                 {
@@ -217,8 +217,8 @@ namespace Mandelbrot
 
                 threadCountInput.Value = RenderSettings.ThreadCount;
 
-                xOffInput.Value = RenderSettings.offsetX;
-                yOffInput.Value = RenderSettings.offsetY;
+                xOffInput.Value = (decimal)RenderSettings.offsetX;
+                yOffInput.Value = (decimal)RenderSettings.offsetY;
 
                 success = true;
             }
@@ -394,7 +394,7 @@ namespace Mandelbrot
         {
             standardPrecisionToolStripMenuItem.Checked = false;
             extraPrescisionToolStripMenuItem.Checked = true;
-            RenderMethod = Renderer.RenderFrame<decimal>;
+            RenderMethod = Renderer.RenderFrame<BigDecimal>;
             RenderSettings.ExtraPrecision = true;
         }
 
@@ -444,8 +444,8 @@ namespace Mandelbrot
 
             if (!Rendering)
             {
-                xOffInput.Value = exploreWindow.GetXOffset();
-                yOffInput.Value = exploreWindow.GetYOffset();
+                xOffInput.Value = (decimal)exploreWindow.GetXOffset();
+                yOffInput.Value = (decimal)exploreWindow.GetYOffset();
             }
         }
 

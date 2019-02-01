@@ -38,11 +38,11 @@ namespace Mandelbrot.Rendering
 
         protected int ThreadCount = Environment.ProcessorCount;
         public int MaxIterations { get; protected set; }
-        public double Magnification { get; protected set; }
+        public BigDecimal Magnification { get; protected set; }
 
-        protected decimal offsetXM;
-        protected decimal offsetYM;
-        protected decimal aspectM;
+        protected BigDecimal offsetXM;
+        protected BigDecimal offsetYM;
+        protected BigDecimal aspectM;
 
         protected int Width;
         protected int Height;
@@ -166,12 +166,12 @@ namespace Mandelbrot.Rendering
             return final.toColor();
         }
 
-        public void GetPointFromFrameLocation(int x, int y, out decimal offsetX, out decimal offsetY)
+        public void GetPointFromFrameLocation(int x, int y, out BigDecimal offsetX, out BigDecimal offsetY)
         {
-            decimal xRange = aspectM / (decimal)Magnification;
-            decimal yRange = 2 / (decimal)Magnification;
-            offsetX = Utils.Map<decimal>(new DecimalMath(), x, 0, Width, -xRange + offsetXM, xRange + offsetXM);
-            offsetY = Utils.Map<decimal>(new DecimalMath(), y, 0, Height, -yRange + offsetYM, yRange + offsetYM);
+            BigDecimal xRange = aspectM / Magnification;
+            BigDecimal yRange = 2 / Magnification;
+            offsetX = Utils.Map<BigDecimal>(new BigDecimalMath(), x, 0, Width, -xRange + offsetXM, xRange + offsetXM);
+            offsetY = Utils.Map<BigDecimal>(new BigDecimalMath(), y, 0, Height, -yRange + offsetYM, yRange + offsetYM);
         }
 
         #endregion
@@ -199,9 +199,9 @@ namespace Mandelbrot.Rendering
             T FrameWidth = TMath.fromInt32(Width);
             T FrameHeight = TMath.fromInt32(Height);
 
-            T zoom = TMath.fromDouble(Magnification);
+            T zoom = TMath.fromBigDecimal(Magnification);
 
-            T scaleFactor = TMath.fromDecimal(aspectM);
+            T scaleFactor = TMath.fromBigDecimal(aspectM);
 
             // Predefine minimum and maximum values of the plane, 
             // In order to avoid making unnecisary calculations on each pixel.  
@@ -293,7 +293,10 @@ namespace Mandelbrot.Rendering
             // Fire frame start event
             FrameStart();
 
-            algorithmProvider.Init(TMath, new RenderSettings { Magnification = Magnification, offsetX = offsetXM, offsetY = offsetYM, MaxIterations = MaxIterations });
+            var init = Task.Run(() => algorithmProvider.Init(TMath, new RenderSettings { Magnification = Magnification, offsetX = offsetXM, offsetY = offsetYM, MaxIterations = MaxIterations, Token = Job.Token }));
+            init.Wait(Job.Token);
+            if (init.IsCanceled)
+                return;
 
             if (Gradual)
             {

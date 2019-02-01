@@ -65,7 +65,7 @@ namespace Mandelbrot.Algorithms
             for (int i = 0; i < ProbePoints.Length; i++)
             {
                 ProbePoints[i] = new List<Complex[]>();
-                var point = new Complex((random.NextDouble() * 4 - 2) / Magnification, (random.NextDouble() * 4 - 2) / Magnification);
+                var point = new Complex((double)((random.NextDouble() * 4 - 2) / Magnification), (double)((random.NextDouble() * 4 - 2) / Magnification));
                 ProbePoints[i].Add(new Complex[3] { point, point * point, point * point * point });
             }
 
@@ -83,6 +83,7 @@ namespace Mandelbrot.Algorithms
 
             for (int i = 0; i < MaxIterations; i++)
             {
+                
                 // pre multiply by two
                 T real = TMath.Add(xn_r, xn_r);
                 T imag = TMath.Add(xn_i, xn_i);
@@ -163,7 +164,6 @@ namespace Mandelbrot.Algorithms
         // Iterates a point over its neighbors to approximate an iteration count.
         public PixelData<T> Run(T x0, T y0)
         {
-
             // Get max iterations.  
             int maxIterations = X.Count - 1;
 
@@ -198,7 +198,6 @@ namespace Mandelbrot.Algorithms
                 znMagn = TMath.fromDouble(MagnitudeSquared(zn));
 
             } while (TMath.LessThan(znMagn, TwoPow8) && n < maxIterations);
-
             return new PixelData<T>(znMagn, n, n < maxIterations);
         }
 

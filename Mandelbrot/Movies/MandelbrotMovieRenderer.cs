@@ -17,7 +17,7 @@ namespace Mandelbrot.Movies
         {
             base.Setup(settings);
             NumFrames = settings.NumFrames;
-            Magnification = Math.Pow(2, NumFrames / 16.0);
+            Magnification = BigDecimal.Pow(2, NumFrames / 16.0);
         }
 
         public void SetFrame(int frameNum)

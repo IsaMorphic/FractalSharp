@@ -30,8 +30,8 @@ namespace Mandelbrot.Algorithms
             this.TMath = TMath;
             MaxIterations = settings.MaxIterations;
 
-            this.offsetX = TMath.fromDecimal(settings.offsetX);
-            this.offsetY = TMath.fromDecimal(settings.offsetY);
+            this.offsetX = TMath.fromBigDecimal(settings.offsetX);
+            this.offsetY = TMath.fromBigDecimal(settings.offsetY);
 
             Zero = TMath.fromInt32(0);
             Two = TMath.fromInt32(2);

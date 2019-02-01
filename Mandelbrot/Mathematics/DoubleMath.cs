@@ -22,11 +22,11 @@ namespace Mandelbrot.Mathematics
 
         public double fromInt32(int a) { return a; }
         public double fromDouble(double a) { return a; }
-        public double fromDecimal(decimal a) { return (double)a; }
+        public double fromBigDecimal(BigDecimal a) { return (double)a; }
 
 
         public int toInt32(double a) { return (int)a; }
         public double toDouble(double a) { return a; }
-        public decimal toDecimal(double a) { return (decimal)a; }
+        public BigDecimal toBigDecimal(double a) { return a; }
     }
 }

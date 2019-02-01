@@ -25,10 +25,10 @@ namespace Mandelbrot.Mathematics
         // Specific Casts
         T fromInt32(int a);
         T fromDouble(double a);
-        T fromDecimal(decimal a);
+        T fromBigDecimal(BigDecimal a);
 
         int toInt32(T a);
         double toDouble(T a);
-        decimal toDecimal(T a);
+        BigDecimal toBigDecimal(T a);
     }
 }

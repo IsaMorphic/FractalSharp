@@ -81,8 +81,8 @@ namespace Mandelbrot.Rendering
             int chunkSize = ChunkSizes[index];
             int maxChunkSize = MaxChunkSizes[index];
 
-            double xMax = (double)aspectM / Magnification;
-            double yMax = 2 / Magnification;
+            double xMax = (double)(aspectM / Magnification);
+            double yMax = (double)(2 / Magnification);
 
             GPUAlgorithmProvider.GPUCell(
                 dev_image,

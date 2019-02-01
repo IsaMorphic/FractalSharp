@@ -285,12 +285,12 @@ namespace Mandelbrot
             frame.Save(newFullPath, ImageFormat.Png);
         }
 
-        public decimal GetXOffset()
+        public BigDecimal GetXOffset()
         {
             return ExplorationSettings.offsetX;
         }
 
-        public decimal GetYOffset()
+        public BigDecimal GetYOffset()
         {
             return ExplorationSettings.offsetY;
         }
@@ -329,7 +329,7 @@ namespace Mandelbrot
 
             ExplorationSettings.Magnification *= ExplorationSettings.Height / rectHeight;
             Point centerPoint = new Point(cornerX + rectWidth / 2, cornerY + rectHeight / 2);
-            decimal offsetX, offsetY;
+            BigDecimal offsetX, offsetY;
             ExplorationRenderer.GetPointFromFrameLocation(
                 centerPoint.X, centerPoint.Y,
                 out offsetX,
