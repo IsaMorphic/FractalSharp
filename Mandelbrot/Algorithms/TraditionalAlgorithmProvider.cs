@@ -3,6 +3,7 @@ using ManagedCuda.VectorTypes;
 using Mandelbrot.Imaging;
 using Mandelbrot.Mathematics;
 using Mandelbrot.Properties;
+using Mandelbrot.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,13 +25,13 @@ namespace Mandelbrot.Algorithms
 
         private int MaxIterations;
 
-        public override void Init(IGenericMath<T> TMath, decimal offsetX, decimal offsetY, int maxIterations)
+        public override void Init(IGenericMath<T> TMath, RenderSettings settings)
         {
             this.TMath = TMath;
-            MaxIterations = maxIterations;
+            MaxIterations = settings.MaxIterations;
 
-            this.offsetX = TMath.fromDecimal(offsetX);
-            this.offsetY = TMath.fromDecimal(offsetY);
+            this.offsetX = TMath.fromDecimal(settings.offsetX);
+            this.offsetY = TMath.fromDecimal(settings.offsetY);
 
             Zero = TMath.fromInt32(0);
             Two = TMath.fromInt32(2);

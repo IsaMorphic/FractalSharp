@@ -1,5 +1,6 @@
 ﻿using Mandelbrot.Imaging;
 using Mandelbrot.Mathematics;
+using Mandelbrot.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace Mandelbrot.Algorithms
 {
     interface IAlgorithmProvider<T>
     {
-        void Init(IGenericMath<T> TMath, decimal offsetX, decimal offsetY, int maxIterations);
+        void Init(IGenericMath<T> TMath, RenderSettings settings);
 
         PixelData<T> Run(T x0, T y0);
     }
