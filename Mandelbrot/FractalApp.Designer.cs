@@ -62,28 +62,26 @@
             this.livePreviewLabel = new System.Windows.Forms.Label();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.YOffLabel = new System.Windows.Forms.Label();
-            this.yOffInput = new System.Windows.Forms.NumericUpDown();
             this.startFrameLabel = new System.Windows.Forms.Label();
             this.max_iteration_label = new System.Windows.Forms.Label();
             this.iterationCountInput = new System.Windows.Forms.NumericUpDown();
             this.startFrameInput = new System.Windows.Forms.NumericUpDown();
             this.XOffLabel = new System.Windows.Forms.Label();
-            this.xOffInput = new System.Windows.Forms.NumericUpDown();
             this.coreCountLabel = new System.Windows.Forms.Label();
             this.threadCountInput = new System.Windows.Forms.NumericUpDown();
             this.viewTab = new System.Windows.Forms.TabPage();
             this.RenderSaveDialog = new System.Windows.Forms.SaveFileDialog();
             this.intervalTimer = new System.Windows.Forms.Timer(this.components);
             this.TrayIcon = new System.Windows.Forms.NotifyIcon(this.components);
+            this.xOffInput = new System.Windows.Forms.TextBox();
+            this.yOffInput = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.ViewControl.SuspendLayout();
             this.advancedTab.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.yOffInput)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.iterationCountInput)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.startFrameInput)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.xOffInput)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.threadCountInput)).BeginInit();
             this.viewTab.SuspendLayout();
             this.SuspendLayout();
@@ -363,13 +361,13 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel1.Controls.Add(this.YOffLabel, 1, 2);
-            this.tableLayoutPanel1.Controls.Add(this.yOffInput, 1, 3);
             this.tableLayoutPanel1.Controls.Add(this.startFrameLabel, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.max_iteration_label, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.iterationCountInput, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.startFrameInput, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.XOffLabel, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.xOffInput, 0, 3);
+            this.tableLayoutPanel1.Controls.Add(this.yOffInput, 1, 3);
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 6);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 4;
@@ -389,29 +387,6 @@
             this.YOffLabel.Size = new System.Drawing.Size(244, 17);
             this.YOffLabel.TabIndex = 8;
             this.YOffLabel.Text = "Y Offset";
-            // 
-            // yOffInput
-            // 
-            this.yOffInput.DecimalPlaces = 28;
-            this.yOffInput.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            196608});
-            this.yOffInput.Location = new System.Drawing.Point(255, 91);
-            this.yOffInput.Maximum = new decimal(new int[] {
-            2,
-            0,
-            0,
-            0});
-            this.yOffInput.Minimum = new decimal(new int[] {
-            2,
-            0,
-            0,
-            -2147483648});
-            this.yOffInput.Name = "yOffInput";
-            this.yOffInput.Size = new System.Drawing.Size(244, 22);
-            this.yOffInput.TabIndex = 9;
             // 
             // startFrameLabel
             // 
@@ -467,29 +442,6 @@
             this.XOffLabel.TabIndex = 6;
             this.XOffLabel.Text = "X Offset";
             // 
-            // xOffInput
-            // 
-            this.xOffInput.DecimalPlaces = 28;
-            this.xOffInput.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            196608});
-            this.xOffInput.Location = new System.Drawing.Point(4, 91);
-            this.xOffInput.Maximum = new decimal(new int[] {
-            2,
-            0,
-            0,
-            0});
-            this.xOffInput.Minimum = new decimal(new int[] {
-            2,
-            0,
-            0,
-            -2147483648});
-            this.xOffInput.Name = "xOffInput";
-            this.xOffInput.Size = new System.Drawing.Size(244, 22);
-            this.xOffInput.TabIndex = 7;
-            // 
             // coreCountLabel
             // 
             this.coreCountLabel.AutoSize = true;
@@ -538,6 +490,20 @@
             this.TrayIcon.Text = "Mandelbrot Renderer";
             this.TrayIcon.Click += new System.EventHandler(this.TrayIcon_Click);
             // 
+            // xOffInput
+            // 
+            this.xOffInput.Location = new System.Drawing.Point(4, 91);
+            this.xOffInput.Name = "xOffInput";
+            this.xOffInput.Size = new System.Drawing.Size(244, 22);
+            this.xOffInput.TabIndex = 10;
+            // 
+            // yOffInput
+            // 
+            this.yOffInput.Location = new System.Drawing.Point(255, 91);
+            this.yOffInput.Name = "yOffInput";
+            this.yOffInput.Size = new System.Drawing.Size(244, 22);
+            this.yOffInput.TabIndex = 11;
+            // 
             // FractalApp
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -560,10 +526,8 @@
             this.advancedTab.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.yOffInput)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.iterationCountInput)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.startFrameInput)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.xOffInput)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.threadCountInput)).EndInit();
             this.viewTab.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -600,10 +564,8 @@
         private System.Windows.Forms.Label startFrameLabel;
         private System.Windows.Forms.NumericUpDown iterationCountInput;
         private System.Windows.Forms.Label YOffLabel;
-        private System.Windows.Forms.NumericUpDown yOffInput;
         private System.Windows.Forms.NumericUpDown startFrameInput;
         private System.Windows.Forms.Label XOffLabel;
-        private System.Windows.Forms.NumericUpDown xOffInput;
         private System.Windows.Forms.SaveFileDialog RenderSaveDialog;
         private System.Windows.Forms.CheckBox livePreviewCheckBox;
         private System.Windows.Forms.Label livePreviewLabel;
@@ -618,6 +580,8 @@
         private System.Windows.Forms.ToolStripMenuItem traditionalToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem perturbationToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exploreFractalToolStripMenuItem;
+        private System.Windows.Forms.TextBox xOffInput;
+        private System.Windows.Forms.TextBox yOffInput;
     }
 }
 

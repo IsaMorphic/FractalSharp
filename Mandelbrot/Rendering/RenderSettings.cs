@@ -19,8 +19,8 @@ namespace Mandelbrot.Rendering
         private int    _threadCount   = Environment.ProcessorCount;
         private BigDecimal _magnification = 1;
 
-        private BigDecimal _offsetX = -0.743643887037158704752191506114774M;
-        private BigDecimal _offsetY =  0.131825904205311970493132056385139M;
+        private BigDecimal _offsetX = BigDecimal.Parse("-743643887037158704752191506114774E-33");
+        private BigDecimal _offsetY =  BigDecimal.Parse("131825904205311970493132056385139E-33");
 
         private int _width  = 960;
         private int _height = 540;

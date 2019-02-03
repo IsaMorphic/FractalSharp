@@ -54,7 +54,7 @@ namespace Mandelbrot
 
         private DateTime RenderStartTime;
 
-        public Explorer(string palettePath, decimal offsetX, decimal offsetY)
+        public Explorer(string palettePath, BigDecimal offsetX, BigDecimal offsetY)
         {
             ColorPalette = Utils.LoadPallete(palettePath);
             ExplorationSettings.offsetX = offsetX;

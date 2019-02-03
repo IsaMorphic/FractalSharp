@@ -317,7 +317,7 @@ namespace Mandelbrot.Rendering
                 }
             }
 
-            Bitmap newFrame = (Bitmap)CurrentFrame.Bitmap.Clone();
+            Bitmap newFrame = new Bitmap(CurrentFrame.Bitmap);
             FrameEnd(newFrame);
         }
 

@@ -80,8 +80,8 @@ namespace Mandelbrot
             startFrameInput.Value = RenderSettings.NumFrames;
             iterationCountInput.Value = RenderSettings.MaxIterations;
 
-            xOffInput.Value = (decimal)RenderSettings.offsetX;
-            yOffInput.Value = (decimal)RenderSettings.offsetY;
+            xOffInput.Text = RenderSettings.offsetX.ToString();
+            yOffInput.Text = RenderSettings.offsetY.ToString();
 
             threadCountInput.Value = RenderSettings.ThreadCount / 2;
             threadCountInput.Maximum = RenderSettings.ThreadCount - 1;
@@ -217,8 +217,8 @@ namespace Mandelbrot
 
                 threadCountInput.Value = RenderSettings.ThreadCount;
 
-                xOffInput.Value = (decimal)RenderSettings.offsetX;
-                yOffInput.Value = (decimal)RenderSettings.offsetY;
+                xOffInput.Text = RenderSettings.offsetX.ToString();
+                yOffInput.Text = RenderSettings.offsetY.ToString();
 
                 success = true;
             }
@@ -338,8 +338,8 @@ namespace Mandelbrot
             if (!Rendering)
             {
                 Rendering = true;
-                RenderSettings.offsetX = xOffInput.Value;
-                RenderSettings.offsetY = yOffInput.Value;
+                RenderSettings.offsetX = BigDecimal.Parse(xOffInput.Text);
+                RenderSettings.offsetY = BigDecimal.Parse(yOffInput.Text);
 
                 RenderSettings.MaxIterations = (int)iterationCountInput.Value;
                 RenderSettings.NumFrames = (int)startFrameInput.Value;
@@ -439,13 +439,13 @@ namespace Mandelbrot
 
         private void exploreFractalToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var exploreWindow = new Explorer(PalletePath, xOffInput.Value, yOffInput.Value);
+            var exploreWindow = new Explorer(PalletePath, BigDecimal.Parse(xOffInput.Text), BigDecimal.Parse(yOffInput.Text));
             exploreWindow.ShowDialog();
 
             if (!Rendering)
             {
-                xOffInput.Value = (decimal)exploreWindow.GetXOffset();
-                yOffInput.Value = (decimal)exploreWindow.GetYOffset();
+                xOffInput.Text = exploreWindow.GetXOffset().ToString();
+                yOffInput.Text = exploreWindow.GetYOffset().ToString();
             }
         }
 

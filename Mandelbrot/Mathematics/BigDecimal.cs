@@ -289,6 +289,12 @@ namespace System
             return string.Concat(Mantissa.ToString(), "E", Exponent);
         }
 
+        public static BigDecimal Parse(string s) {
+            var tokens = s.Split('E');
+            var mantissa = BigInteger.Parse(tokens.First());
+            return new BigDecimal(mantissa, int.Parse(tokens.Last()));
+        }
+
         public bool Equals(BigDecimal other)
         {
             return other.Mantissa.Equals(Mantissa) && other.Exponent == Exponent;
