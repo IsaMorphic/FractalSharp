@@ -8,7 +8,7 @@ namespace Mandelbrot.Mathematics
 {
     class BigDecimalMath : IGenericMath<BigDecimal>
     {
-        private static int MaxSignificantFigures = 200;
+        private static int MaxSignificantFigures = 300;
         private static int MaxDoubleConversionFigures = 18;
 
         public BigDecimal Add(BigDecimal a, BigDecimal b) { return (a + b).Truncate(MaxSignificantFigures); }

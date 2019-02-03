@@ -293,10 +293,13 @@ namespace Mandelbrot.Rendering
             // Fire frame start event
             FrameStart();
 
-            var init = Task.Run(() => algorithmProvider.Init(TMath, new RenderSettings { Magnification = Magnification, offsetX = offsetX, offsetY = offsetY, MaxIterations = MaxIterations, Token = Job.Token }));
-            init.Wait();
-            if (init.IsCanceled)
-                return;
+            algorithmProvider.Init(
+                TMath, new RenderSettings {
+                    Magnification = Magnification,
+                    offsetX = offsetX,
+                    offsetY = offsetY,
+                    MaxIterations = MaxIterations,
+                    Token = Job.Token });
 
             if (Gradual)
             {

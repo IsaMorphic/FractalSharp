@@ -437,7 +437,7 @@
             // 
             this.iterationCountInput.Location = new System.Drawing.Point(4, 28);
             this.iterationCountInput.Maximum = new decimal(new int[] {
-            1000000,
+            100000000,
             0,
             0,
             0});

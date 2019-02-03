@@ -21,9 +21,7 @@ namespace Mandelbrot.Algorithms
 
         //private CudaDeviceVariable<cuDoubleComplex> dev_points;
 
-        private T Zero;
-        private T TwoPow8;
-        private T TwoPow10;
+        private T Zero, Four;
 
         private int SkippedIterations;
 
@@ -42,8 +40,7 @@ namespace Mandelbrot.Algorithms
             this.TMath = TMath;
 
             Zero = TMath.fromInt32(0);
-            TwoPow8 = TMath.fromInt32(256);
-            TwoPow10 = TMath.fromInt32(1024);
+            Four = TMath.fromInt32(4);
 
             A = new List<Complex>();
             B = new List<Complex>();
@@ -87,7 +84,7 @@ namespace Mandelbrot.Algorithms
                 X.Add(c);
                 TwoX.Add(two_c);
                 // calculate next iteration, remember real = 2 * xn_r
-                if (MagnitudeSquared(X[i]) > 4)
+                if (TMath.GreaterThan(TMath.Add(xn_r2, xn_i2), Four))
                     break;
 
 
@@ -133,7 +130,7 @@ namespace Mandelbrot.Algorithms
                 IterateC(n);
                 IterateProbePoints(n);
 
-                double error = 0;
+                BigDecimal error = 0;
                 foreach (var P in ProbePoints)
                 {
                     error += MagnitudeSquared((A[n] * P[0][0] + B[n] * P[0][1] + C[n] * P[0][2]) - P[n][0]);
@@ -177,61 +174,13 @@ namespace Mandelbrot.Algorithms
                 // dn += d0
                 dn += d0;
 
-                n++;
-
                 // zn = x[iter] * 0.5 + dn
                 zn = X[n] + dn;
+
+                n++;
 
             } while (MagnitudeSquared(zn) < 256 && n < maxIterations);
             return new PixelData(MagnitudeSquared(zn), n, n < maxIterations);
         }
-
-        //    public override void GPUInit(CudaContext ctx, byte[] ptxImage, dim3 gridDim, dim3 blockDim)
-        //    {
-        //        gpuKernel = ctx.LoadKernelPTX(Resources.Kernel, "perturbation");
-
-        //        gpuKernel.GridDimensions = gridDim;
-        //        gpuKernel.BlockDimensions = blockDim;
-        //    }
-
-        //    public override void GPUPreFrame()
-        //    {
-        //        cuDoubleComplex[] cuDoubles =
-        //            new cuDoubleComplex[X.Count];
-        //        for (var i = 0; i < cuDoubles.Length; i++)
-        //        {
-        //            GenericComplex<T> complex = X[i];
-        //            cuDoubles[i] = new cuDoubleComplex(
-        //                    TMath.toDouble(complex.real),
-        //                    TMath.toDouble(complex.imag));
-        //        }
-
-        //        dev_points = cuDoubles;
-        //    }
-
-        //    public override void GPUPostFrame()
-        //    {
-        //        dev_points.Dispose();
-        //    }
-
-        //    public override void GPUCell(
-        //        CudaDeviceVariable<int> dev_image,
-        //        CudaDeviceVariable<int> dev_palette,
-        //        int cell_x, int cell_y,
-        //        int cellWidth, int cellHeight,
-        //        int totalCells_x, int totalCells_y,
-        //        double xMax, double yMax,
-        //        int chunkSize, int maxChunkSize)
-        //    {
-        //        gpuKernel.Run(
-        //            dev_image.DevicePointer,
-        //            dev_palette.DevicePointer, dev_palette.Size,
-        //            dev_points.DevicePointer, dev_points.Size,
-        //            cell_x, cell_y,
-        //            cellWidth, cellHeight,
-        //            totalCells_x, totalCells_y,
-        //            xMax, yMax,
-        //            chunkSize, maxChunkSize);
-        //    }
     }
 }

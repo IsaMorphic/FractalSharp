@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -31,10 +31,6 @@ namespace System
             Mantissa = mantissa;
             Exponent = exponent;
             Normalize();
-            if (AlwaysTruncate)
-            {
-                Truncate();
-            }
         }
 
         /// <summary>
@@ -72,19 +68,15 @@ namespace System
             // save some time because the number of digits is not needed to remove trailing zeros
             shortened.Normalize();
             // remove the least significant digits, as long as the number of digits is higher than the given Precision
-            while (NumberOfDigits(shortened.Mantissa) > precision)
+            if (NumberOfDigits(shortened.Mantissa) > precision)
             {
-                shortened.Mantissa /= 10;
-                shortened.Exponent++;
+                var diff = NumberOfDigits(shortened.Mantissa) - precision;
+                shortened.Mantissa /= BigInteger.Pow(10, diff);
+                shortened.Exponent += diff;
             }
             // normalize again to make sure there are no trailing zeros left
             shortened.Normalize();
             return shortened;
-        }
-
-        public BigDecimal Truncate()
-        {
-            return Truncate(Precision);
         }
 
         public BigDecimal Floor()
