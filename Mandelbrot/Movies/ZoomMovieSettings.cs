@@ -18,7 +18,8 @@ namespace Mandelbrot.Movies
 
         [ScriptIgnore]
         public override Type AlgorithmType { get => base.AlgorithmType; set => base.AlgorithmType = value; }
-
+        [ScriptIgnore]
+        public override Type ArithmeticType { get => base.ArithmeticType; set => base.ArithmeticType = value; }
         public int NumFrames { get => _numFrames; set => _numFrames = value; }
 
         public string PalettePath { get => _palettePath; set => _palettePath = value; }

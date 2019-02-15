@@ -12,9 +12,43 @@ using Mandelbrot.Imaging;
 using Mandelbrot.Rendering;
 using Mandelbrot.Mathematics;
 using System.Reflection;
+using System.Web.Script.Serialization;
+using System.Collections.ObjectModel;
 
 namespace Mandelbrot.Utilities
 {
+
+    public class BigDecimalConverter : JavaScriptConverter
+    {
+        public override IEnumerable<Type> SupportedTypes
+        {
+            get
+            {
+                return new ReadOnlyCollection<Type>(new List<Type>(new Type[] { typeof(BigDecimal) }));
+            }
+        }
+
+        public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer)
+        {
+            if (type == typeof(BigDecimal))
+                return BigDecimal.Parse((string)dictionary["value"]);
+            else
+                return null;
+        }
+
+        public override IDictionary<string, object> Serialize(object obj, JavaScriptSerializer serializer)
+        {
+            try
+            {
+                BigDecimal val = (BigDecimal)obj;
+                return new Dictionary<string, object>() { { "value", val.ToString() } };
+            }
+            catch (InvalidCastException) {
+                return new Dictionary<string, object>();
+            }
+        }
+    }
+
     class Utils
     {
         public static RGB[] LoadPallete(string path)
@@ -49,7 +83,7 @@ namespace Mandelbrot.Utilities
             return buffer;
         }
 
-        public static T Map<T>(IGenericMath<T> TMath, T OldValue, T OldMin, T OldMax, T NewMin, T NewMax)
+        public static T Map<T>(GenericMath<T> TMath, T OldValue, T OldMin, T OldMax, T NewMin, T NewMax)
         {
             T OldRange = TMath.Subtract(OldMax, OldMin);
             T NewRange = TMath.Subtract(NewMax, NewMin);
@@ -73,7 +107,7 @@ namespace Mandelbrot.Utilities
 
                 foreach (var type in definedTypes)
                 {
-                    if (type.GetInterfaces().Contains(@interface))
+                    if (type.BaseType == @interface)
                     {
                         resolvedTypes.Add(type);
                     }

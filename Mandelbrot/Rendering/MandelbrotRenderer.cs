@@ -33,6 +33,8 @@ namespace Mandelbrot.Rendering
 
         protected GenericMathResolver MathResolver;
         protected DirectBitmap CurrentFrame;
+        protected dynamic AlgorithmProvider;
+
 
         protected bool isInitialized = false;
 
@@ -42,7 +44,7 @@ namespace Mandelbrot.Rendering
 
         protected BigDecimal offsetX;
         protected BigDecimal offsetY;
-        protected BigDecimal aspect;
+        protected BigDecimal aspectRatio;
 
         protected int Width;
         protected int Height;
@@ -59,6 +61,7 @@ namespace Mandelbrot.Rendering
         protected RGB[] palette;
 
         protected Type AlgorithmType;
+        protected Type ArithmeticType;
 
         protected CancellationTokenSource Job;
 
@@ -88,7 +91,7 @@ namespace Mandelbrot.Rendering
             CellWidth = Width / TotalCellsX;
             CellHeight = Height / TotalCellsY;
 
-            aspect = ((decimal)Width / (decimal)Height) * 2;
+            aspectRatio = ((decimal)Width / (decimal)Height) * 2;
 
             CurrentFrame = new DirectBitmap(Width, Height);
 
@@ -121,6 +124,8 @@ namespace Mandelbrot.Rendering
 
                 AlgorithmType = settings.AlgorithmType;
 
+                ArithmeticType = settings.ArithmeticType;
+
                 Gradual = settings.Gradual;
 
                 MaxChunkSizes = settings.MaxChunkSizes;
@@ -137,6 +142,18 @@ namespace Mandelbrot.Rendering
             {
                 throw new ApplicationException("Renderer is not Initialized!");
             }
+
+            var TMath = MathResolver.CreateMathObject(ArithmeticType);
+            var genericType = AlgorithmType.MakeGenericType(ArithmeticType);
+            AlgorithmProvider = Activator
+                .CreateInstance(genericType, TMath, new RenderSettings
+                {
+                    Magnification = Magnification,
+                    offsetX = offsetX,
+                    offsetY = offsetY,
+                    MaxIterations = MaxIterations,
+                    Token = Job.Token
+                });
         }
 
         #endregion
@@ -168,7 +185,7 @@ namespace Mandelbrot.Rendering
 
         public void GetPointFromFrameLocation(int x, int y, out BigDecimal offsetX, out BigDecimal offsetY)
         {
-            BigDecimal xRange = aspect / Magnification;
+            BigDecimal xRange = aspectRatio / Magnification;
             BigDecimal yRange = 2 / Magnification;
             offsetX = Utils.Map<BigDecimal>(new BigDecimalMath(), x, 0, Width, -xRange + this.offsetX, xRange + this.offsetX);
             offsetY = Utils.Map<BigDecimal>(new BigDecimalMath(), y, 0, Height, -yRange + this.offsetY, yRange + this.offsetY);
@@ -185,7 +202,7 @@ namespace Mandelbrot.Rendering
             else { CellX = 0; CellY = 0; }
         }
 
-        public void RenderCell<T>(IGenericMath<T> TMath, IAlgorithmProvider<T> algorithmProvider)
+        public void RenderCell()
         {
             int in_set = 0;
 
@@ -193,32 +210,24 @@ namespace Mandelbrot.Rendering
             int chunkSize = ChunkSizes[index];
             int maxChunkSize = MaxChunkSizes[index];
 
-            T Zero = TMath.fromInt32(0);
-
-            // Cast type specific values to the generic type
-            T FrameWidth = TMath.fromInt32(Width);
-            T FrameHeight = TMath.fromInt32(Height);
-
-            T zoom = TMath.fromBigDecimal(Magnification);
-
-            T scaleFactor = TMath.fromBigDecimal(aspect);
-
+            BigDecimal scaleFactor = aspectRatio;
+            BigDecimal zoom = Magnification;
             // Predefine minimum and maximum values of the plane, 
             // In order to avoid making unnecisary calculations on each pixel.  
 
             // x_min = -scaleFactor / zoom
             // x_max =  scaleFactor / zoom
-            T xMin = TMath.Divide(TMath.Negate(scaleFactor), zoom);
-            T xMax = TMath.Divide(scaleFactor, zoom);
+            BigDecimal xMin = -scaleFactor / zoom + offsetX;
+            BigDecimal xMax = scaleFactor / zoom + offsetX;
 
             // y_min = -2 / zoom
             // y_max =  2 / zoom
-            T yMin = TMath.Divide(TMath.fromInt32(-2), zoom);
-            T yMax = TMath.Divide(TMath.fromInt32(2), zoom);
+            BigDecimal yMin = -2 / zoom + offsetY;
+            BigDecimal yMax = 2 / zoom + offsetY;
 
             var loop = Parallel.For(CellX * CellWidth, (CellX + 1) * CellWidth, new ParallelOptions { CancellationToken = Job.Token, MaxDegreeOfParallelism = ThreadCount }, px =>
             {
-                T x0 = Utils.Map<T>(TMath, TMath.fromInt32(px), Zero, FrameWidth, xMin, xMax);
+                BigDecimal x0 = Utils.Map<BigDecimal>(new BigDecimalMath(), px, 0, Width, xMin, xMax);
 
                 for (int py = CellY * CellHeight; py < (CellY + 1) * CellHeight; py++)
                 {
@@ -229,10 +238,10 @@ namespace Mandelbrot.Rendering
                         maxChunkSize != chunkSize))
                         continue;
 
-                    T y0 = Utils.Map<T>(TMath, TMath.fromInt32(py), Zero, FrameHeight, yMin, yMax);
+                    BigDecimal y0 = Utils.Map<BigDecimal>(new BigDecimalMath(), py, 0, Height, yMin, yMax);
 
 
-                    PixelData pixelData = algorithmProvider.Run(x0, y0);
+                    PixelData pixelData = AlgorithmProvider.Run(x0, y0);
 
                     // Grab the values from our pixel data
 
@@ -276,35 +285,15 @@ namespace Mandelbrot.Rendering
 
         // Frame rendering method, using generic typing to reduce the amount 
         // of code used and to make the algorithm easily applicable to other number types
-        public void RenderFrame<T>()
+        public void RenderFrame()
         {
-            Type NumType = typeof(T);
-
-            // Initialize Math Object
-            IGenericMath<T> TMath = MathResolver.CreateMathObject<T>();
-
-            // Initialize Algorithm Provider
-            Type algorithmType = AlgorithmType.MakeGenericType(NumType);
-
-            IAlgorithmProvider<T> algorithmProvider =
-                (IAlgorithmProvider<T>)Activator
-                .CreateInstance(algorithmType);
-
             // Fire frame start event
             FrameStart();
-
-            algorithmProvider.Init(
-                TMath, new RenderSettings {
-                    Magnification = Magnification,
-                    offsetX = offsetX,
-                    offsetY = offsetY,
-                    MaxIterations = MaxIterations,
-                    Token = Job.Token });
 
             if (Gradual)
             {
                 IncrementCellCoords();
-                RenderCell<T>(TMath, algorithmProvider);
+                RenderCell();
             }
             else
             {
@@ -312,7 +301,7 @@ namespace Mandelbrot.Rendering
                 {
                     for (CellY = 0; CellY < TotalCellsY; CellY++)
                     {
-                        RenderCell<T>(TMath, algorithmProvider);
+                        RenderCell();
                     }
                 }
             }

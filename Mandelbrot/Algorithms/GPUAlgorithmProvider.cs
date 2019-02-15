@@ -11,9 +11,13 @@ using System.Threading.Tasks;
 
 namespace Mandelbrot.Algorithms
 {
-    abstract class GPUAlgorithmProvider<T> : IAlgorithmProvider<T>
+    /*abstract class GPUAlgorithmProvider<T> : AlgorithmProvider<T>
     {
         protected CudaKernel gpuKernel;
+
+        public GPUAlgorithmProvider(object TMath, RenderSettings settings) : base(TMath, settings)
+        {
+        }
 
         public abstract void GPUInit(CudaContext ctx, byte[] ptxImage, dim3 gridDim, dim3 blockDim);
         public abstract void GPUPreFrame();
@@ -27,7 +31,7 @@ namespace Mandelbrot.Algorithms
             double xMax, double yMax,
             int chunkSize, int maxChunkSize);
 
-        public abstract void Init(IGenericMath<T> TMath, RenderSettings settings);
-        public abstract PixelData Run(T x0, T y0);
-    }
+        public override abstract void Init();
+        public override abstract PixelData Run(T x0, T y0);
+    }*/
 }

@@ -13,19 +13,20 @@ using Mandelbrot.Rendering;
 
 namespace Mandelbrot.Algorithms
 {
-    class PerturbationAlgorithmProvider<T> : IAlgorithmProvider<T>
+    class PerturbationAlgorithmProvider<T> : AlgorithmProvider<T>
     {
-        private IGenericMath<T> TMath;
         private List<Complex> X, TwoX, A, B, C;
         private List<Complex[]>[] ProbePoints = new List<Complex[]>[20];
-
+        private BigDecimal referenceX, referenceY;
         //private CudaDeviceVariable<cuDoubleComplex> dev_points;
 
         private T Zero, Four;
 
         private int SkippedIterations;
 
-        private RenderSettings env;
+        public PerturbationAlgorithmProvider(object TMath, RenderSettings settings) : base(TMath, settings)
+        {
+        }
 
         private double MagnitudeSquared(Complex a)
         {
@@ -34,13 +35,13 @@ namespace Mandelbrot.Algorithms
 
         // Perturbation Theory Algorithm, 
         // produces a list of iteration values used to compute the surrounding points
-        public void Init(IGenericMath<T> TMath, RenderSettings settings)
+        public override void Init()
         {
-            env = settings;
-            this.TMath = TMath;
-
             Zero = TMath.fromInt32(0);
             Four = TMath.fromInt32(4);
+
+            referenceX = Settings.offsetX;
+            referenceY = Settings.offsetY;
 
             A = new List<Complex>();
             B = new List<Complex>();
@@ -52,7 +53,7 @@ namespace Mandelbrot.Algorithms
             for (int i = 0; i < ProbePoints.Length; i++)
             {
                 ProbePoints[i] = new List<Complex[]>();
-                var point = new Complex((double)((random.NextDouble() * 4 - 2) / env.Magnification), (double)((random.NextDouble() * 4 - 2) / env.Magnification));
+                var point = new Complex((double)((random.NextDouble() * 4 - 2) / Settings.Magnification), (double)((random.NextDouble() * 4 - 2) / Settings.Magnification));
                 ProbePoints[i].Add(new Complex[3] { point, point * point, point * point * point });
             }
 
@@ -65,12 +66,12 @@ namespace Mandelbrot.Algorithms
 
         public void GetSurroundingPoints()
         {
-            T xn_r, x0_r = xn_r = TMath.fromBigDecimal(env.offsetX);
-            T xn_i, x0_i = xn_i = TMath.fromBigDecimal(env.offsetY);
+            T xn_r, x0_r = xn_r = TMath.fromBigDecimal(Settings.offsetX);
+            T xn_i, x0_i = xn_i = TMath.fromBigDecimal(Settings.offsetY);
 
-            for (int i = 0; i < env.MaxIterations; i++)
+            for (int i = 0; i < Settings.MaxIterations; i++)
             {
-                env.Token.ThrowIfCancellationRequested();
+                Settings.Token.ThrowIfCancellationRequested();
                 // pre multiply by two
                 T real = TMath.Add(xn_r, xn_r);
                 T imag = TMath.Add(xn_i, xn_i);
@@ -136,7 +137,7 @@ namespace Mandelbrot.Algorithms
                     error += MagnitudeSquared((A[n] * P[0][0] + B[n] * P[0][1] + C[n] * P[0][2]) - P[n][0]);
                 }
                 error /= ProbePoints.Length;
-                if (error > 1 / env.Magnification)
+                if (error > 1 / Settings.Magnification)
                 {
                     SkippedIterations = Math.Max(n - 3, 0);
                     return;
@@ -149,7 +150,7 @@ namespace Mandelbrot.Algorithms
 
         // Non-Traditional Mandelbrot algorithm, 
         // Iterates a point over its neighbors to approximate an iteration count.
-        public PixelData Run(T x0, T y0)
+        public override PixelData Run(BigDecimal x0, BigDecimal y0)
         {
             // Get max iterations.  
             int maxIterations = X.Count - 1;
@@ -160,7 +161,7 @@ namespace Mandelbrot.Algorithms
             // Initialize some variables...
             Complex zn;
 
-            Complex d0 = new Complex(TMath.toDouble(x0), TMath.toDouble(y0));
+            Complex d0 = new Complex((double)(x0 - referenceX), (double)(y0 - referenceY));
 
             Complex dn = A[n] * d0 + B[n] * d0 * d0 + C[n] * d0 * d0 * d0;
 

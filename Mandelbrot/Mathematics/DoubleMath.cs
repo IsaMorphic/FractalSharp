@@ -6,27 +6,27 @@ using System.Threading.Tasks;
 
 namespace Mandelbrot.Mathematics
 {
-    class DoubleMath : IGenericMath<double>
+    class DoubleMath : GenericMath<double>
     {
-        public double Add(double a, double b) { return a + b; }
-        public double Subtract(double a, double b) { return a - b; }
+        public override double Add(double a, double b) { return a + b; }
+        public override double Subtract(double a, double b) { return a - b; }
 
-        public double Multiply(double a, double b) { return a * b; }
-        public double Divide(double a, double b) { return a / b; }
+        public override double Multiply(double a, double b) { return a * b; }
+        public override double Divide(double a, double b) { return a / b; }
 
-        public double Negate(double a) { return -a; }
+        public override double Negate(double a) { return -a; }
 
-        public bool LessThan(double a, double b) { return a < b; }
-        public bool GreaterThan(double a, double b) { return a > b; }
-        public bool EqualTo(double a, double b) { return a == b; }
+        public override bool LessThan(double a, double b) { return a < b; }
+        public override bool GreaterThan(double a, double b) { return a > b; }
+        public override bool EqualTo(double a, double b) { return a == b; }
 
-        public double fromInt32(int a) { return a; }
-        public double fromDouble(double a) { return a; }
-        public double fromBigDecimal(BigDecimal a) { return (double)a; }
+        public override double fromInt32(int a) { return a; }
+        public override double fromDouble(double a) { return a; }
+        public override double fromBigDecimal(BigDecimal a) { return (double)(a.Truncate(18)); }
 
 
-        public int toInt32(double a) { return (int)a; }
-        public double toDouble(double a) { return a; }
-        public BigDecimal toBigDecimal(double a) { return a; }
+        public override int toInt32(double a) { return (int)a; }
+        public override double toDouble(double a) { return a; }
+        public override BigDecimal toBigDecimal(double a) { return a; }
     }
 }

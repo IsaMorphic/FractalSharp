@@ -102,7 +102,7 @@
     <Compile Include="Imaging\DirectBitmap.cs" />
     <Compile Include="Movies\MandelbrotMovieRenderer.cs" />
     <Compile Include="Imaging\PixelData.cs" />
-    <Compile Include="Algorithms\IAlgorithmProvider.cs" />
+    <Compile Include="Algorithms\AlgorithmProvider.cs" />
     <Compile Include="Algorithms\PerturbationAlgorithmProvider.cs" />
     <Compile Include="Algorithms\TraditionalAlgorithmProvider.cs" />
     <Compile Include="Rendering\GpuRenderer.cs" />
@@ -111,7 +111,7 @@
     <Compile Include="Mathematics\ComplexMath.cs" />
     <Compile Include="Mathematics\DoubleMath.cs" />
     <Compile Include="Mathematics\GenericComplex.cs" />
-    <Compile Include="Mathematics\IGenericMath.cs" />
+    <Compile Include="Mathematics\GenericMath.cs" />
     <Compile Include="Imaging\RGB.cs" />
     <Compile Include="Utilities\GenericMathResolver.cs" />
     <Compile Include="Utilities\Utils.cs" />

@@ -21,9 +21,8 @@ namespace Mandelbrot.Utilities
             Assemblies = assemblies;
         }
 
-        public IGenericMath<T> CreateMathObject<T>()
+        public object CreateMathObject(Type NumType)
         {
-            Type NumType = typeof(T);
 
             Type NumResolved = null;
 
@@ -33,7 +32,7 @@ namespace Mandelbrot.Utilities
             }
             else
             {
-                Type GenericInterface = typeof(IGenericMath<>);
+                Type GenericInterface = typeof(GenericMath<>);
                 Type NumInterface = GenericInterface.MakeGenericType(NumType);
 
                 List<Type> ResolvedTypes = Utils.GetAllImplementationsInAssemblies(Assemblies, NumInterface);
@@ -42,8 +41,7 @@ namespace Mandelbrot.Utilities
                 CachedTypes.Add(NumType, NumResolved);
             }
 
-            IGenericMath<T> TMath = (IGenericMath<T>)
-                Activator.CreateInstance(NumResolved);
+            object TMath = Activator.CreateInstance(NumResolved);
 
             return TMath;
         }

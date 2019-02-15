@@ -8,9 +8,9 @@ namespace Mandelbrot.Mathematics
 {
     class ComplexMath<T>
     {
-        private IGenericMath<T> TMath;
+        private GenericMath<T> TMath;
 
-        public ComplexMath(IGenericMath<T> TMath)
+        public ComplexMath(GenericMath<T> TMath)
         {
             this.TMath = TMath;
         }

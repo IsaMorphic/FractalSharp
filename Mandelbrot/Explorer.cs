@@ -24,7 +24,7 @@ namespace Mandelbrot
         private int Iterations = 400;
 
         private bool ShouldRestartRender = true;
-        private bool UseGPU = true;
+        private bool UseGPU = false;
 
         private bool MovingUp;
         private bool MovingDown;
@@ -43,7 +43,7 @@ namespace Mandelbrot
         private float DeltaY;
 
         private RenderSettings ExplorationSettings = new RenderSettings();
-        private GpuRenderer ExplorationRenderer = new GpuRenderer();
+        private MandelbrotRenderer ExplorationRenderer = new MandelbrotRenderer();
 
 
         private RGB[] ColorPalette;
@@ -68,7 +68,7 @@ namespace Mandelbrot
                 4, 2, 2, 4,
                 8, 4, 4, 8,
             };
-
+            ExplorationSettings.AlgorithmType = typeof(PerturbationAlgorithmProvider<>);
             InitializeComponent();
         }
 
@@ -141,11 +141,11 @@ namespace Mandelbrot
         {
             Bounds = Screen.PrimaryScreen.Bounds;
 
-            if (!ExplorationRenderer.GPUAvailable())
-            {
-                MessageBox.Show("A CUDA supporting device is not present.  The exploration feature may be slow if you choose to continue.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                UseGPU = false;
-            }
+            //if (!ExplorationRenderer.GPUAvailable())
+            //{
+            //    MessageBox.Show("A CUDA supporting device is not present.  The exploration feature may be slow if you choose to continue.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            //    UseGPU = false;
+            //}
 
             ExplorationSettings.Width = 1280;
             ExplorationSettings.Height = 720;
@@ -166,8 +166,8 @@ namespace Mandelbrot
                 ColorPalette,
                 MathResolver);
 
-            if (UseGPU)
-                ExplorationRenderer.InitGPU();
+            //if (UseGPU)
+            //    ExplorationRenderer.InitGPU();
 
             Task.Run((Action)NextFrame);
         }
@@ -176,7 +176,7 @@ namespace Mandelbrot
         {
             TimeSpan renderTime = DateTime.Now - RenderStartTime;
 
-            decimal stepAmount = .01M / (decimal)ExplorationSettings.Magnification;
+            BigDecimal stepAmount = .01 / ExplorationSettings.Magnification;
             if (MovingUp)
                 ExplorationSettings.offsetY -= stepAmount;
             if (MovingDown)
@@ -231,21 +231,21 @@ namespace Mandelbrot
             {
                 ExplorationSettings.Magnification /= 1.2;
             }
-            if (UseGPU)
-                ExplorationRenderer.CleanupGPU();
+            //if (UseGPU)
+            //    ExplorationRenderer.CleanupGPU();
         }
 
         private void NextFrame()
         {
-            if (UseGPU)
-                ExplorationRenderer.RenderFrameGPU();
-            else
-                ExplorationRenderer.RenderFrame<double>();
+            //if (UseGPU)
+            //    ExplorationRenderer.RenderFrameGPU();
+            //else
+                ExplorationRenderer.RenderFrame();
         }
 
         private void RenderPhoto()
         {
-            GpuRenderer PhotoRenderer = new GpuRenderer();
+            MandelbrotRenderer PhotoRenderer = new MandelbrotRenderer();
             PhotoRenderer.FrameStarted += () => { return; };
             PhotoRenderer.FrameFinished += PhotoRenderer_FrameEnd;
             RenderSettings PhotoSettings = new RenderSettings();
@@ -258,13 +258,13 @@ namespace Mandelbrot
             PhotoRenderer.Initialize(PhotoSettings, ColorPalette, MathResolver);
             if (UseGPU)
             {
-                PhotoRenderer.InitGPU();
-                PhotoRenderer.RenderFrameGPU();
-                PhotoRenderer.CleanupGPU();
+                //PhotoRenderer.InitGPU();
+                //PhotoRenderer.RenderFrameGPU();
+                //PhotoRenderer.CleanupGPU();
             }
             else
             {
-                PhotoRenderer.RenderFrame<double>();
+                PhotoRenderer.RenderFrame();
             }
         }
 

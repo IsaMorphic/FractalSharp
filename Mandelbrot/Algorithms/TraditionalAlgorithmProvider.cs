@@ -12,10 +12,8 @@ using System.Threading.Tasks;
 
 namespace Mandelbrot.Algorithms
 {
-    class TraditionalAlgorithmProvider<T> : GPUAlgorithmProvider<T>
+    class TraditionalAlgorithmProvider<T> : AlgorithmProvider<T>
     {
-        private IGenericMath<T> TMath;
-
         private T Zero;
         private T Two;
         private T Four;
@@ -25,23 +23,25 @@ namespace Mandelbrot.Algorithms
 
         private int MaxIterations;
 
-        public override void Init(IGenericMath<T> TMath, RenderSettings settings)
+        public TraditionalAlgorithmProvider(object TMath, RenderSettings settings) : base(TMath, settings)
         {
-            this.TMath = TMath;
-            MaxIterations = settings.MaxIterations;
+        }
 
-            this.offsetX = TMath.fromBigDecimal(settings.offsetX);
-            this.offsetY = TMath.fromBigDecimal(settings.offsetY);
-
+        public override void Init()
+        {
             Zero = TMath.fromInt32(0);
             Two = TMath.fromInt32(2);
             Four = TMath.fromInt32(4);
+
+            offsetX = TMath.fromBigDecimal(Settings.offsetX);
+            offsetY = TMath.fromBigDecimal(Settings.offsetY);
+            MaxIterations = Settings.MaxIterations;
         }
 
-        public override PixelData Run(T px, T py)
+        public override PixelData Run(BigDecimal px, BigDecimal py)
         {
-            T x0 = TMath.Add(px, offsetX);
-            T y0 = TMath.Add(py, offsetY);
+            T x0 = TMath.Add(TMath.fromBigDecimal(px), offsetX);
+            T y0 = TMath.Add(TMath.fromBigDecimal(py), offsetY);
 
             // Initialize some variables..
             T x = Zero;
@@ -79,38 +79,38 @@ namespace Mandelbrot.Algorithms
             return new PixelData(TMath.toDouble(TMath.Add(xx, yy)), iter, iter < MaxIterations);
         }
 
-        public override void GPUInit(CudaContext ctx, byte[] ptxImage, dim3 gridDim, dim3 blockDim)
-        {
-            gpuKernel = ctx.LoadKernelPTX(ptxImage, "traditional");
+        //public override void GPUInit(CudaContext ctx, byte[] ptxImage, dim3 gridDim, dim3 blockDim)
+        //{
+        //    gpuKernel = ctx.LoadKernelPTX(ptxImage, "traditional");
 
-            gpuKernel.GridDimensions = gridDim;
-            gpuKernel.BlockDimensions = blockDim;
-        }
+        //    gpuKernel.GridDimensions = gridDim;
+        //    gpuKernel.BlockDimensions = blockDim;
+        //}
 
-        public override void GPUPreFrame() { return; }
+        //public override void GPUPreFrame() { return; }
 
-        public override void GPUPostFrame() { return; }
+        //public override void GPUPostFrame() { return; }
 
-        public override void GPUCell(
-            CudaDeviceVariable<int> dev_image,
-            CudaDeviceVariable<int> dev_palette,
-            int cell_x, int cell_y,
-            int cellWidth, int cellHeight,
-            int totalCells_x, int totalCells_y,
-            double xMax, double yMax,
-            int chunkSize, int maxChunkSize)
-        {
-            gpuKernel.Run(
-                dev_image.DevicePointer,
-                dev_palette.DevicePointer,
-                dev_palette.Size,
-                cell_x, cell_y,
-                cellWidth, cellHeight,
-                totalCells_x, totalCells_y,
-                xMax, yMax,
-                offsetX, offsetY,
-                MaxIterations, 
-                chunkSize, maxChunkSize);
-        }
+        //public override void GPUCell(
+        //    CudaDeviceVariable<int> dev_image,
+        //    CudaDeviceVariable<int> dev_palette,
+        //    int cell_x, int cell_y,
+        //    int cellWidth, int cellHeight,
+        //    int totalCells_x, int totalCells_y,
+        //    double xMax, double yMax,
+        //    int chunkSize, int maxChunkSize)
+        //{
+        //    gpuKernel.Run(
+        //        dev_image.DevicePointer,
+        //        dev_palette.DevicePointer,
+        //        dev_palette.Size,
+        //        cell_x, cell_y,
+        //        cellWidth, cellHeight,
+        //        totalCells_x, totalCells_y,
+        //        xMax, yMax,
+        //        offsetX, offsetY,
+        //        MaxIterations, 
+        //        chunkSize, maxChunkSize);
+        //}
     }
 }

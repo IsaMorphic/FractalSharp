@@ -12,6 +12,7 @@ namespace Mandelbrot.Rendering
     class RenderSettings
     {
         private Type _algorithmType = typeof(TraditionalAlgorithmProvider<>);
+        private Type _arithmeticType = typeof(BigDecimal);
 
         private CancellationToken _token;
 
@@ -45,5 +46,6 @@ namespace Mandelbrot.Rendering
         public virtual bool Gradual { get => _gradual; set => _gradual = value; }
         public virtual int[] MaxChunkSizes { get => _maxChunkSizes; set => _maxChunkSizes = value; }
         public virtual CancellationToken Token { get => _token; set => _token = value; }
+        public virtual Type ArithmeticType { get => _arithmeticType; set => _arithmeticType = value; }
     }
 }
