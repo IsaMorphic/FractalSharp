@@ -21,6 +21,10 @@ namespace Mandelbrot
 {
     public partial class Explorer : Form
     {
+        private List<RenderSettings> UndoBuffer = new List<RenderSettings>();
+
+        private int UndoIndex = 0;
+
         private int Iterations = 400;
 
         private bool ShouldRestartRender = true;
@@ -68,7 +72,6 @@ namespace Mandelbrot
                 4, 2, 2, 4,
                 8, 4, 4, 8,
             };
-            ExplorationSettings.AlgorithmType = typeof(PerturbationAlgorithmProvider<>);
             InitializeComponent();
         }
 
@@ -77,23 +80,24 @@ namespace Mandelbrot
             ExplorationSettings.MaxIterations = Iterations;
             switch (e.KeyCode)
             {
-                case Keys.Left:
-                    MovingLeft = true;
-                    break;
-                case Keys.Right:
-                    MovingRight = true;
-                    break;
                 case Keys.Up:
-                    MovingUp = true;
+                    UndoIndex = Math.Min(UndoIndex + 1, UndoBuffer.Count - 1);
+                    ExplorationSettings = UndoBuffer[UndoIndex];
                     break;
                 case Keys.Down:
-                    MovingDown = true;
-                    break;
-                case Keys.ShiftKey:
-                    ZoomingIn = true;
-                    break;
-                case Keys.ControlKey:
-                    ZoomingOut = true;
+                    UndoBuffer.Add(new RenderSettings
+                    {
+                        AlgorithmType = ExplorationSettings.AlgorithmType,
+                        ArithmeticType = ExplorationSettings.ArithmeticType,
+                        MaxChunkSizes = ExplorationSettings.MaxChunkSizes,
+                        Magnification = ExplorationSettings.Magnification,
+                        offsetX = ExplorationSettings.offsetX,
+                        offsetY = ExplorationSettings.offsetY,
+                        Gradual = ExplorationSettings.Gradual,
+                        MaxIterations = ExplorationSettings.MaxIterations
+                    });
+                    UndoIndex = Math.Max(UndoIndex - 1, 0);
+                    ExplorationSettings = UndoBuffer[UndoIndex];
                     break;
                 case Keys.Oemplus:
                     ExplorationSettings.MaxIterations =
@@ -316,6 +320,17 @@ namespace Mandelbrot
 
         private void Explorer_MouseUp(object sender, MouseEventArgs e)
         {
+            UndoBuffer.Add(new RenderSettings {
+                AlgorithmType = ExplorationSettings.AlgorithmType,
+                ArithmeticType = ExplorationSettings.ArithmeticType,
+                MaxChunkSizes = ExplorationSettings.MaxChunkSizes,
+                Magnification = ExplorationSettings.Magnification,
+                offsetX = ExplorationSettings.offsetX,
+                offsetY = ExplorationSettings.offsetY,
+                Gradual = ExplorationSettings.Gradual,
+                MaxIterations = ExplorationSettings.MaxIterations
+            });
+            UndoIndex = UndoBuffer.Count;
             int startX = (int)(MouseStart.X / DeltaX);
             int startY = (int)(MouseStart.Y / DeltaY);
             int endX = (int)(MouseEnd.X / DeltaX);
