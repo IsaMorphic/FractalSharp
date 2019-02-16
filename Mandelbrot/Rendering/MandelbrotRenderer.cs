@@ -33,7 +33,7 @@ namespace Mandelbrot.Rendering
 
         protected GenericMathResolver MathResolver;
         protected DirectBitmap CurrentFrame;
-        protected dynamic AlgorithmProvider;
+        protected dynamic AlgorithmProvider, PointMapper;
 
 
         protected bool isInitialized = false;
@@ -91,7 +91,7 @@ namespace Mandelbrot.Rendering
             CellWidth = Width / TotalCellsX;
             CellHeight = Height / TotalCellsY;
 
-            aspectRatio = ((decimal)Width / (decimal)Height) * 2;
+            aspectRatio = ((BigDecimal)Width / (BigDecimal)Height) * 2;
 
             CurrentFrame = new DirectBitmap(Width, Height);
 
@@ -144,7 +144,12 @@ namespace Mandelbrot.Rendering
             }
 
             var TMath = MathResolver.CreateMathObject(ArithmeticType);
-            var genericType = AlgorithmType.MakeGenericType(ArithmeticType);
+
+            var genericType = typeof(PointMapper<>).MakeGenericType(ArithmeticType);
+            PointMapper = Activator.CreateInstance(genericType, TMath);
+            PointMapper.SetInputSpace(0, Width, 0, Height);
+
+            genericType = AlgorithmType.MakeGenericType(ArithmeticType);
             AlgorithmProvider = Activator
                 .CreateInstance(genericType, TMath, new RenderSettings
                 {
@@ -225,21 +230,20 @@ namespace Mandelbrot.Rendering
             BigDecimal yMin = -2 / zoom + offsetY;
             BigDecimal yMax = 2 / zoom + offsetY;
 
+            PointMapper.SetOutputSpace(xMin, xMax, yMin, yMax);
+
             var loop = Parallel.For(CellX * CellWidth, (CellX + 1) * CellWidth, new ParallelOptions { CancellationToken = Job.Token, MaxDegreeOfParallelism = ThreadCount }, px =>
             {
-                BigDecimal x0 = Utils.Map<BigDecimal>(new BigDecimalMath(), px, 0, Width, xMin, xMax);
-
+                var x0 = PointMapper.MapPointX(px);
                 for (int py = CellY * CellHeight; py < (CellY + 1) * CellHeight; py++)
                 {
+                    var y0 = PointMapper.MapPointY(py);
                     if ((px % chunkSize != 0 ||
                          py % chunkSize != 0) ||
                        ((px / chunkSize) % 2 == 0 &&
                         (py / chunkSize) % 2 == 0 &&
                         maxChunkSize != chunkSize))
                         continue;
-
-                    BigDecimal y0 = Utils.Map<BigDecimal>(new BigDecimalMath(), py, 0, Height, yMin, yMax);
-
 
                     PixelData pixelData = AlgorithmProvider.Run(x0, y0);
 
@@ -290,6 +294,8 @@ namespace Mandelbrot.Rendering
             // Fire frame start event
             FrameStart();
 
+            AlgorithmProvider.FrameStart();
+
             if (Gradual)
             {
                 IncrementCellCoords();
@@ -306,6 +312,8 @@ namespace Mandelbrot.Rendering
                 }
             }
 
+            AlgorithmProvider.FrameEnd();
+
             Bitmap newFrame = new Bitmap(CurrentFrame.Bitmap);
             FrameEnd(newFrame);
         }
@@ -318,5 +326,39 @@ namespace Mandelbrot.Rendering
         }
 
         #endregion
+    }
+
+    class PointMapper<T> {
+        private GenericMath<T> TMath;
+        private T inXMin, inXMax, inYMin, inYMax;
+        private T outXMin, outXMax, outYMin, outYMax;
+
+        public PointMapper(object TMath) {
+            this.TMath = TMath as GenericMath<T>;
+        }
+
+        public void SetInputSpace(BigDecimal xMin, BigDecimal xMax, BigDecimal yMin, BigDecimal yMax) {
+            inXMin = TMath.fromBigDecimal(xMin);
+            inXMax = TMath.fromBigDecimal(xMax);
+            inYMin = TMath.fromBigDecimal(yMin);
+            inYMax = TMath.fromBigDecimal(yMax);
+        }
+        public void SetOutputSpace(BigDecimal xMin, BigDecimal xMax, BigDecimal yMin, BigDecimal yMax)
+        {
+            outXMin = TMath.fromBigDecimal(xMin);
+            outXMax = TMath.fromBigDecimal(xMax);
+            outYMin = TMath.fromBigDecimal(yMin);
+            outYMax = TMath.fromBigDecimal(yMax);
+        }
+        public T MapPointX(double x)
+        {
+            T real = Utils.Map<T>(TMath, TMath.fromDouble(x), inXMin, inXMax, outXMin, outXMax);
+            return real;
+        }
+        public T MapPointY(double y)
+        {
+            T imag = Utils.Map<T>(TMath, TMath.fromDouble(y), inYMin, inYMax, outYMin, outYMax);
+            return imag;
+        }
     }
 }

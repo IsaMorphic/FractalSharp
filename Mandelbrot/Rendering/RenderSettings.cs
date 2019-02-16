@@ -12,7 +12,7 @@ namespace Mandelbrot.Rendering
     class RenderSettings
     {
         private Type _algorithmType = typeof(TraditionalAlgorithmProvider<>);
-        private Type _arithmeticType = typeof(BigDecimal);
+        private Type _arithmeticType = typeof(double);
 
         private CancellationToken _token;
 

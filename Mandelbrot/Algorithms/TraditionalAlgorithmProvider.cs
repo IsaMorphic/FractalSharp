@@ -38,10 +38,10 @@ namespace Mandelbrot.Algorithms
             MaxIterations = Settings.MaxIterations;
         }
 
-        public override PixelData Run(BigDecimal px, BigDecimal py)
+        public override PixelData Run(T px, T py)
         {
-            T x0 = TMath.Add(TMath.fromBigDecimal(px), offsetX);
-            T y0 = TMath.Add(TMath.fromBigDecimal(py), offsetY);
+            T x0 = px;
+            T y0 = py;
 
             // Initialize some variables..
             T x = Zero;

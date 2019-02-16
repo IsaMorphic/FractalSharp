@@ -23,6 +23,10 @@ namespace Mandelbrot.Algorithms
 
         public abstract void Init();
 
-        public abstract PixelData Run(BigDecimal x0, BigDecimal y0);
+        public virtual void FrameStart() { }
+
+        public virtual void FrameEnd() { }
+
+        public abstract PixelData Run(T px, T py);
     }
 }

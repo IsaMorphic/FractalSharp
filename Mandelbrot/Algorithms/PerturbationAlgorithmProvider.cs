@@ -17,8 +17,7 @@ namespace Mandelbrot.Algorithms
     {
         private List<Complex> X, TwoX, A, B, C;
         private List<Complex[]>[] ProbePoints = new List<Complex[]>[20];
-        private BigDecimal referenceX, referenceY;
-        //private CudaDeviceVariable<cuDoubleComplex> dev_points;
+        private T referenceX, referenceY;
 
         private T Zero, Four;
 
@@ -40,8 +39,8 @@ namespace Mandelbrot.Algorithms
             Zero = TMath.fromInt32(0);
             Four = TMath.fromInt32(4);
 
-            referenceX = Settings.offsetX;
-            referenceY = Settings.offsetY;
+            referenceX = TMath.fromBigDecimal(Settings.offsetX);
+            referenceY = TMath.fromBigDecimal(Settings.offsetY);
 
             A = new List<Complex>();
             B = new List<Complex>();
@@ -49,6 +48,11 @@ namespace Mandelbrot.Algorithms
             X = new List<Complex>();
             TwoX = new List<Complex>();
 
+            GetSurroundingPoints();
+        }
+
+        public override void FrameStart()
+        {
             Random random = new Random();
             for (int i = 0; i < ProbePoints.Length; i++)
             {
@@ -57,11 +61,17 @@ namespace Mandelbrot.Algorithms
                 ProbePoints[i].Add(new Complex[3] { point, point * point, point * point * point });
             }
 
-            GetSurroundingPoints();
             A.Add(new Complex(1, 0));
             B.Add(new Complex(0, 0));
             C.Add(new Complex(0, 0));
             ApproximateSeries();
+        }
+
+        public override void FrameEnd()
+        {
+            A.Clear();
+            B.Clear();
+            C.Clear();
         }
 
         public void GetSurroundingPoints()
@@ -150,7 +160,7 @@ namespace Mandelbrot.Algorithms
 
         // Non-Traditional Mandelbrot algorithm, 
         // Iterates a point over its neighbors to approximate an iteration count.
-        public override PixelData Run(BigDecimal x0, BigDecimal y0)
+        public override PixelData Run(T px, T py)
         {
             // Get max iterations.  
             int maxIterations = X.Count - 1;
@@ -161,7 +171,7 @@ namespace Mandelbrot.Algorithms
             // Initialize some variables...
             Complex zn;
 
-            Complex d0 = new Complex((double)(x0 - referenceX), (double)(y0 - referenceY));
+            Complex d0 = new Complex(TMath.toDouble(TMath.Subtract(px, referenceX)), TMath.toDouble(TMath.Subtract(py, referenceY)));
 
             Complex dn = A[n] * d0 + B[n] * d0 * d0 + C[n] * d0 * d0 * d0;
 
