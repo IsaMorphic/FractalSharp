@@ -18,24 +18,11 @@ namespace Mandelbrot.Algorithms
         private T Two;
         private T Four;
 
-        private T offsetX;
-        private T offsetY;
-
-        private int MaxIterations;
-
-        public TraditionalAlgorithmProvider(object TMath, RenderSettings settings) : base(TMath, settings)
-        {
-        }
-
-        public override void Init()
+        public TraditionalAlgorithmProvider(GenericMath<T> TMath) : base(TMath)
         {
             Zero = TMath.fromInt32(0);
             Two = TMath.fromInt32(2);
             Four = TMath.fromInt32(4);
-
-            offsetX = TMath.fromBigDecimal(Settings.offsetX);
-            offsetY = TMath.fromBigDecimal(Settings.offsetY);
-            MaxIterations = Settings.MaxIterations;
         }
 
         public override PixelData Run(T px, T py)
@@ -56,7 +43,7 @@ namespace Mandelbrot.Algorithms
             int iter = 0;
 
             // Mandelbrot algorithm
-            while (TMath.LessThan(TMath.Add(xx, yy), Four) && iter < MaxIterations)
+            while (TMath.LessThan(TMath.Add(xx, yy), Four) && iter < Params.MaxIterations)
             {
                 // xtemp = xx - yy + x0
                 T xtemp = TMath.Add(TMath.Subtract(xx, yy), x0);
@@ -65,7 +52,7 @@ namespace Mandelbrot.Algorithms
 
                 if (TMath.EqualTo(x, xtemp) && TMath.EqualTo(y, ytemp))
                 {
-                    iter = MaxIterations;
+                    iter = Params.MaxIterations;
                     break;
                 }
 
@@ -76,41 +63,7 @@ namespace Mandelbrot.Algorithms
 
                 iter++;
             }
-            return new PixelData(TMath.toDouble(TMath.Add(xx, yy)), iter, iter < MaxIterations);
+            return new PixelData(TMath.toDouble(TMath.Add(xx, yy)), iter, iter < Params.MaxIterations);
         }
-
-        //public override void GPUInit(CudaContext ctx, byte[] ptxImage, dim3 gridDim, dim3 blockDim)
-        //{
-        //    gpuKernel = ctx.LoadKernelPTX(ptxImage, "traditional");
-
-        //    gpuKernel.GridDimensions = gridDim;
-        //    gpuKernel.BlockDimensions = blockDim;
-        //}
-
-        //public override void GPUPreFrame() { return; }
-
-        //public override void GPUPostFrame() { return; }
-
-        //public override void GPUCell(
-        //    CudaDeviceVariable<int> dev_image,
-        //    CudaDeviceVariable<int> dev_palette,
-        //    int cell_x, int cell_y,
-        //    int cellWidth, int cellHeight,
-        //    int totalCells_x, int totalCells_y,
-        //    double xMax, double yMax,
-        //    int chunkSize, int maxChunkSize)
-        //{
-        //    gpuKernel.Run(
-        //        dev_image.DevicePointer,
-        //        dev_palette.DevicePointer,
-        //        dev_palette.Size,
-        //        cell_x, cell_y,
-        //        cellWidth, cellHeight,
-        //        totalCells_x, totalCells_y,
-        //        xMax, yMax,
-        //        offsetX, offsetY,
-        //        MaxIterations, 
-        //        chunkSize, maxChunkSize);
-        //}
     }
 }

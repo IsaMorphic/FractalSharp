@@ -23,8 +23,46 @@ namespace Mandelbrot.Algorithms
 
         private int SkippedIterations;
 
-        public PerturbationAlgorithmProvider(object TMath, RenderSettings settings) : base(TMath, settings)
+        public PerturbationAlgorithmProvider(GenericMath<T> TMath) : base(TMath)
         {
+            Zero = TMath.fromInt32(0);
+            Four = TMath.fromInt32(4);
+
+            A = new List<Complex>();
+            B = new List<Complex>();
+            C = new List<Complex>();
+            X = new List<Complex>();
+            TwoX = new List<Complex>();
+        }
+
+        // Perturbation Theory Algorithm, 
+        // produces a list of iteration values used to compute the surrounding points
+
+        protected override void ParamsUpdated()
+        {
+            A.Clear();
+            B.Clear();
+            C.Clear();
+            X.Clear();
+            TwoX.Clear();
+
+            referenceX = TMath.fromBigDecimal(Params.offsetX);
+            referenceY = TMath.fromBigDecimal(Params.offsetY);
+
+            Random random = new Random();
+            for (int i = 0; i < ProbePoints.Length; i++)
+            {
+                ProbePoints[i] = new List<Complex[]>();
+                var point = new Complex((double)((random.NextDouble() * 4 - 2) / Params.Magnification), (double)((random.NextDouble() * 4 - 2) / Params.Magnification));
+                ProbePoints[i].Add(new Complex[3] { point, point * point, point * point * point });
+            }
+
+            A.Add(new Complex(1, 0));
+            B.Add(new Complex(0, 0));
+            C.Add(new Complex(0, 0));
+
+            IterateReferencePoint();
+            ApproximateSeries();
         }
 
         private double MagnitudeSquared(Complex a)
@@ -32,56 +70,14 @@ namespace Mandelbrot.Algorithms
             return a.Real * a.Real + a.Imaginary * a.Imaginary;
         }
 
-        // Perturbation Theory Algorithm, 
-        // produces a list of iteration values used to compute the surrounding points
-        public override void Init()
+        public void IterateReferencePoint()
         {
-            Zero = TMath.fromInt32(0);
-            Four = TMath.fromInt32(4);
+            T xn_r, x0_r = xn_r = referenceX;
+            T xn_i, x0_i = xn_i = referenceY;
 
-            referenceX = TMath.fromBigDecimal(Settings.offsetX);
-            referenceY = TMath.fromBigDecimal(Settings.offsetY);
-
-            A = new List<Complex>();
-            B = new List<Complex>();
-            C = new List<Complex>();
-            X = new List<Complex>();
-            TwoX = new List<Complex>();
-
-            GetSurroundingPoints();
-        }
-
-        public override void FrameStart()
-        {
-            Random random = new Random();
-            for (int i = 0; i < ProbePoints.Length; i++)
+            for (int i = 0; i < Params.MaxIterations; i++)
             {
-                ProbePoints[i] = new List<Complex[]>();
-                var point = new Complex((double)((random.NextDouble() * 4 - 2) / Settings.Magnification), (double)((random.NextDouble() * 4 - 2) / Settings.Magnification));
-                ProbePoints[i].Add(new Complex[3] { point, point * point, point * point * point });
-            }
-
-            A.Add(new Complex(1, 0));
-            B.Add(new Complex(0, 0));
-            C.Add(new Complex(0, 0));
-            ApproximateSeries();
-        }
-
-        public override void FrameEnd()
-        {
-            A.Clear();
-            B.Clear();
-            C.Clear();
-        }
-
-        public void GetSurroundingPoints()
-        {
-            T xn_r, x0_r = xn_r = TMath.fromBigDecimal(Settings.offsetX);
-            T xn_i, x0_i = xn_i = TMath.fromBigDecimal(Settings.offsetY);
-
-            for (int i = 0; i < Settings.MaxIterations; i++)
-            {
-                Settings.Token.ThrowIfCancellationRequested();
+                Params.Token.ThrowIfCancellationRequested();
                 // pre multiply by two
                 T real = TMath.Add(xn_r, xn_r);
                 T imag = TMath.Add(xn_i, xn_i);
@@ -147,7 +143,7 @@ namespace Mandelbrot.Algorithms
                     error += MagnitudeSquared((A[n] * P[0][0] + B[n] * P[0][1] + C[n] * P[0][2]) - P[n][0]);
                 }
                 error /= ProbePoints.Length;
-                if (error > 1 / Settings.Magnification)
+                if (error > 1 / Params.Magnification)
                 {
                     SkippedIterations = Math.Max(n - 3, 0);
                     return;

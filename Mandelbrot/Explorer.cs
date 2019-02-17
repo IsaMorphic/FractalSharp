@@ -47,8 +47,9 @@ namespace Mandelbrot
         private float DeltaY;
 
         private RenderSettings ExplorationSettings = new RenderSettings();
-        private MandelbrotRenderer ExplorationRenderer = new MandelbrotRenderer();
+        private ExplorationRenderer ExplorationRenderer = new ExplorationRenderer();
 
+        private Bitmap CurrentFrame;
 
         private RGB[] ColorPalette;
 
@@ -64,15 +65,20 @@ namespace Mandelbrot
             ExplorationSettings.offsetX = offsetX;
             ExplorationSettings.offsetY = offsetY;
 
+            ExplorationSettings.AlgorithmType = typeof(PerturbationAlgorithmProvider<>);
+            ExplorationSettings.ArithmeticType = typeof(BigDecimal);
             ExplorationSettings.Gradual = true;
 
             ExplorationSettings.MaxChunkSizes = new int[12]
             {
+                16,8, 8,16,
                 8, 4, 4, 8,
-                4, 2, 2, 4,
-                8, 4, 4, 8,
+                16,8, 8,16,
             };
+
             InitializeComponent();
+
+            UpdateTimer.Start();
         }
 
         private void Explorer_KeyDown(object sender, KeyEventArgs e)
@@ -80,6 +86,12 @@ namespace Mandelbrot
             ExplorationSettings.MaxIterations = Iterations;
             switch (e.KeyCode)
             {
+                case Keys.ShiftKey:
+                    ZoomingIn = true;
+                    break;
+                case Keys.ControlKey:
+                    ZoomingOut = true;
+                    break;
                 case Keys.Up:
                     UndoIndex = Math.Min(UndoIndex + 1, UndoBuffer.Count - 1);
                     ExplorationSettings = UndoBuffer[UndoIndex];
@@ -194,38 +206,14 @@ namespace Mandelbrot
             if (ZoomingOut)
                 ExplorationSettings.Magnification /= 1.05;
 
-            ExplorationRenderer.Setup(ExplorationSettings);
+            ExplorationRenderer.Update(ExplorationSettings);
 
             RenderStartTime = DateTime.Now;
         }
 
         private void ExplorationRenderer_FrameEnd(Bitmap frame)
         {
-            Bitmap newFrame = (Bitmap)frame.Clone();
-            using (var g = Graphics.FromImage(newFrame))
-            {
-                g.DrawString("real: " + ExplorationSettings.offsetX, SystemFonts.DefaultFont, Brushes.White, 0, 0);
-                g.DrawString("imag: " + ExplorationSettings.offsetY, SystemFonts.DefaultFont, Brushes.White, 0, 10);
-                g.DrawString("zoom: " + ExplorationSettings.Magnification, SystemFonts.DefaultFont, Brushes.White, 0, 20);
-                g.DrawString("iter: " + ExplorationSettings.MaxIterations, SystemFonts.DefaultFont, Brushes.White, 0, 30);
-
-                if (MousePressed)
-                {
-                    int startX = (int)(MouseStart.X / DeltaX);
-                    int startY = (int)(MouseStart.Y / DeltaY);
-                    int endX = (int)(MouseEnd.X / DeltaX);
-                    int endY = (int)(MouseEnd.Y / DeltaY);
-
-                    int cornerX = (startX > endX) ? endX : startX;
-                    int cornerY = (startY > endY) ? endY : startY;
-
-                    Rectangle SelectArea = new Rectangle(cornerX, cornerY, Math.Abs(startX - endX), Math.Abs(startY - endY));
-                    g.DrawRectangle(Pens.White, SelectArea);
-                }
-            }
-
-            pictureBox1.Image = newFrame;
-
+            CurrentFrame = frame;
             Task.Run((Action)NextFrame);
         }
 
@@ -244,7 +232,7 @@ namespace Mandelbrot
             //if (UseGPU)
             //    ExplorationRenderer.RenderFrameGPU();
             //else
-                ExplorationRenderer.RenderFrame();
+            ExplorationRenderer.RenderFrame();
         }
 
         private void RenderPhoto()
@@ -303,6 +291,7 @@ namespace Mandelbrot
         {
             Cursor.Show();
             ShouldRestartRender = false;
+            UpdateTimer.Stop();
             ExplorationRenderer.StopRender();
         }
 
@@ -320,7 +309,8 @@ namespace Mandelbrot
 
         private void Explorer_MouseUp(object sender, MouseEventArgs e)
         {
-            UndoBuffer.Add(new RenderSettings {
+            UndoBuffer.Add(new RenderSettings
+            {
                 AlgorithmType = ExplorationSettings.AlgorithmType,
                 ArithmeticType = ExplorationSettings.ArithmeticType,
                 MaxChunkSizes = ExplorationSettings.MaxChunkSizes,
@@ -352,6 +342,61 @@ namespace Mandelbrot
             ExplorationSettings.offsetX = offsetX;
             ExplorationSettings.offsetY = offsetY;
             MousePressed = false;
+        }
+
+        private void UpdateTimer_Tick(object sender, EventArgs e)
+        {
+            if (CurrentFrame == null)
+                return;
+            if (pictureBox1.Image != null)
+                pictureBox1.Image.Dispose();
+
+            var newFrame = new Bitmap(CurrentFrame);
+            using (var g = Graphics.FromImage(newFrame))
+            {
+                g.DrawString("real: " + ExplorationSettings.offsetX, SystemFonts.DefaultFont, Brushes.White, 0, 0);
+                g.DrawString("imag: " + ExplorationSettings.offsetY, SystemFonts.DefaultFont, Brushes.White, 0, 10);
+                g.DrawString("zoom: " + ExplorationSettings.Magnification, SystemFonts.DefaultFont, Brushes.White, 0, 20);
+                g.DrawString("iter: " + ExplorationSettings.MaxIterations, SystemFonts.DefaultFont, Brushes.White, 0, 30);
+
+                if (MousePressed)
+                {
+                    int startX = (int)(MouseStart.X / DeltaX);
+                    int startY = (int)(MouseStart.Y / DeltaY);
+                    int endX = (int)(MouseEnd.X / DeltaX);
+                    int endY = (int)(MouseEnd.Y / DeltaY);
+
+                    int cornerX = (startX > endX) ? endX : startX;
+                    int cornerY = (startY > endY) ? endY : startY;
+
+                    Rectangle SelectArea = new Rectangle(cornerX, cornerY, Math.Abs(startX - endX), Math.Abs(startY - endY));
+                    g.DrawRectangle(Pens.White, SelectArea);
+                }
+            }
+            pictureBox1.Image = newFrame;
+        }
+    }
+    class ExplorationRenderer : MandelbrotRenderer
+    {
+        public void Update(RenderSettings settings)
+        {
+
+            bool hasChanged = (
+                    offsetX != settings.offsetX ||
+                    offsetY != settings.offsetY ||
+                    Magnification != settings.Magnification ||
+                    MaxIterations != settings.MaxIterations);
+
+            offsetX = settings.offsetX;
+            offsetY = settings.offsetY;
+            Magnification = settings.Magnification;
+            MaxIterations = settings.MaxIterations;
+
+            if (hasChanged)
+            {
+                AlgorithmProvider.UpdateParams(settings.AlgorithmParams);
+                ResetChunkSizes();
+            }
         }
     }
 }

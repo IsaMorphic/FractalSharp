@@ -12,16 +12,19 @@ namespace Mandelbrot.Algorithms
     abstract class AlgorithmProvider<T>
     {
         protected readonly GenericMath<T> TMath;
-        protected readonly RenderSettings Settings;
+        protected AlgorithmParams Params { get; private set; }
 
-        public AlgorithmProvider(object TMath, RenderSettings settings)
+        public AlgorithmProvider(GenericMath<T> TMath)
         {
-            this.TMath = TMath as GenericMath<T>;
-            this.Settings = settings;
-            Init();
+            this.TMath = TMath;
         }
 
-        public abstract void Init();
+        public void UpdateParams(AlgorithmParams Params) {
+            this.Params = Params;
+            ParamsUpdated();
+        }
+
+        protected virtual void ParamsUpdated() { }
 
         public virtual void FrameStart() { }
 

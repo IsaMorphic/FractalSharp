@@ -80,7 +80,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Algorithms\GPUAlgorithmProvider.cs" />
     <Compile Include="Explorer.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -105,7 +104,7 @@
     <Compile Include="Algorithms\AlgorithmProvider.cs" />
     <Compile Include="Algorithms\PerturbationAlgorithmProvider.cs" />
     <Compile Include="Algorithms\TraditionalAlgorithmProvider.cs" />
-    <Compile Include="Rendering\GpuRenderer.cs" />
+    <Compile Include="Algorithms\AlgorithmParams.cs" />
     <Compile Include="Rendering\MandelbrotRenderer.cs" />
     <Compile Include="Rendering\RenderSettings.cs" />
     <Compile Include="Mathematics\ComplexMath.cs" />

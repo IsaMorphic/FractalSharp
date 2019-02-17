@@ -31,6 +31,7 @@ namespace Mandelbrot.Rendering
 
         protected bool Gradual = true;
 
+
         protected GenericMathResolver MathResolver;
         protected DirectBitmap CurrentFrame;
         protected dynamic AlgorithmProvider, PointMapper;
@@ -106,12 +107,6 @@ namespace Mandelbrot.Rendering
         {
             if (isInitialized)
             {
-                bool hasChanged = (
-                    offsetX != settings.offsetX ||
-                    offsetY != settings.offsetY ||
-                    Magnification != settings.Magnification ||
-                    MaxIterations != settings.MaxIterations);
-
                 Job = new CancellationTokenSource();
 
                 offsetX = settings.offsetX;
@@ -130,28 +125,19 @@ namespace Mandelbrot.Rendering
 
                 MaxChunkSizes = settings.MaxChunkSizes;
 
-                if (hasChanged)
-                {
-                    for (var i = 0; i < ChunkSizes.Length; i++)
-                    {
-                        ChunkSizes[i] = MaxChunkSizes[i];
-                    }
-                }
-            }
-            else
-            {
-                throw new ApplicationException("Renderer is not Initialized!");
-            }
+                ResetChunkSizes();
 
-            var TMath = MathResolver.CreateMathObject(ArithmeticType);
+                dynamic TMath = MathResolver.CreateMathObject(ArithmeticType);
 
-            var genericType = typeof(PointMapper<>).MakeGenericType(ArithmeticType);
-            PointMapper = Activator.CreateInstance(genericType, TMath);
-            PointMapper.SetInputSpace(0, Width, 0, Height);
+                var genericType = typeof(PointMapper<>).MakeGenericType(ArithmeticType);
+                PointMapper = Activator.CreateInstance(genericType, TMath);
 
-            genericType = AlgorithmType.MakeGenericType(ArithmeticType);
-            AlgorithmProvider = Activator
-                .CreateInstance(genericType, TMath, new RenderSettings
+                PointMapper.SetInputSpace(0, Width, 0, Height);
+
+                genericType = AlgorithmType.MakeGenericType(ArithmeticType);
+                AlgorithmProvider = Activator.CreateInstance(genericType, TMath);
+
+                AlgorithmProvider.UpdateParams(new AlgorithmParams
                 {
                     Magnification = Magnification,
                     offsetX = offsetX,
@@ -159,6 +145,18 @@ namespace Mandelbrot.Rendering
                     MaxIterations = MaxIterations,
                     Token = Job.Token
                 });
+            }
+            else
+            {
+                throw new ApplicationException("Renderer is not Initialized!");
+            }
+        }
+
+        public void ResetChunkSizes() {
+            for (var i = 0; i < ChunkSizes.Length; i++)
+            {
+                ChunkSizes[i] = MaxChunkSizes[i];
+            }
         }
 
         #endregion
@@ -294,15 +292,19 @@ namespace Mandelbrot.Rendering
             // Fire frame start event
             FrameStart();
 
-            AlgorithmProvider.FrameStart();
-
             if (Gradual)
             {
+                if (CellX == 0 && CellY == 0)
+                    AlgorithmProvider.FrameStart();
                 IncrementCellCoords();
                 RenderCell();
+                if (CellX == 0 && CellY == 0)
+                    AlgorithmProvider.FrameEnd();
             }
             else
             {
+                AlgorithmProvider.FrameStart();
+
                 for (CellX = 0; CellX < TotalCellsX; CellX++)
                 {
                     for (CellY = 0; CellY < TotalCellsY; CellY++)
@@ -310,9 +312,9 @@ namespace Mandelbrot.Rendering
                         RenderCell();
                     }
                 }
-            }
 
-            AlgorithmProvider.FrameEnd();
+                AlgorithmProvider.FrameEnd();
+            }
 
             Bitmap newFrame = new Bitmap(CurrentFrame.Bitmap);
             FrameEnd(newFrame);
