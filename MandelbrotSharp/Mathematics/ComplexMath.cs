@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mandelbrot.Mathematics
+namespace MandelbrotSharp.Mathematics
 {
-    class ComplexMath<T>
+    public class ComplexMath<T>
     {
         private GenericMath<T> TMath;
 

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mandelbrot.Mathematics
+namespace MandelbrotSharp.Mathematics
 {
-    class DoubleMath : GenericMath<double>
+    public class DoubleMath : GenericMath<double>
     {
         public override double Add(double a, double b) { return a + b; }
         public override double Subtract(double a, double b) { return a - b; }

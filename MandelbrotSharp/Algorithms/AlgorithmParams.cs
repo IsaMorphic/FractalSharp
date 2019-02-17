@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Mandelbrot.Algorithms
+namespace MandelbrotSharp.Algorithms
 {
-    class AlgorithmParams
+    public class AlgorithmParams
     {
         private CancellationToken _token;
 

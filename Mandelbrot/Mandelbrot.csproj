@@ -61,9 +61,6 @@
     <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ManagedCuda">
-      <HintPath>Dependencies\ManagedCuda.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -92,29 +89,10 @@
     <Compile Include="FractalApp.Designer.cs">
       <DependentUpon>FractalApp.cs</DependentUpon>
     </Compile>
-    <Compile Include="Mathematics\BigDecimal.cs" />
-    <Compile Include="Mathematics\BigDecimalMath.cs" />
-    <Compile Include="Mathematics\FloatMath.cs" />
     <Compile Include="Movies\ZoomMovieSettings.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Imaging\DirectBitmap.cs" />
     <Compile Include="Movies\MandelbrotMovieRenderer.cs" />
-    <Compile Include="Imaging\PixelData.cs" />
-    <Compile Include="Algorithms\AlgorithmProvider.cs" />
-    <Compile Include="Algorithms\PerturbationAlgorithmProvider.cs" />
-    <Compile Include="Algorithms\TraditionalAlgorithmProvider.cs" />
-    <Compile Include="Algorithms\AlgorithmParams.cs" />
-    <Compile Include="Rendering\MandelbrotRenderer.cs" />
-    <Compile Include="Rendering\RenderSettings.cs" />
-    <Compile Include="Mathematics\ComplexMath.cs" />
-    <Compile Include="Mathematics\DoubleMath.cs" />
-    <Compile Include="Mathematics\GenericComplex.cs" />
-    <Compile Include="Mathematics\GenericMath.cs" />
-    <Compile Include="Imaging\RGB.cs" />
-    <Compile Include="Utilities\GenericMathResolver.cs" />
-    <Compile Include="Utilities\PointMapper.cs" />
-    <Compile Include="Utilities\Utils.cs" />
     <EmbeddedResource Include="Explorer.resx">
       <DependentUpon>Explorer.cs</DependentUpon>
     </EmbeddedResource>
@@ -131,7 +109,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="Dependencies\Kernel.ptx" />
     <None Include="Palettes\altern.map">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -220,7 +197,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <None Include="Resources\kernel_x64.ptx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -231,6 +207,14 @@
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Resources\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MandelbrotSharp\MandelbrotSharp.csproj">
+      <Project>{9fea5d9e-c459-41eb-a7b6-41da21ea7fc9}</Project>
+      <Name>MandelbrotSharp</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

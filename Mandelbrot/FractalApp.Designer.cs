@@ -1,4 +1,4 @@
-﻿namespace Mandelbrot
+﻿namespace MandelbrotSharp
 {
     partial class FractalApp
     {

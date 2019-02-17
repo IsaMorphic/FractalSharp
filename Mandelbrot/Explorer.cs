@@ -1,8 +1,8 @@
-using Mandelbrot.Algorithms;
-using Mandelbrot.Imaging;
-using Mandelbrot.Mathematics;
-using Mandelbrot.Rendering;
-using Mandelbrot.Utilities;
+using MandelbrotSharp.Algorithms;
+using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Mathematics;
+using MandelbrotSharp.Rendering;
+using MandelbrotSharp.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,7 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Mandelbrot
+namespace MandelbrotSharp
 {
     public partial class Explorer : Form
     {
@@ -55,7 +55,9 @@ namespace Mandelbrot
 
         private GenericMathResolver MathResolver =
             new GenericMathResolver(new Assembly[]
-            { Assembly.GetExecutingAssembly() });
+            {   Assembly.GetExecutingAssembly(),
+                Assembly.Load("MandelbrotSharp")
+            });
 
         private DateTime RenderStartTime;
 

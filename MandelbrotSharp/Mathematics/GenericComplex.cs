@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mandelbrot.Mathematics
+namespace MandelbrotSharp.Mathematics
 {
-    struct GenericComplex<T>
+    public struct GenericComplex<T>
     {
         public T real { get; }
         public T imag { get; }

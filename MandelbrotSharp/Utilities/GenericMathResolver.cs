@@ -5,11 +5,11 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-using Mandelbrot.Mathematics;
+using MandelbrotSharp.Mathematics;
 
-namespace Mandelbrot.Utilities
+namespace MandelbrotSharp.Utilities
 {
-    class GenericMathResolver
+    public class GenericMathResolver
     {
         Assembly[] Assemblies;
 

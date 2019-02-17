@@ -1,4 +1,4 @@
-﻿using Mandelbrot.Algorithms;
+﻿using MandelbrotSharp.Algorithms;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Mandelbrot.Rendering
+namespace MandelbrotSharp.Rendering
 {
-    class RenderSettings
+    public class RenderSettings
     {
         private Type _algorithmType = typeof(TraditionalAlgorithmProvider<>);
         private Type _arithmeticType = typeof(double);

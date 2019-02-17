@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mandelbrot.Mathematics
+namespace MandelbrotSharp.Mathematics
 {
-    class BigDecimalMath : GenericMath<BigDecimal>
+    public class BigDecimalMath : GenericMath<BigDecimal>
     {
         private static int MaxSignificantFigures = 300;
         private static int MaxDoubleConversionFigures = 18;

@@ -1,15 +1,15 @@
-﻿using Mandelbrot.Imaging;
-using Mandelbrot.Mathematics;
-using Mandelbrot.Rendering;
+﻿using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Mathematics;
+using MandelbrotSharp.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mandelbrot.Algorithms
+namespace MandelbrotSharp.Algorithms
 {
-    abstract class AlgorithmProvider<T>
+    public abstract class AlgorithmProvider<T>
     {
         protected readonly GenericMath<T> TMath;
         protected AlgorithmParams Params { get; private set; }

@@ -1,26 +1,20 @@
-using Mandelbrot.Algorithms;
-using Mandelbrot.Imaging;
-using Mandelbrot.Mathematics;
-using Mandelbrot.Properties;
-using Mandelbrot.Utilities;
+using MandelbrotSharp.Algorithms;
+using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Mathematics;
+using MandelbrotSharp.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Mandelbrot.Rendering
+namespace MandelbrotSharp.Rendering
 {
-    delegate void FrameStartDelegate();
-    delegate void FrameStopDelegate(Bitmap frame);
+    public delegate void FrameStartDelegate();
+    public delegate void FrameStopDelegate(Bitmap frame);
 
-    delegate void RenderStopDelegate();
+    public delegate void RenderStopDelegate();
 
-    class MandelbrotRenderer
+    public class MandelbrotRenderer
     { 
 
         private int CellX;

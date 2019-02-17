@@ -1,18 +1,9 @@
-﻿using ManagedCuda;
-using ManagedCuda.VectorTypes;
-using Mandelbrot.Imaging;
-using Mandelbrot.Mathematics;
-using Mandelbrot.Properties;
-using Mandelbrot.Rendering;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Mathematics;
 
-namespace Mandelbrot.Algorithms
+namespace MandelbrotSharp.Algorithms
 {
-    class TraditionalAlgorithmProvider<T> : AlgorithmProvider<T>
+    public class TraditionalAlgorithmProvider<T> : AlgorithmProvider<T>
     {
         private T Zero;
         private T Two;

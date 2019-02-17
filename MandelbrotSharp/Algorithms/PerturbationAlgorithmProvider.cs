@@ -1,19 +1,12 @@
-using ManagedCuda;
-using ManagedCuda.VectorTypes;
-using Mandelbrot.Imaging;
-using Mandelbrot.Mathematics;
-using Mandelbrot.Properties;
+using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Mathematics;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Numerics;
-using Mandelbrot.Rendering;
 
-namespace Mandelbrot.Algorithms
+namespace MandelbrotSharp.Algorithms
 {
-    class PerturbationAlgorithmProvider<T> : AlgorithmProvider<T>
+    public class PerturbationAlgorithmProvider<T> : AlgorithmProvider<T>
     {
         private List<Complex> X, TwoX, A, B, C;
         private List<Complex[]>[] ProbePoints = new List<Complex[]>[20];

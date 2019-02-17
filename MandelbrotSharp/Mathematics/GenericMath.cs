@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mandelbrot.Mathematics
+namespace MandelbrotSharp.Mathematics
 {
-    abstract class GenericMath<T>
+    public abstract class GenericMath<T>
     {
         // Basic Operations
         public abstract T Add(T a, T b);

@@ -5,11 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Mandelbrot.Utilities;
+using MandelbrotSharp.Utilities;
 
-namespace Mandelbrot.Imaging
+namespace MandelbrotSharp.Imaging
 {
-    struct RGB
+    public struct RGB
     {
         public int red;
         public int green;

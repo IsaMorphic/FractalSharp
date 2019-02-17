@@ -14,16 +14,16 @@ using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
 
-using Mandelbrot.Imaging;
-using Mandelbrot.Rendering;
-using Mandelbrot.Utilities;
-using Mandelbrot.Algorithms;
+using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Rendering;
+using MandelbrotSharp.Utilities;
+using MandelbrotSharp.Algorithms;
 
-using Mandelbrot.Movies;
+using MandelbrotSharp.Movies;
 
 using System.Reflection;
 
-namespace Mandelbrot
+namespace MandelbrotSharp
 {
     public partial class FractalApp : Form
     {
@@ -47,7 +47,9 @@ namespace Mandelbrot
 
         private GenericMathResolver MathResolver =
             new GenericMathResolver(new Assembly[]
-            { Assembly.GetExecutingAssembly() });
+            { Assembly.GetExecutingAssembly(),
+              Assembly.Load("MandelbrotSharp")
+            });
 
         private MandelbrotMovieRenderer Renderer = new MandelbrotMovieRenderer();
         private ZoomMovieSettings RenderSettings = new ZoomMovieSettings();

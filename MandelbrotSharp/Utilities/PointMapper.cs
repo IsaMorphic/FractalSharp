@@ -1,13 +1,13 @@
-﻿using Mandelbrot.Mathematics;
+﻿using MandelbrotSharp.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mandelbrot.Utilities
+namespace MandelbrotSharp.Utilities
 {
-    class PointMapper<T>
+    public class PointMapper<T>
     {
         private GenericMath<T> TMath;
         private T inXMin, inXMax, inYMin, inYMax;

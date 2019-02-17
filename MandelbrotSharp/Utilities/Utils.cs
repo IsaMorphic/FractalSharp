@@ -8,14 +8,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
-using Mandelbrot.Imaging;
-using Mandelbrot.Rendering;
-using Mandelbrot.Mathematics;
+using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Rendering;
+using MandelbrotSharp.Mathematics;
 using System.Reflection;
 using System.Web.Script.Serialization;
 using System.Collections.ObjectModel;
 
-namespace Mandelbrot.Utilities
+namespace MandelbrotSharp.Utilities
 {
 
     public class BigDecimalConverter : JavaScriptConverter
@@ -49,7 +49,7 @@ namespace Mandelbrot.Utilities
         }
     }
 
-    class Utils
+    public class Utils
     {
         public static RGB[] LoadPallete(string path)
         {

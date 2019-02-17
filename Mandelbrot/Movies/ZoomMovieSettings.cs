@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
-using Mandelbrot.Rendering;
+using MandelbrotSharp.Rendering;
 
-namespace Mandelbrot.Movies
+namespace MandelbrotSharp.Movies
 {
     class ZoomMovieSettings : RenderSettings
     {

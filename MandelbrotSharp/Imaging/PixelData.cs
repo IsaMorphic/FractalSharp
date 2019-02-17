@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mandelbrot.Imaging
+namespace MandelbrotSharp.Imaging
 {
-    class PixelData
+    public class PixelData
     {
         double Magnitude;
         private int IterCount;

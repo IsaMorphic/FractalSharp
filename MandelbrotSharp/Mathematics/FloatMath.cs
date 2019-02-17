@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mandelbrot.Mathematics
+namespace MandelbrotSharp.Mathematics
 {
-    class FloatMath : GenericMath<float>
+    public class FloatMath : GenericMath<float>
     {
         public override float Add(float a, float b) { return a + b; }
         public override float Subtract(float a, float b) { return a - b; }

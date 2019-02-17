@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Mandelbrot.Properties {
+namespace MandelbrotSharp.Properties {
     using System;
     
     
@@ -57,16 +57,6 @@ namespace Mandelbrot.Properties {
             }
             set {
                 resourceCulture = value;
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] Kernel {
-            get {
-                object obj = ResourceManager.GetObject("Kernel", resourceCulture);
-                return ((byte[])(obj));
             }
         }
     }
