@@ -1,6 +1,3 @@
-using ManagedCuda;
-using ManagedCuda.BasicTypes;
-using ManagedCuda.VectorTypes;
 using Mandelbrot.Algorithms;
 using Mandelbrot.Imaging;
 using Mandelbrot.Mathematics;
@@ -26,45 +23,45 @@ namespace Mandelbrot.Rendering
     class MandelbrotRenderer
     { 
 
-        protected int CellX;
-        protected int CellY;
+        private int CellX;
+        private int CellY;
 
-        protected bool Gradual = true;
-
-
-        protected GenericMathResolver MathResolver;
-        protected DirectBitmap CurrentFrame;
-        protected dynamic AlgorithmProvider, PointMapper;
+        private bool Gradual = true;
 
 
-        protected bool isInitialized = false;
+        private GenericMathResolver MathResolver;
+        private DirectBitmap CurrentFrame;
+        private dynamic AlgorithmProvider, PointMapper;
 
-        protected int ThreadCount = Environment.ProcessorCount;
-        public int MaxIterations { get; protected set; }
-        public BigDecimal Magnification { get; protected set; }
+        private bool isInitialized = false;
 
+        private int ThreadCount = Environment.ProcessorCount;
+
+        protected int MaxIterations;
+        protected BigDecimal Magnification;
         protected BigDecimal offsetX;
         protected BigDecimal offsetY;
-        protected BigDecimal aspectRatio;
 
-        protected int Width;
-        protected int Height;
+        private BigDecimal aspectRatio;
 
-        protected int TotalCellsX = 4;
-        protected int TotalCellsY = 3;
+        private int Width;
+        private int Height;
 
-        protected int CellWidth;
-        protected int CellHeight;
+        private int TotalCellsX = 4;
+        private int TotalCellsY = 3;
 
-        protected int[] ChunkSizes = new int[12];
-        protected int[] MaxChunkSizes = new int[12];
+        private int CellWidth;
+        private int CellHeight;
 
-        protected RGB[] palette;
+        private int[] ChunkSizes = new int[12];
+        private int[] MaxChunkSizes = new int[12];
 
-        protected Type AlgorithmType;
-        protected Type ArithmeticType;
+        private RGB[] palette;
 
-        protected CancellationTokenSource Job;
+        private Type AlgorithmType;
+        private Type ArithmeticType;
+
+        private CancellationTokenSource Job;
 
         public event FrameStartDelegate FrameStarted;
         public event FrameStopDelegate FrameFinished;
@@ -137,14 +134,7 @@ namespace Mandelbrot.Rendering
                 genericType = AlgorithmType.MakeGenericType(ArithmeticType);
                 AlgorithmProvider = Activator.CreateInstance(genericType, TMath);
 
-                AlgorithmProvider.UpdateParams(new AlgorithmParams
-                {
-                    Magnification = Magnification,
-                    offsetX = offsetX,
-                    offsetY = offsetY,
-                    MaxIterations = MaxIterations,
-                    Token = Job.Token
-                });
+                UpdateAlgorithmProvider();
             }
             else
             {
@@ -152,11 +142,23 @@ namespace Mandelbrot.Rendering
             }
         }
 
-        public void ResetChunkSizes() {
+        protected void ResetChunkSizes() {
             for (var i = 0; i < ChunkSizes.Length; i++)
             {
                 ChunkSizes[i] = MaxChunkSizes[i];
             }
+        }
+
+        protected void UpdateAlgorithmProvider()
+        {
+            AlgorithmProvider.UpdateParams(new AlgorithmParams
+            {
+                Magnification = Magnification,
+                offsetX = offsetX,
+                offsetY = offsetY,
+                MaxIterations = MaxIterations,
+                Token = Job.Token
+            });
         }
 
         #endregion
@@ -294,17 +296,11 @@ namespace Mandelbrot.Rendering
 
             if (Gradual)
             {
-                if (CellX == 0 && CellY == 0)
-                    AlgorithmProvider.FrameStart();
                 IncrementCellCoords();
                 RenderCell();
-                if (CellX == 0 && CellY == 0)
-                    AlgorithmProvider.FrameEnd();
             }
             else
             {
-                AlgorithmProvider.FrameStart();
-
                 for (CellX = 0; CellX < TotalCellsX; CellX++)
                 {
                     for (CellY = 0; CellY < TotalCellsY; CellY++)
@@ -312,8 +308,6 @@ namespace Mandelbrot.Rendering
                         RenderCell();
                     }
                 }
-
-                AlgorithmProvider.FrameEnd();
             }
 
             Bitmap newFrame = new Bitmap(CurrentFrame.Bitmap);
@@ -328,39 +322,5 @@ namespace Mandelbrot.Rendering
         }
 
         #endregion
-    }
-
-    class PointMapper<T> {
-        private GenericMath<T> TMath;
-        private T inXMin, inXMax, inYMin, inYMax;
-        private T outXMin, outXMax, outYMin, outYMax;
-
-        public PointMapper(object TMath) {
-            this.TMath = TMath as GenericMath<T>;
-        }
-
-        public void SetInputSpace(BigDecimal xMin, BigDecimal xMax, BigDecimal yMin, BigDecimal yMax) {
-            inXMin = TMath.fromBigDecimal(xMin);
-            inXMax = TMath.fromBigDecimal(xMax);
-            inYMin = TMath.fromBigDecimal(yMin);
-            inYMax = TMath.fromBigDecimal(yMax);
-        }
-        public void SetOutputSpace(BigDecimal xMin, BigDecimal xMax, BigDecimal yMin, BigDecimal yMax)
-        {
-            outXMin = TMath.fromBigDecimal(xMin);
-            outXMax = TMath.fromBigDecimal(xMax);
-            outYMin = TMath.fromBigDecimal(yMin);
-            outYMax = TMath.fromBigDecimal(yMax);
-        }
-        public T MapPointX(double x)
-        {
-            T real = Utils.Map<T>(TMath, TMath.fromDouble(x), inXMin, inXMax, outXMin, outXMax);
-            return real;
-        }
-        public T MapPointY(double y)
-        {
-            T imag = Utils.Map<T>(TMath, TMath.fromDouble(y), inYMin, inYMax, outYMin, outYMax);
-            return imag;
-        }
     }
 }

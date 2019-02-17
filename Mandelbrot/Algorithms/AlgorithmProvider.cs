@@ -19,17 +19,13 @@ namespace Mandelbrot.Algorithms
             this.TMath = TMath;
         }
 
-        public void UpdateParams(AlgorithmParams Params) {
+        public void UpdateParams(AlgorithmParams Params)
+        {
             this.Params = Params;
             ParamsUpdated();
         }
 
-        protected virtual void ParamsUpdated() { }
-
-        public virtual void FrameStart() { }
-
-        public virtual void FrameEnd() { }
-
         public abstract PixelData Run(T px, T py);
+        protected virtual void ParamsUpdated() { }
     }
 }

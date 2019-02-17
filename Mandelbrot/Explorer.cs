@@ -65,8 +65,8 @@ namespace Mandelbrot
             ExplorationSettings.offsetX = offsetX;
             ExplorationSettings.offsetY = offsetY;
 
-            ExplorationSettings.AlgorithmType = typeof(PerturbationAlgorithmProvider<>);
-            ExplorationSettings.ArithmeticType = typeof(BigDecimal);
+            ExplorationSettings.AlgorithmType = typeof(TraditionalAlgorithmProvider<>);
+            ExplorationSettings.ArithmeticType = typeof(double);
             ExplorationSettings.Gradual = true;
 
             ExplorationSettings.MaxChunkSizes = new int[12]
@@ -394,7 +394,7 @@ namespace Mandelbrot
 
             if (hasChanged)
             {
-                AlgorithmProvider.UpdateParams(settings.AlgorithmParams);
+                UpdateAlgorithmProvider();
                 ResetChunkSizes();
             }
         }

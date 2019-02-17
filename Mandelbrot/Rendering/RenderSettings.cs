@@ -37,7 +37,6 @@ namespace Mandelbrot.Rendering
         public virtual int Height { get => _height; set => _height = value; }
         public virtual bool Gradual { get => _gradual; set => _gradual = value; }
         public virtual int[] MaxChunkSizes { get => _maxChunkSizes; set => _maxChunkSizes = value; }
-        public virtual AlgorithmParams AlgorithmParams { get => _algorithmParams; }
 
 
         public virtual BigDecimal Magnification { get => _algorithmParams.Magnification; set => _algorithmParams.Magnification = value; }

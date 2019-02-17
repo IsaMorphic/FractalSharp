@@ -113,6 +113,7 @@
     <Compile Include="Mathematics\GenericMath.cs" />
     <Compile Include="Imaging\RGB.cs" />
     <Compile Include="Utilities\GenericMathResolver.cs" />
+    <Compile Include="Utilities\PointMapper.cs" />
     <Compile Include="Utilities\Utils.cs" />
     <EmbeddedResource Include="Explorer.resx">
       <DependentUpon>Explorer.cs</DependentUpon>
