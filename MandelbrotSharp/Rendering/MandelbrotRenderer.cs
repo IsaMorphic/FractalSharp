@@ -6,6 +6,7 @@ using System;
 using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Numerics;
 
 namespace MandelbrotSharp.Rendering
 {
@@ -15,17 +16,18 @@ namespace MandelbrotSharp.Rendering
     public delegate void RenderStopDelegate();
 
     public class MandelbrotRenderer
-    { 
+    {
 
         private int CellX;
         private int CellY;
 
         private bool Gradual = true;
 
-
         private GenericMathResolver MathResolver;
         private DirectBitmap CurrentFrame;
-        private dynamic AlgorithmProvider, PointMapper;
+
+        private dynamic AlgorithmProvider;
+        protected dynamic PointMapper;
 
         private bool isInitialized = false;
 
@@ -50,8 +52,6 @@ namespace MandelbrotSharp.Rendering
         private int[] ChunkSizes = new int[12];
         private int[] MaxChunkSizes = new int[12];
 
-        private RGB[] palette;
-
         private Type AlgorithmType;
         private Type ArithmeticType;
 
@@ -73,7 +73,7 @@ namespace MandelbrotSharp.Rendering
 
         #region Initialization and Configuration Methods
 
-        public void Initialize(RenderSettings settings, RGB[] newPalette, GenericMathResolver mathResolver)
+        public void Initialize(RenderSettings settings, GenericMathResolver mathResolver)
         {
             MathResolver = mathResolver;
 
@@ -86,8 +86,6 @@ namespace MandelbrotSharp.Rendering
             aspectRatio = ((BigDecimal)Width / (BigDecimal)Height) * 2;
 
             CurrentFrame = new DirectBitmap(Width, Height);
-
-            palette = newPalette;
 
             isInitialized = true;
 
@@ -136,7 +134,8 @@ namespace MandelbrotSharp.Rendering
             }
         }
 
-        protected void ResetChunkSizes() {
+        protected void ResetChunkSizes()
+        {
             for (var i = 0; i < ChunkSizes.Length; i++)
             {
                 ChunkSizes[i] = MaxChunkSizes[i];
@@ -160,34 +159,12 @@ namespace MandelbrotSharp.Rendering
         #region Algorithm Methods
 
         // Smooth Coloring Algorithm
-        private Color GetColorFromIterationCount(int iterCount, double znMagn)
+        protected virtual RgbValue GetColorFromPixelData(PixelData data)
         {
-            double temp_i = iterCount;
-            // sqrt of inner term removed using log simplification rules.
-            double log_zn = Math.Log(znMagn) / 2;
-            double nu = Math.Log(log_zn / Math.Log(2)) / Math.Log(2);
-            // Rearranging the potential function.
-            // Dividing log_zn by log(2) instead of log(N = 1<<8)
-            // because we want the entire palette to range from the
-            // center to radius 2, NOT our bailout radius.
-            temp_i = temp_i + 1 - nu;
-            // Grab two colors from the pallete
-            RGB color1 = palette[(int)temp_i % (palette.Length - 1)];
-            RGB color2 = palette[(int)(temp_i + 1) % (palette.Length - 1)];
-
-            // Lerp between both colors
-            RGB final = RGB.LerpColors(color1, color2, temp_i % 1);
-
-            // Return the result.
-            return final.toColor();
-        }
-
-        public void GetPointFromFrameLocation(int x, int y, out BigDecimal offsetX, out BigDecimal offsetY)
-        {
-            BigDecimal xRange = aspectRatio / Magnification;
-            BigDecimal yRange = 2 / Magnification;
-            offsetX = Utils.Map<BigDecimal>(new BigDecimalMath(), x, 0, Width, -xRange + this.offsetX, xRange + this.offsetX);
-            offsetY = Utils.Map<BigDecimal>(new BigDecimalMath(), y, 0, Height, -yRange + this.offsetY, yRange + this.offsetY);
+            if (data.Escaped)
+                return new RgbValue(0,0,0);
+            else
+                return new RgbValue(200, 200, 200);
         }
 
         #endregion
@@ -203,8 +180,6 @@ namespace MandelbrotSharp.Rendering
 
         public void RenderCell()
         {
-            int in_set = 0;
-
             int index = CellX + CellY * 4;
             int chunkSize = ChunkSizes[index];
             int maxChunkSize = MaxChunkSizes[index];
@@ -241,26 +216,7 @@ namespace MandelbrotSharp.Rendering
 
                     PixelData pixelData = AlgorithmProvider.Run(x0, y0);
 
-                    // Grab the values from our pixel data
-
-                    double magn = pixelData.GetMagnitude();
-                    int iterCount = pixelData.GetIterCount();
-                    bool pointEscaped = pixelData.GetEscaped();
-
-                    Color PixelColor;
-
-                    // if zn's magnitude surpasses the 
-                    // bailout radius, give it a fancy color.
-                    if (pointEscaped) // itercount
-                    {
-                        PixelColor = GetColorFromIterationCount(iterCount, magn);
-                    }
-                    // Otherwise, make the pixel black, as it is in the set.  
-                    else
-                    {
-                        PixelColor = Color.Black;
-                        Interlocked.Increment(ref in_set);
-                    }
+                    RgbValue PixelColor = GetColorFromPixelData(pixelData);
 
                     for (var i = px; i < px + chunkSize; i++)
                     {
@@ -277,8 +233,6 @@ namespace MandelbrotSharp.Rendering
 
             if (chunkSize > 1)
                 ChunkSizes[index] /= 2;
-
-            if (in_set == Width * Height) StopRender();
         }
 
         // Frame rendering method, using generic typing to reduce the amount 

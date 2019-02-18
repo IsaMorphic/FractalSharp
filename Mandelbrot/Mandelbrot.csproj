@@ -93,6 +93,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Movies\MandelbrotMovieRenderer.cs" />
+    <Compile Include="Utils.cs" />
     <EmbeddedResource Include="Explorer.resx">
       <DependentUpon>Explorer.cs</DependentUpon>
     </EmbeddedResource>

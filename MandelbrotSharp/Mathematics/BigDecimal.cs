@@ -5,7 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace System
+namespace System.Numerics
 {
     public struct BigDecimal
     : IComparable

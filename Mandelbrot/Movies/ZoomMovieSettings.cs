@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using MandelbrotSharp.Rendering;
 
-namespace MandelbrotSharp.Movies
+namespace Mandelbrot.Movies
 {
     class ZoomMovieSettings : RenderSettings
     {

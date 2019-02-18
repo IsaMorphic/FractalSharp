@@ -9,21 +9,21 @@ using MandelbrotSharp.Utilities;
 
 namespace MandelbrotSharp.Imaging
 {
-    public struct RGB
+    public struct RgbValue
     {
         public int red;
         public int green;
         public int blue;
-        public RGB(int r, int g, int b)
+        public RgbValue(int r, int g, int b)
         {
             red = r;
             green = g;
             blue = b;
         }
 
-        public static RGB LerpColors(RGB a, RGB b, double alpha) {
+        public static RgbValue LerpColors(RgbValue a, RgbValue b, double alpha) {
             // Initialize final color
-            RGB c = new RGB();
+            RgbValue c = new RgbValue();
 
             // Linear interpolate red, green, and blue values.
             c.red = (int)Utils.lerp(a.red, b.red, alpha);

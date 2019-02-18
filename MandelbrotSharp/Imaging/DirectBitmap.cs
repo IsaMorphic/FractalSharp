@@ -28,10 +28,10 @@ namespace MandelbrotSharp.Imaging
             Bitmap = new Bitmap(width, height, width * 4, PixelFormat.Format32bppArgb, BitsHandle.AddrOfPinnedObject());
         }
 
-        public void SetPixel(int x, int y, Color colour)
+        public void SetPixel(int x, int y, RgbValue colour)
         {
             int index = x + (y * Width);
-            int col = colour.ToArgb();
+            int col = (255 << 24) | (colour.red << 16) | (colour.green << 8) | (colour.blue);
 
             Bits[index] = col;
         }

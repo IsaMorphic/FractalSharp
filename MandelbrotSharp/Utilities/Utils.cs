@@ -1,59 +1,20 @@
-﻿using System;
+﻿using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Mathematics;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
-
-using MandelbrotSharp.Imaging;
-using MandelbrotSharp.Rendering;
-using MandelbrotSharp.Mathematics;
 using System.Reflection;
-using System.Web.Script.Serialization;
-using System.Collections.ObjectModel;
+using System.Runtime.InteropServices;
 
 namespace MandelbrotSharp.Utilities
 {
-
-    public class BigDecimalConverter : JavaScriptConverter
-    {
-        public override IEnumerable<Type> SupportedTypes
-        {
-            get
-            {
-                return new ReadOnlyCollection<Type>(new List<Type>(new Type[] { typeof(BigDecimal) }));
-            }
-        }
-
-        public override object Deserialize(IDictionary<string, object> dictionary, Type type, JavaScriptSerializer serializer)
-        {
-            if (type == typeof(BigDecimal))
-                return BigDecimal.Parse((string)dictionary["value"]);
-            else
-                return null;
-        }
-
-        public override IDictionary<string, object> Serialize(object obj, JavaScriptSerializer serializer)
-        {
-            try
-            {
-                BigDecimal val = (BigDecimal)obj;
-                return new Dictionary<string, object>() { { "value", val.ToString() } };
-            }
-            catch (InvalidCastException) {
-                return new Dictionary<string, object>();
-            }
-        }
-    }
-
     public class Utils
     {
-        public static RGB[] LoadPallete(string path)
+        public static RgbValue[] LoadPallete(string path)
         {
-            List<RGB> pallete = new List<RGB>();
+            List<RgbValue> pallete = new List<RgbValue>();
             StreamReader palleteData = new StreamReader(path);
             while (!palleteData.EndOfStream)
             {
@@ -64,7 +25,7 @@ namespace MandelbrotSharp.Utilities
                     int r = int.Parse(palleteTokens[0]);
                     int g = int.Parse(palleteTokens[1]);
                     int b = int.Parse(palleteTokens[2]);
-                    RGB color = new RGB(r, g, b);
+                    RgbValue color = new RgbValue(r, g, b);
                     pallete.Add(color);
                 }
                 catch (FormatException) { }

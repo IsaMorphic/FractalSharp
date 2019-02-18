@@ -1,4 +1,4 @@
-﻿namespace MandelbrotSharp
+﻿namespace Mandelbrot
 {
     partial class Explorer
     {

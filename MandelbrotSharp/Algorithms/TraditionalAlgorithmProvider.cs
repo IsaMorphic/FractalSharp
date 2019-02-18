@@ -54,7 +54,7 @@ namespace MandelbrotSharp.Algorithms
 
                 iter++;
             }
-            return new PixelData(TMath.toDouble(TMath.Add(xx, yy)), iter, iter < Params.MaxIterations);
+            return new PixelData(TMath.toDouble(TMath.Add(xx, yy)), iter, iter >= Params.MaxIterations);
         }
     }
 }

@@ -19,11 +19,11 @@ using MandelbrotSharp.Rendering;
 using MandelbrotSharp.Utilities;
 using MandelbrotSharp.Algorithms;
 
-using MandelbrotSharp.Movies;
+using Mandelbrot.Movies;
 
 using System.Reflection;
 
-namespace MandelbrotSharp
+namespace Mandelbrot
 {
     public partial class FractalApp : Form
     {
@@ -267,9 +267,11 @@ namespace MandelbrotSharp
 
         private void RenderSaveDialog_OK(object sender, CancelEventArgs e)
         {
-            RGB[] palette = Utils.LoadPallete(RenderSettings.PalettePath);
+            RgbValue[] palette = Utils.LoadPallete(RenderSettings.PalettePath);
 
-            Renderer.Initialize(RenderSettings, palette, MathResolver);
+            Renderer.SetPalette(palette);
+
+            Renderer.Initialize(RenderSettings, MathResolver);
 
             VideoPath = RenderSaveDialog.FileName;
 
@@ -358,8 +360,9 @@ namespace MandelbrotSharp
                     }
                     else
                     {
-                        RGB[] palette = Utils.LoadPallete(RenderSettings.PalettePath);
-                        Renderer.Initialize(RenderSettings, palette, MathResolver);
+                        RgbValue[] palette = Utils.LoadPallete(RenderSettings.PalettePath);
+                        Renderer.SetPalette(palette);
+                        Renderer.Initialize(RenderSettings, MathResolver);
                         Renderer.Setup(RenderSettings);
                     }
                     Renderer.RenderFrame();

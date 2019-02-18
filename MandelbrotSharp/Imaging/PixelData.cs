@@ -8,24 +8,9 @@ namespace MandelbrotSharp.Imaging
 {
     public class PixelData
     {
-        double Magnitude;
-        private int IterCount;
-        private bool Escaped;
-
-        public double GetMagnitude()
-        {
-            return Magnitude;
-        }
-
-        public int GetIterCount()
-        {
-            return IterCount;
-        }
-
-        public bool GetEscaped()
-        {
-            return Escaped;
-        }
+        public double Magnitude { get; private set; }
+        public int IterCount { get; private set; }
+        public bool Escaped { get; private set; }
 
         public PixelData(double Magnitude, int IterCount, bool Escaped)
         {

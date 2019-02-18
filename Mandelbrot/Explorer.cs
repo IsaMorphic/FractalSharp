@@ -16,8 +16,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Numerics;
+using MandelbrotSharp.Extras;
 
-namespace MandelbrotSharp
+namespace Mandelbrot
 {
     public partial class Explorer : Form
     {
@@ -51,7 +53,7 @@ namespace MandelbrotSharp
 
         private Bitmap CurrentFrame;
 
-        private RGB[] ColorPalette;
+        private RgbValue[] ColorPalette;
 
         private GenericMathResolver MathResolver =
             new GenericMathResolver(new Assembly[]
@@ -179,9 +181,10 @@ namespace MandelbrotSharp
             ExplorationRenderer.FrameFinished += ExplorationRenderer_FrameEnd;
             ExplorationRenderer.RenderHalted += ExplorationRenderer_RenderHalted;
 
+            ExplorationRenderer.SetPalette(ColorPalette);
+
             ExplorationRenderer.Initialize(
                 ExplorationSettings,
-                ColorPalette,
                 MathResolver);
 
             //if (UseGPU)
@@ -239,7 +242,7 @@ namespace MandelbrotSharp
 
         private void RenderPhoto()
         {
-            MandelbrotRenderer PhotoRenderer = new MandelbrotRenderer();
+            HistogramRenderer PhotoRenderer = new HistogramRenderer();
             PhotoRenderer.FrameStarted += () => { return; };
             PhotoRenderer.FrameFinished += PhotoRenderer_FrameEnd;
             RenderSettings PhotoSettings = new RenderSettings();
@@ -249,7 +252,9 @@ namespace MandelbrotSharp
             PhotoSettings.MaxIterations = ExplorationSettings.MaxIterations;
             PhotoSettings.Width = 1920;
             PhotoSettings.Height = 1080;
-            PhotoRenderer.Initialize(PhotoSettings, ColorPalette, MathResolver);
+
+            PhotoRenderer.SetPalette(ColorPalette);
+            PhotoRenderer.Initialize(PhotoSettings, MathResolver);
             if (UseGPU)
             {
                 //PhotoRenderer.InitGPU();
@@ -378,8 +383,14 @@ namespace MandelbrotSharp
             pictureBox1.Image = newFrame;
         }
     }
-    class ExplorationRenderer : MandelbrotRenderer
+    class ExplorationRenderer : HistogramRenderer
     {
+        public void GetPointFromFrameLocation(int x, int y, out BigDecimal offsetX, out BigDecimal offsetY)
+        {
+            offsetX = PointMapper.MapPointX(x);
+            offsetY = PointMapper.MapPointY(y);
+        }
+
         public void Update(RenderSettings settings)
         {
 
