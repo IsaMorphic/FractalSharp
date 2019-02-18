@@ -250,6 +250,8 @@ namespace Mandelbrot
             PhotoSettings.offsetY = ExplorationSettings.offsetY;
             PhotoSettings.Magnification = ExplorationSettings.Magnification;
             PhotoSettings.MaxIterations = ExplorationSettings.MaxIterations;
+            PhotoSettings.AlgorithmType = ExplorationSettings.AlgorithmType;
+            PhotoSettings.ArithmeticType = ExplorationSettings.ArithmeticType;
             PhotoSettings.Width = 1920;
             PhotoSettings.Height = 1080;
 

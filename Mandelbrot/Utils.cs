@@ -1,6 +1,8 @@
-﻿using System;
+﻿using MandelbrotSharp.Imaging;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -9,6 +11,29 @@ using System.Web.Script.Serialization;
 
 namespace Mandelbrot
 {
+    public class Utils {
+        public static RgbValue[] LoadPallete(string path)
+        {
+            List<RgbValue> pallete = new List<RgbValue>();
+            StreamReader palleteData = new StreamReader(path);
+            while (!palleteData.EndOfStream)
+            {
+                try
+                {
+                    string palleteString = palleteData.ReadLine();
+                    string[] palleteTokens = palleteString.Split(new char[1] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    int r = int.Parse(palleteTokens[0]);
+                    int g = int.Parse(palleteTokens[1]);
+                    int b = int.Parse(palleteTokens[2]);
+                    RgbValue color = new RgbValue(r, g, b);
+                    pallete.Add(color);
+                }
+                catch (FormatException) { }
+            }
+            return pallete.ToArray();
+        }
+    }
+
     public class BigDecimalConverter : JavaScriptConverter
     {
         public override IEnumerable<Type> SupportedTypes

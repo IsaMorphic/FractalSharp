@@ -12,38 +12,6 @@ namespace MandelbrotSharp.Utilities
 {
     public class Utils
     {
-        public static RgbValue[] LoadPallete(string path)
-        {
-            List<RgbValue> pallete = new List<RgbValue>();
-            StreamReader palleteData = new StreamReader(path);
-            while (!palleteData.EndOfStream)
-            {
-                try
-                {
-                    string palleteString = palleteData.ReadLine();
-                    string[] palleteTokens = palleteString.Split(new char[1] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    int r = int.Parse(palleteTokens[0]);
-                    int g = int.Parse(palleteTokens[1]);
-                    int b = int.Parse(palleteTokens[2]);
-                    RgbValue color = new RgbValue(r, g, b);
-                    pallete.Add(color);
-                }
-                catch (FormatException) { }
-            }
-            return pallete.ToArray();
-        }
-        public static byte[] BitmapToByteArray(Bitmap img)
-        {
-            // and buffer of appropriate size for storing its bits
-            var buffer = new byte[img.Width * img.Height * 4];
-
-            // Now copy bits from bitmap to buffer
-            var bits = img.LockBits(new Rectangle(0, 0, img.Width, img.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppRgb);
-            Marshal.Copy(bits.Scan0, buffer, 0, buffer.Length);
-            img.UnlockBits(bits);
-            return buffer;
-        }
-
         public static T Map<T>(GenericMath<T> TMath, T OldValue, T OldMin, T OldMax, T NewMin, T NewMax)
         {
             T OldRange = TMath.Subtract(OldMax, OldMin);
