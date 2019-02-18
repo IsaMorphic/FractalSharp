@@ -63,14 +63,14 @@ namespace Mandelbrot
 
         private DateTime RenderStartTime;
 
-        public Explorer(string palettePath, BigDecimal offsetX, BigDecimal offsetY)
+        public Explorer(string palettePath, BigDecimal offsetX, BigDecimal offsetY, Type algorithm, Type numType)
         {
             ColorPalette = Utils.LoadPallete(palettePath);
             ExplorationSettings.offsetX = offsetX;
             ExplorationSettings.offsetY = offsetY;
 
-            ExplorationSettings.AlgorithmType = typeof(TraditionalAlgorithmProvider<>);
-            ExplorationSettings.ArithmeticType = typeof(double);
+            ExplorationSettings.AlgorithmType = algorithm;
+            ExplorationSettings.ArithmeticType = numType;
             ExplorationSettings.Gradual = true;
 
             ExplorationSettings.MaxChunkSizes = new int[12]

@@ -180,7 +180,7 @@ namespace MandelbrotSharp.Algorithms
                 n++;
 
             } while (MagnitudeSquared(zn) < 256 && n < maxIterations);
-            return new PixelData(MagnitudeSquared(zn), n, n < maxIterations);
+            return new PixelData(MagnitudeSquared(zn), n, n >= maxIterations);
         }
     }
 }

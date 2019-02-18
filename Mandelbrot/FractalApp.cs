@@ -444,7 +444,12 @@ namespace Mandelbrot
 
         private void exploreFractalToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var exploreWindow = new Explorer(PalletePath, BigDecimal.Parse(xOffInput.Text), BigDecimal.Parse(yOffInput.Text));
+            var exploreWindow = new Explorer(
+                PalletePath, 
+                BigDecimal.Parse(xOffInput.Text), 
+                BigDecimal.Parse(yOffInput.Text), 
+                RenderSettings.AlgorithmType, 
+                RenderSettings.ArithmeticType);
             exploreWindow.ShowDialog();
 
             if (!Rendering)

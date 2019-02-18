@@ -10,7 +10,6 @@ namespace MandelbrotSharp.Mathematics
     public class BigDecimalMath : GenericMath<BigDecimal>
     {
         private static int MaxSignificantFigures = 300;
-        private static int MaxDoubleConversionFigures = 18;
 
         public override BigDecimal Add(BigDecimal a, BigDecimal b) { return (a + b).Truncate(MaxSignificantFigures); }
         public override BigDecimal Subtract(BigDecimal a, BigDecimal b) { return (a - b).Truncate(MaxSignificantFigures); }
@@ -30,7 +29,7 @@ namespace MandelbrotSharp.Mathematics
 
 
         public override int toInt32(BigDecimal a) { return (int)a; }
-        public override double toDouble(BigDecimal a) { return (double)(a.Truncate(MaxDoubleConversionFigures)); }
+        public override double toDouble(BigDecimal a) { return (double)a; }
         public override BigDecimal toBigDecimal(BigDecimal a) { return a; }
     }
 }

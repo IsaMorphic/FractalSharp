@@ -129,7 +129,7 @@ namespace System.Numerics
 
         public static explicit operator double(BigDecimal value)
         {
-            var truncated = value.Truncate(18);
+            var truncated = value.Truncate(16);
             return (double)truncated.Mantissa * Math.Pow(10, truncated.Exponent);
         }
 
