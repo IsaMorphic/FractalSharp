@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MandelbrotSharp.Properties {
+namespace Mandelbrot.Properties {
     using System;
     
     
