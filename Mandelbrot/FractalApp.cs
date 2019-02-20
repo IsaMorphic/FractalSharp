@@ -42,6 +42,8 @@ namespace Mandelbrot
         private bool PrecisionSwitched = false;
         private double ExtraPrecisionThreshold = Math.Pow(500, 5);
 
+        private DirectBitmap CurrentFrame;
+
         private Type PreferredAlgorithm =
             typeof(TraditionalAlgorithmProvider<>);
 
@@ -115,14 +117,18 @@ namespace Mandelbrot
             }
         }
 
-        private void FrameEnd(Bitmap frame)
+        private void FrameEnd(RgbaImage frame)
         {
             try
             {
-                frame.Save(String.Format(VideoPath, Renderer.NumFrames), ImageFormat.Png);
+                CurrentFrame.SetBits(frame.CopyDataAsBits());
+                CurrentFrame.Bitmap.Save(String.Format(VideoPath, Renderer.NumFrames), ImageFormat.Png);
                 if (livePreviewCheckBox.Checked)
                 {
-                    pictureBox1.Image = frame;
+                    var previousImage = pictureBox1.Image;
+                    pictureBox1.Image = new Bitmap(CurrentFrame.Bitmap);
+                    if (previousImage != null)
+                        previousImage.Dispose();
                 }
             }
             catch (NullReferenceException) { };
@@ -149,6 +155,7 @@ namespace Mandelbrot
                 threadCountInput.Enabled = true;
                 coreCountLabel.Enabled = true;
                 pictureBox1.Image = null;
+                CurrentFrame.Dispose();
                 if (PrecisionSwitched)
                 {
                     standardPrecisionToolStripMenuItem.Checked = false;
@@ -267,7 +274,7 @@ namespace Mandelbrot
 
         private void RenderSaveDialog_OK(object sender, CancelEventArgs e)
         {
-            RgbValue[] palette = Utils.LoadPallete(RenderSettings.PalettePath);
+            RgbaValue[] palette = Utils.LoadPallete(RenderSettings.PalettePath);
 
             Renderer.SetPalette(palette);
 
@@ -339,6 +346,8 @@ namespace Mandelbrot
         {
             if (!Rendering)
             {
+                CurrentFrame = new DirectBitmap(RenderSettings.Width, RenderSettings.Height);
+
                 Rendering = true;
                 RenderSettings.offsetX = BigDecimal.Parse(xOffInput.Text);
                 RenderSettings.offsetY = BigDecimal.Parse(yOffInput.Text);
@@ -360,7 +369,7 @@ namespace Mandelbrot
                     }
                     else
                     {
-                        RgbValue[] palette = Utils.LoadPallete(RenderSettings.PalettePath);
+                        RgbaValue[] palette = Utils.LoadPallete(RenderSettings.PalettePath);
                         Renderer.SetPalette(palette);
                         Renderer.Initialize(RenderSettings, MathResolver);
                         Renderer.Setup(RenderSettings);
@@ -445,10 +454,10 @@ namespace Mandelbrot
         private void exploreFractalToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var exploreWindow = new Explorer(
-                PalletePath, 
-                BigDecimal.Parse(xOffInput.Text), 
-                BigDecimal.Parse(yOffInput.Text), 
-                RenderSettings.AlgorithmType, 
+                PalletePath,
+                BigDecimal.Parse(xOffInput.Text),
+                BigDecimal.Parse(yOffInput.Text),
+                RenderSettings.AlgorithmType,
                 RenderSettings.ArithmeticType);
             exploreWindow.ShowDialog();
 

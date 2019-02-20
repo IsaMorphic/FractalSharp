@@ -32,7 +32,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -47,9 +46,9 @@
     <Compile Include="Algorithms\PerturbationAlgorithmProvider.cs" />
     <Compile Include="Algorithms\TraditionalAlgorithmProvider.cs" />
     <Compile Include="Extras\HistogramRenderer.cs" />
-    <Compile Include="Imaging\DirectBitmap.cs" />
+    <Compile Include="Imaging\RgbaImage.cs" />
     <Compile Include="Imaging\PixelData.cs" />
-    <Compile Include="Imaging\RgbValue.cs" />
+    <Compile Include="Imaging\RgbaValue.cs" />
     <Compile Include="Mathematics\BigDecimal.cs" />
     <Compile Include="Mathematics\BigDecimalMath.cs" />
     <Compile Include="Mathematics\ComplexMath.cs" />

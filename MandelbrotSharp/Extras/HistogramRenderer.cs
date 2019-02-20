@@ -11,16 +11,16 @@ namespace MandelbrotSharp.Extras
 {
     public class HistogramRenderer : MandelbrotRenderer
     {
-        private RgbValue[] palette;
+        private RgbaValue[] palette;
 
-        public void SetPalette(RgbValue[] newPalette) {
+        public void SetPalette(RgbaValue[] newPalette) {
             palette = newPalette;
         }
 
-        protected override RgbValue GetColorFromPixelData(PixelData data)
+        protected override RgbaValue GetColorFromPixelData(PixelData data)
         {
             if (data.Escaped)
-                return new RgbValue(0, 0, 0);
+                return new RgbaValue(0, 0, 0);
             
             double temp_i = data.IterCount;
             // sqrt of inner term removed using log simplification rules.
@@ -32,11 +32,11 @@ namespace MandelbrotSharp.Extras
             // center to radius 2, NOT our bailout radius.
             temp_i = temp_i + 1 - nu;
             // Grab two colors from the pallete
-            RgbValue color1 = palette[(int)temp_i % (palette.Length - 1)];
-            RgbValue color2 = palette[(int)(temp_i + 1) % (palette.Length - 1)];
+            RgbaValue color1 = palette[(int)temp_i % (palette.Length - 1)];
+            RgbaValue color2 = palette[(int)(temp_i + 1) % (palette.Length - 1)];
 
             // Lerp between both colors
-            RgbValue final = RgbValue.LerpColors(color1, color2, temp_i % 1);
+            RgbaValue final = RgbaValue.LerpColors(color1, color2, temp_i % 1);
 
             // Return the result.
             return final;

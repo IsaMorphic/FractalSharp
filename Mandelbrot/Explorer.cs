@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Numerics;
 using MandelbrotSharp.Extras;
+using System.Runtime.InteropServices;
 
 namespace Mandelbrot
 {
@@ -51,9 +52,10 @@ namespace Mandelbrot
         private RenderSettings ExplorationSettings = new RenderSettings();
         private ExplorationRenderer ExplorationRenderer = new ExplorationRenderer();
 
-        private Bitmap CurrentFrame;
+        private DirectBitmap CurrentFrame;
+        private bool firstFrameDone;
 
-        private RgbValue[] ColorPalette;
+        private RgbaValue[] ColorPalette;
 
         private GenericMathResolver MathResolver =
             new GenericMathResolver(new Assembly[]
@@ -190,6 +192,8 @@ namespace Mandelbrot
             //if (UseGPU)
             //    ExplorationRenderer.InitGPU();
 
+            CurrentFrame = new DirectBitmap(ExplorationSettings.Width, ExplorationSettings.Height);
+
             Task.Run((Action)NextFrame);
         }
 
@@ -216,9 +220,10 @@ namespace Mandelbrot
             RenderStartTime = DateTime.Now;
         }
 
-        private void ExplorationRenderer_FrameEnd(Bitmap frame)
+        private void ExplorationRenderer_FrameEnd(RgbaImage frame)
         {
-            CurrentFrame = frame;
+            firstFrameDone = true;
+            CurrentFrame.SetBits(frame.CopyDataAsBits());
             Task.Run((Action)NextFrame);
         }
 
@@ -269,7 +274,7 @@ namespace Mandelbrot
             }
         }
 
-        private void PhotoRenderer_FrameEnd(Bitmap frame)
+        private void PhotoRenderer_FrameEnd(RgbaImage frame)
         {
             int count = 1;
 
@@ -283,7 +288,10 @@ namespace Mandelbrot
                 string tempFileName = string.Format("{0}({1})", fileNameOnly, count++);
                 newFullPath = Path.Combine(path, tempFileName + extension);
             }
-            frame.Save(newFullPath, ImageFormat.Png);
+            using (DirectBitmap bitmap = new DirectBitmap(frame.Width, frame.Height)) {
+                bitmap.SetBits(frame.CopyDataAsBits());
+                bitmap.Bitmap.Save(newFullPath, ImageFormat.Png);
+            }
         }
 
         public BigDecimal GetXOffset()
@@ -298,10 +306,12 @@ namespace Mandelbrot
 
         private void Explorer_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Cursor.Show();
-            ShouldRestartRender = false;
             UpdateTimer.Stop();
+            Cursor.Show();
             ExplorationRenderer.StopRender();
+            CurrentFrame.Dispose();
+            pictureBox1.Image.Dispose();
+            ShouldRestartRender = false;
         }
 
         private void Explorer_MouseMove(object sender, MouseEventArgs e)
@@ -355,13 +365,11 @@ namespace Mandelbrot
 
         private void UpdateTimer_Tick(object sender, EventArgs e)
         {
-            if (CurrentFrame == null)
+            if (!firstFrameDone)
                 return;
-            if (pictureBox1.Image != null)
-                pictureBox1.Image.Dispose();
 
-            var newFrame = new Bitmap(CurrentFrame);
-            using (var g = Graphics.FromImage(newFrame))
+            var bitmap = new Bitmap(CurrentFrame.Bitmap);
+            using (var g = Graphics.FromImage(bitmap))
             {
                 g.DrawString("real: " + ExplorationSettings.offsetX, SystemFonts.DefaultFont, Brushes.White, 0, 0);
                 g.DrawString("imag: " + ExplorationSettings.offsetY, SystemFonts.DefaultFont, Brushes.White, 0, 10);
@@ -382,7 +390,10 @@ namespace Mandelbrot
                     g.DrawRectangle(Pens.White, SelectArea);
                 }
             }
-            pictureBox1.Image = newFrame;
+            var previousImage = pictureBox1.Image;
+            pictureBox1.Image = bitmap;
+            if (previousImage != null)
+                previousImage.Dispose();
         }
     }
     class ExplorationRenderer : HistogramRenderer

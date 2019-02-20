@@ -1,17 +1,15 @@
 using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Imaging;
-using MandelbrotSharp.Mathematics;
 using MandelbrotSharp.Utilities;
 using System;
-using System.Drawing;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Numerics;
 
 namespace MandelbrotSharp.Rendering
 {
     public delegate void FrameStartDelegate();
-    public delegate void FrameStopDelegate(Bitmap frame);
+    public delegate void FrameStopDelegate(RgbaImage frame);
 
     public delegate void RenderStopDelegate();
 
@@ -24,7 +22,7 @@ namespace MandelbrotSharp.Rendering
         private bool Gradual = true;
 
         private GenericMathResolver MathResolver;
-        private DirectBitmap CurrentFrame;
+        private RgbaImage CurrentFrame;
 
         private dynamic AlgorithmProvider;
         protected dynamic PointMapper;
@@ -66,7 +64,7 @@ namespace MandelbrotSharp.Rendering
             FrameStarted();
         }
 
-        protected virtual void FrameEnd(Bitmap frame)
+        protected virtual void FrameEnd(RgbaImage frame)
         {
             FrameFinished(frame);
         }
@@ -85,7 +83,7 @@ namespace MandelbrotSharp.Rendering
 
             aspectRatio = ((BigDecimal)Width / (BigDecimal)Height) * 2;
 
-            CurrentFrame = new DirectBitmap(Width, Height);
+            CurrentFrame = new RgbaImage(Width, Height);
 
             isInitialized = true;
 
@@ -159,12 +157,12 @@ namespace MandelbrotSharp.Rendering
         #region Algorithm Methods
 
         // Smooth Coloring Algorithm
-        protected virtual RgbValue GetColorFromPixelData(PixelData data)
+        protected virtual RgbaValue GetColorFromPixelData(PixelData data)
         {
             if (data.Escaped)
-                return new RgbValue(0,0,0);
+                return new RgbaValue(0,0,0);
             else
-                return new RgbValue(200, 200, 200);
+                return new RgbaValue(200, 200, 200);
         }
 
         #endregion
@@ -216,7 +214,7 @@ namespace MandelbrotSharp.Rendering
 
                     PixelData pixelData = AlgorithmProvider.Run(x0, y0);
 
-                    RgbValue PixelColor = GetColorFromPixelData(pixelData);
+                    RgbaValue PixelColor = GetColorFromPixelData(pixelData);
 
                     for (var i = px; i < px + chunkSize; i++)
                     {
@@ -257,9 +255,7 @@ namespace MandelbrotSharp.Rendering
                     }
                 }
             }
-
-            Bitmap newFrame = new Bitmap(CurrentFrame.Bitmap);
-            FrameEnd(newFrame);
+            FrameEnd(new RgbaImage(CurrentFrame));
         }
 
         // Method that signals the render process to stop.  
