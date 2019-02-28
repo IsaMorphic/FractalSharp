@@ -22,7 +22,7 @@ namespace MandelbrotSharp.Rendering
         private bool Gradual = true;
 
         private GenericMathResolver MathResolver;
-        private RgbaImage CurrentFrame;
+        protected RgbaImage CurrentFrame { get; private set; }
 
         private dynamic AlgorithmProvider;
         protected dynamic PointMapper;
@@ -169,19 +169,8 @@ namespace MandelbrotSharp.Rendering
 
         #region Rendering Methods
 
-        protected void IncrementCellCoords()
+        protected void UpdatePointMapperOutputSpace()
         {
-            if (CellX < TotalCellsX - 1) { CellX++; }
-            else if (CellY < TotalCellsY - 1) { CellX = 0; CellY++; }
-            else { CellX = 0; CellY = 0; }
-        }
-
-        public void RenderCell()
-        {
-            int index = CellX + CellY * 4;
-            int chunkSize = ChunkSizes[index];
-            int maxChunkSize = MaxChunkSizes[index];
-
             BigDecimal scaleFactor = aspectRatio;
             BigDecimal zoom = Magnification;
             // Predefine minimum and maximum values of the plane, 
@@ -198,6 +187,22 @@ namespace MandelbrotSharp.Rendering
             BigDecimal yMax = 2 / zoom + offsetY;
 
             PointMapper.SetOutputSpace(xMin, xMax, yMin, yMax);
+        }
+
+        protected void IncrementCellCoords()
+        {
+            if (CellX < TotalCellsX - 1) { CellX++; }
+            else if (CellY < TotalCellsY - 1) { CellX = 0; CellY++; }
+            else { CellX = 0; CellY = 0; }
+        }
+
+        public void RenderCell()
+        {
+            int index = CellX + CellY * 4;
+            int chunkSize = ChunkSizes[index];
+            int maxChunkSize = MaxChunkSizes[index];
+
+            UpdatePointMapperOutputSpace();
 
             var loop = Parallel.For(CellX * CellWidth, (CellX + 1) * CellWidth, new ParallelOptions { CancellationToken = Job.Token, MaxDegreeOfParallelism = ThreadCount }, px =>
             {
@@ -262,6 +267,7 @@ namespace MandelbrotSharp.Rendering
         public void StopRender()
         {
             Job.Cancel();
+            Job = new CancellationTokenSource();
             RenderHalted();
         }
 
