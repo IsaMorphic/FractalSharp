@@ -181,7 +181,6 @@ namespace Mandelbrot
 
             ExplorationRenderer.FrameStarted += ExplorationRenderer_FrameStart;
             ExplorationRenderer.FrameFinished += ExplorationRenderer_FrameEnd;
-            ExplorationRenderer.RenderHalted += ExplorationRenderer_RenderHalted;
 
             ExplorationRenderer.SetPalette(ColorPalette);
 
@@ -197,7 +196,7 @@ namespace Mandelbrot
             Task.Run((Action)NextFrame);
         }
 
-        private void ExplorationRenderer_FrameStart()
+        private void ExplorationRenderer_FrameStart(object sender, EventArgs e)
         {
             TimeSpan renderTime = DateTime.Now - RenderStartTime;
 
@@ -220,22 +219,13 @@ namespace Mandelbrot
             RenderStartTime = DateTime.Now;
         }
 
-        private void ExplorationRenderer_FrameEnd(RgbaImage frame)
+        private void ExplorationRenderer_FrameEnd(object sender, FrameEventArgs e)
         {
             firstFrameDone = true;
-            CurrentFrame.SetBits(frame.CopyDataAsBits());
+            CurrentFrame.SetBits(e.Frame.CopyDataAsBits());
             Task.Run((Action)NextFrame);
         }
 
-        private void ExplorationRenderer_RenderHalted()
-        {
-            if (ShouldRestartRender)
-            {
-                ExplorationSettings.Magnification /= 1.2;
-            }
-            //if (UseGPU)
-            //    ExplorationRenderer.CleanupGPU();
-        }
 
         private void NextFrame()
         {
@@ -248,7 +238,6 @@ namespace Mandelbrot
         private void RenderPhoto()
         {
             HistogramRenderer PhotoRenderer = new HistogramRenderer();
-            PhotoRenderer.FrameStarted += () => { return; };
             PhotoRenderer.FrameFinished += PhotoRenderer_FrameEnd;
             RenderSettings PhotoSettings = new RenderSettings();
             PhotoSettings.offsetX = ExplorationSettings.offsetX;
@@ -274,7 +263,7 @@ namespace Mandelbrot
             }
         }
 
-        private void PhotoRenderer_FrameEnd(RgbaImage frame)
+        private void PhotoRenderer_FrameEnd(object sender, FrameEventArgs e)
         {
             int count = 1;
 
@@ -288,8 +277,8 @@ namespace Mandelbrot
                 string tempFileName = string.Format("{0}({1})", fileNameOnly, count++);
                 newFullPath = Path.Combine(path, tempFileName + extension);
             }
-            using (DirectBitmap bitmap = new DirectBitmap(frame.Width, frame.Height)) {
-                bitmap.SetBits(frame.CopyDataAsBits());
+            using (DirectBitmap bitmap = new DirectBitmap(e.Frame.Width, e.Frame.Height)) {
+                bitmap.SetBits(e.Frame.CopyDataAsBits());
                 bitmap.Bitmap.Save(newFullPath, ImageFormat.Png);
             }
         }

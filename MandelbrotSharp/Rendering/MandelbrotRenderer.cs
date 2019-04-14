@@ -8,10 +8,16 @@ using System.Threading.Tasks;
 
 namespace MandelbrotSharp.Rendering
 {
-    public delegate void FrameStartDelegate();
-    public delegate void FrameStopDelegate(RgbaImage frame);
+    // Define a class to hold custom event info
+    public class FrameEventArgs : EventArgs
+    {
+        public FrameEventArgs(RgbaImage frame)
+        {
+            Frame = frame;
+        }
 
-    public delegate void RenderStopDelegate();
+        public RgbaImage Frame;
+    }
 
     public class MandelbrotRenderer
     {
@@ -55,18 +61,17 @@ namespace MandelbrotSharp.Rendering
 
         private CancellationTokenSource Job;
 
-        public event FrameStartDelegate FrameStarted;
-        public event FrameStopDelegate FrameFinished;
-        public event RenderStopDelegate RenderHalted;
+        public event EventHandler FrameStarted;
+        public event EventHandler<FrameEventArgs> FrameFinished;
 
-        protected virtual void FrameStart()
+        protected virtual void OnFrameStarted()
         {
-            FrameStarted();
+            FrameStarted?.Invoke(this, null);
         }
 
-        protected virtual void FrameEnd(RgbaImage frame)
+        protected virtual void OnFrameFinished(FrameEventArgs e)
         {
-            FrameFinished(frame);
+            FrameFinished?.Invoke(this, e);
         }
 
         #region Initialization and Configuration Methods
@@ -243,7 +248,7 @@ namespace MandelbrotSharp.Rendering
         public void RenderFrame()
         {
             // Fire frame start event
-            FrameStart();
+            OnFrameStarted();
 
             if (Gradual)
             {
@@ -260,7 +265,7 @@ namespace MandelbrotSharp.Rendering
                     }
                 }
             }
-            FrameEnd(new RgbaImage(CurrentFrame));
+            OnFrameFinished(new FrameEventArgs(new RgbaImage(CurrentFrame)));
         }
 
         // Method that signals the render process to stop.  
@@ -268,7 +273,6 @@ namespace MandelbrotSharp.Rendering
         {
             Job.Cancel();
             Job = new CancellationTokenSource();
-            RenderHalted();
         }
 
         #endregion

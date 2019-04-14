@@ -89,8 +89,6 @@ namespace Mandelbrot
             Renderer.FrameStarted += FrameStart;
             Renderer.FrameFinished += FrameEnd;
 
-            Renderer.RenderHalted += Shutdown;
-
             RenderSettings.PalettePath = PalletePath;
 
             Width = 960;
@@ -98,7 +96,7 @@ namespace Mandelbrot
         }
 
         #region Renderer Events
-        private void FrameStart()
+        private void FrameStart(object sender, EventArgs e)
         {
             currentFrameStartTime = DateTime.Now;
 
@@ -117,11 +115,11 @@ namespace Mandelbrot
             }
         }
 
-        private void FrameEnd(RgbaImage frame)
+        private void FrameEnd(object sender, FrameEventArgs e)
         {
             try
             {
-                CurrentFrame.SetBits(frame.CopyDataAsBits());
+                CurrentFrame.SetBits(e.Frame.CopyDataAsBits());
                 CurrentFrame.Bitmap.Save(String.Format(VideoPath, Renderer.NumFrames), ImageFormat.Png);
                 if (livePreviewCheckBox.Checked)
                 {
@@ -392,6 +390,7 @@ namespace Mandelbrot
         private void stopToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Renderer.StopRender();
+            Shutdown();
         }
 
         // Configuration Events
