@@ -9,19 +9,14 @@ using MandelbrotSharp.Mathematics;
 
 namespace MandelbrotSharp.Utilities
 {
-    public class GenericMathResolver
+    public static class GenericMathResolver
     {
-        Assembly[] Assemblies;
+        public static List<Assembly> Assemblies = new List<Assembly>();
 
-        private Dictionary<Type, Type> CachedTypes =
+        private static Dictionary<Type, Type> CachedTypes =
             new Dictionary<Type, Type>();
 
-        public GenericMathResolver(Assembly[] assemblies)
-        {
-            Assemblies = assemblies;
-        }
-
-        public object CreateMathObject(Type NumType)
+        public static object CreateMathObject(Type NumType)
         {
 
             Type NumResolved = null;
@@ -35,7 +30,7 @@ namespace MandelbrotSharp.Utilities
                 Type GenericInterface = typeof(GenericMath<>);
                 Type NumInterface = GenericInterface.MakeGenericType(NumType);
 
-                List<Type> ResolvedTypes = Utils.GetAllImplementationsInAssemblies(Assemblies, NumInterface);
+                List<Type> ResolvedTypes = Utils.GetAllImplementationsInAssemblies(Assemblies.ToArray(), NumInterface);
 
                 NumResolved = ResolvedTypes.Single();
                 CachedTypes.Add(NumType, NumResolved);

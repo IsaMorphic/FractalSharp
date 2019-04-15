@@ -47,12 +47,6 @@ namespace Mandelbrot
         private Type PreferredAlgorithm =
             typeof(TraditionalAlgorithmProvider<>);
 
-        private GenericMathResolver MathResolver =
-            new GenericMathResolver(new Assembly[]
-            { Assembly.GetExecutingAssembly(),
-              Assembly.Load("MandelbrotSharp")
-            });
-
         private MandelbrotMovieRenderer Renderer = new MandelbrotMovieRenderer();
         private ZoomMovieSettings RenderSettings = new ZoomMovieSettings();
 
@@ -76,6 +70,11 @@ namespace Mandelbrot
         {
             Directory.CreateDirectory("Renders");
             Directory.CreateDirectory("Photos");
+
+            GenericMathResolver.Assemblies.AddRange(new Assembly[]
+            { Assembly.GetExecutingAssembly(),
+              Assembly.Load("MandelbrotSharp")
+            });
 
             startFrameInput.Value = RenderSettings.NumFrames;
             iterationCountInput.Value = RenderSettings.MaxIterations;
@@ -276,7 +275,7 @@ namespace Mandelbrot
 
             Renderer.SetPalette(palette);
 
-            Renderer.Initialize(RenderSettings, MathResolver);
+            Renderer.Initialize(RenderSettings);
 
             VideoPath = RenderSaveDialog.FileName;
 
@@ -369,7 +368,7 @@ namespace Mandelbrot
                     {
                         RgbaValue[] palette = Utils.LoadPallete(RenderSettings.PalettePath);
                         Renderer.SetPalette(palette);
-                        Renderer.Initialize(RenderSettings, MathResolver);
+                        Renderer.Initialize(RenderSettings);
                         Renderer.Setup(RenderSettings);
                     }
                     Renderer.RenderFrame();

@@ -27,7 +27,6 @@ namespace MandelbrotSharp.Rendering
 
         private bool Gradual = true;
 
-        private GenericMathResolver MathResolver;
         protected RgbaImage CurrentFrame { get; private set; }
 
         private dynamic AlgorithmProvider;
@@ -76,10 +75,8 @@ namespace MandelbrotSharp.Rendering
 
         #region Initialization and Configuration Methods
 
-        public void Initialize(RenderSettings settings, GenericMathResolver mathResolver)
+        public void Initialize(RenderSettings settings)
         {
-            MathResolver = mathResolver;
-
             Width = settings.Width;
             Height = settings.Height;
 
@@ -119,7 +116,7 @@ namespace MandelbrotSharp.Rendering
 
                 ResetChunkSizes();
 
-                dynamic TMath = MathResolver.CreateMathObject(ArithmeticType);
+                dynamic TMath = GenericMathResolver.CreateMathObject(ArithmeticType);
 
                 var genericType = typeof(PointMapper<>).MakeGenericType(ArithmeticType);
                 PointMapper = Activator.CreateInstance(genericType, TMath);

@@ -57,12 +57,6 @@ namespace Mandelbrot
 
         private RgbaValue[] ColorPalette;
 
-        private GenericMathResolver MathResolver =
-            new GenericMathResolver(new Assembly[]
-            {   Assembly.GetExecutingAssembly(),
-                Assembly.Load("MandelbrotSharp")
-            });
-
         private DateTime RenderStartTime;
 
         public Explorer(string palettePath, BigDecimal offsetX, BigDecimal offsetY, Type algorithm, Type numType)
@@ -185,8 +179,7 @@ namespace Mandelbrot
             ExplorationRenderer.SetPalette(ColorPalette);
 
             ExplorationRenderer.Initialize(
-                ExplorationSettings,
-                MathResolver);
+                ExplorationSettings);
 
             //if (UseGPU)
             //    ExplorationRenderer.InitGPU();
@@ -250,7 +243,7 @@ namespace Mandelbrot
             PhotoSettings.Height = 1080;
 
             PhotoRenderer.SetPalette(ColorPalette);
-            PhotoRenderer.Initialize(PhotoSettings, MathResolver);
+            PhotoRenderer.Initialize(PhotoSettings);
             if (UseGPU)
             {
                 //PhotoRenderer.InitGPU();
