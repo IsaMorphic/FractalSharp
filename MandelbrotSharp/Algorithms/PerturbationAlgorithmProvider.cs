@@ -10,11 +10,15 @@ namespace MandelbrotSharp.Algorithms
     {
         private List<Complex> X, TwoX, A, B, C;
         private List<Complex[]>[] ProbePoints = new List<Complex[]>[20];
+        private T newReferenceX, newReferenceY;
         private T referenceX, referenceY;
 
         private T Zero, Four;
 
         private int SkippedIterations;
+        private int MostIterations;
+
+        private bool hasBeenUpdated = false;
 
         public PerturbationAlgorithmProvider(GenericMath<T> TMath) : base(TMath)
         {
@@ -39,14 +43,22 @@ namespace MandelbrotSharp.Algorithms
             X.Clear();
             TwoX.Clear();
 
-            referenceX = TMath.fromBigDecimal(Params.offsetX);
-            referenceY = TMath.fromBigDecimal(Params.offsetY);
+            MostIterations = 0;
+
+            if (!hasBeenUpdated)
+            {
+                newReferenceX = TMath.fromBigDecimal(Params.offsetX);
+                newReferenceY = TMath.fromBigDecimal(Params.offsetY);
+            }
+
+            referenceX = newReferenceX;
+            referenceY = newReferenceY;
 
             Random random = new Random();
             for (int i = 0; i < ProbePoints.Length; i++)
             {
                 ProbePoints[i] = new List<Complex[]>();
-                var point = new Complex((double)((random.NextDouble() * 4 - 2) / Params.Magnification), (double)((random.NextDouble() * 4 - 2) / Params.Magnification));
+                var point = new Complex((double)((random.NextDouble() * 4 - 2) / Params.Magnification + Params.offsetX), (double)((random.NextDouble() * 4 - 2) / Params.Magnification + Params.offsetY));
                 ProbePoints[i].Add(new Complex[3] { point, point * point, point * point * point });
             }
 
@@ -56,6 +68,8 @@ namespace MandelbrotSharp.Algorithms
 
             IterateReferencePoint();
             ApproximateSeries();
+
+            hasBeenUpdated = true;
         }
 
         private double MagnitudeSquared(Complex a)
@@ -180,6 +194,14 @@ namespace MandelbrotSharp.Algorithms
                 n++;
 
             } while (MagnitudeSquared(zn) < 256 && n < maxIterations);
+
+            if (n > MostIterations)
+            {
+                newReferenceX = px;
+                newReferenceY = py;
+                MostIterations = n;
+            }
+
             return new PixelData(MagnitudeSquared(zn), n, n >= maxIterations);
         }
     }
