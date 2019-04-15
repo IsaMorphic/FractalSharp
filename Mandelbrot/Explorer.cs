@@ -24,7 +24,7 @@ namespace Mandelbrot
 {
     public partial class Explorer : Form
     {
-        private List<RenderSettings> UndoBuffer = new List<RenderSettings>();
+        private List<HistogramRenderSettings> UndoBuffer = new List<HistogramRenderSettings>();
 
         private int UndoIndex = 0;
 
@@ -49,25 +49,22 @@ namespace Mandelbrot
         private float DeltaX;
         private float DeltaY;
 
-        private RenderSettings ExplorationSettings = new RenderSettings();
+        private HistogramRenderSettings ExplorationSettings = new HistogramRenderSettings();
         private ExplorationRenderer ExplorationRenderer = new ExplorationRenderer();
 
         private DirectBitmap CurrentFrame;
         private bool firstFrameDone;
 
-        private RgbaValue[] ColorPalette;
-
         private DateTime RenderStartTime;
 
         public Explorer(string palettePath, BigDecimal offsetX, BigDecimal offsetY, Type algorithm, Type numType)
         {
-            ColorPalette = Utils.LoadPallete(palettePath);
+            ExplorationSettings.Palette = Utils.LoadPallete(palettePath);
             ExplorationSettings.offsetX = offsetX;
             ExplorationSettings.offsetY = offsetY;
 
-            ExplorationSettings.AlgorithmType = algorithm;
-            ExplorationSettings.ArithmeticType = numType;
-            ExplorationSettings.Gradual = true;
+            ExplorationSettings.TilesX = 4;
+            ExplorationSettings.TilesY = 3;
 
             ExplorationSettings.MaxChunkSizes = new int[12]
             {
@@ -75,6 +72,10 @@ namespace Mandelbrot
                 8, 4, 4, 8,
                 16,8, 8,16,
             };
+
+            ExplorationSettings.AlgorithmType = algorithm;
+            ExplorationSettings.ArithmeticType = numType;
+
 
             InitializeComponent();
 
@@ -97,7 +98,7 @@ namespace Mandelbrot
                     ExplorationSettings = UndoBuffer[UndoIndex];
                     break;
                 case Keys.Down:
-                    UndoBuffer.Add(new RenderSettings
+                    UndoBuffer.Add(new HistogramRenderSettings
                     {
                         AlgorithmType = ExplorationSettings.AlgorithmType,
                         ArithmeticType = ExplorationSettings.ArithmeticType,
@@ -105,7 +106,6 @@ namespace Mandelbrot
                         Magnification = ExplorationSettings.Magnification,
                         offsetX = ExplorationSettings.offsetX,
                         offsetY = ExplorationSettings.offsetY,
-                        Gradual = ExplorationSettings.Gradual,
                         MaxIterations = ExplorationSettings.MaxIterations
                     });
                     UndoIndex = Math.Max(UndoIndex - 1, 0);
@@ -176,8 +176,6 @@ namespace Mandelbrot
             ExplorationRenderer.FrameStarted += ExplorationRenderer_FrameStart;
             ExplorationRenderer.FrameFinished += ExplorationRenderer_FrameEnd;
 
-            ExplorationRenderer.SetPalette(ColorPalette);
-
             ExplorationRenderer.Initialize(
                 ExplorationSettings);
 
@@ -232,7 +230,7 @@ namespace Mandelbrot
         {
             HistogramRenderer PhotoRenderer = new HistogramRenderer();
             PhotoRenderer.FrameFinished += PhotoRenderer_FrameEnd;
-            RenderSettings PhotoSettings = new RenderSettings();
+            HistogramRenderSettings PhotoSettings = new HistogramRenderSettings();
             PhotoSettings.offsetX = ExplorationSettings.offsetX;
             PhotoSettings.offsetY = ExplorationSettings.offsetY;
             PhotoSettings.Magnification = ExplorationSettings.Magnification;
@@ -241,8 +239,7 @@ namespace Mandelbrot
             PhotoSettings.ArithmeticType = ExplorationSettings.ArithmeticType;
             PhotoSettings.Width = 1920;
             PhotoSettings.Height = 1080;
-
-            PhotoRenderer.SetPalette(ColorPalette);
+            PhotoSettings.Palette = ExplorationSettings.Palette;
             PhotoRenderer.Initialize(PhotoSettings);
             if (UseGPU)
             {
@@ -310,7 +307,7 @@ namespace Mandelbrot
 
         private void Explorer_MouseUp(object sender, MouseEventArgs e)
         {
-            UndoBuffer.Add(new RenderSettings
+            UndoBuffer.Add(new HistogramRenderSettings
             {
                 AlgorithmType = ExplorationSettings.AlgorithmType,
                 ArithmeticType = ExplorationSettings.ArithmeticType,
@@ -318,7 +315,6 @@ namespace Mandelbrot
                 Magnification = ExplorationSettings.Magnification,
                 offsetX = ExplorationSettings.offsetX,
                 offsetY = ExplorationSettings.offsetY,
-                Gradual = ExplorationSettings.Gradual,
                 MaxIterations = ExplorationSettings.MaxIterations
             });
             UndoIndex = UndoBuffer.Count;

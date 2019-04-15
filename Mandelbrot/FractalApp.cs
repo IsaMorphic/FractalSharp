@@ -271,9 +271,7 @@ namespace Mandelbrot
 
         private void RenderSaveDialog_OK(object sender, CancelEventArgs e)
         {
-            RgbaValue[] palette = Utils.LoadPallete(RenderSettings.PalettePath);
-
-            Renderer.SetPalette(palette);
+            RenderSettings.Palette = Utils.LoadPallete(RenderSettings.PalettePath);
 
             Renderer.Initialize(RenderSettings);
 
@@ -366,8 +364,7 @@ namespace Mandelbrot
                     }
                     else
                     {
-                        RgbaValue[] palette = Utils.LoadPallete(RenderSettings.PalettePath);
-                        Renderer.SetPalette(palette);
+                        RenderSettings.Palette = Utils.LoadPallete(RenderSettings.PalettePath);
                         Renderer.Initialize(RenderSettings);
                         Renderer.Setup(RenderSettings);
                     }

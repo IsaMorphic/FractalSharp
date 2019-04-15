@@ -1,5 +1,6 @@
 using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Mathematics;
 using MandelbrotSharp.Utilities;
 using System;
 using System.Numerics;
@@ -19,49 +20,50 @@ namespace MandelbrotSharp.Rendering
         public RgbaImage Frame;
     }
 
+    public class ConfigEventArgs : EventArgs
+    {
+        public ConfigEventArgs(RenderSettings settings)
+        {
+            Settings = settings;
+        }
+
+        public RenderSettings Settings;
+    }
+
     public class MandelbrotRenderer
     {
-
-        private int CellX;
-        private int CellY;
-
-        private bool Gradual = true;
-
-        protected RgbaImage CurrentFrame { get; private set; }
-
-        private dynamic AlgorithmProvider;
-        protected dynamic PointMapper;
-
-        private bool isInitialized = false;
-
-        private int ThreadCount = Environment.ProcessorCount;
+        public event EventHandler FrameStarted;
+        public event EventHandler<ConfigEventArgs> ConfigurationUpdated;
+        public event EventHandler<FrameEventArgs> FrameFinished;
 
         protected int MaxIterations;
         protected BigDecimal Magnification;
         protected BigDecimal offsetX;
         protected BigDecimal offsetY;
 
-        private BigDecimal aspectRatio;
+        protected int Width { get; private set; }
+        protected int Height { get; private set; }
 
-        private int Width;
-        private int Height;
+        protected int ThreadCount { get; private set; }
 
-        private int TotalCellsX = 4;
-        private int TotalCellsY = 3;
+        protected dynamic AlgorithmProvider { get; private set; }
+        protected dynamic PointMapper { get; private set; }
 
-        private int CellWidth;
-        private int CellHeight;
+        protected RgbaImage CurrentFrame { get; private set; }
 
-        private int[] ChunkSizes = new int[12];
-        private int[] MaxChunkSizes = new int[12];
+        protected BigDecimal aspectRatio { get; private set; }
 
         private Type AlgorithmType;
         private Type ArithmeticType;
 
-        private CancellationTokenSource Job;
+        private CancellationTokenSource CancelTokenSource;
 
-        public event EventHandler FrameStarted;
-        public event EventHandler<FrameEventArgs> FrameFinished;
+        private bool isInitialized = false;
+
+        protected virtual void OnConfigurationUpdated(ConfigEventArgs e)
+        {
+            ConfigurationUpdated?.Invoke(this, e);
+        }
 
         protected virtual void OnFrameStarted()
         {
@@ -80,9 +82,6 @@ namespace MandelbrotSharp.Rendering
             Width = settings.Width;
             Height = settings.Height;
 
-            CellWidth = Width / TotalCellsX;
-            CellHeight = Height / TotalCellsY;
-
             aspectRatio = ((BigDecimal)Width / (BigDecimal)Height) * 2;
 
             CurrentFrame = new RgbaImage(Width, Height);
@@ -96,7 +95,7 @@ namespace MandelbrotSharp.Rendering
         {
             if (isInitialized)
             {
-                Job = new CancellationTokenSource();
+                CancelTokenSource = new CancellationTokenSource();
 
                 offsetX = settings.offsetX;
                 offsetY = settings.offsetY;
@@ -110,12 +109,6 @@ namespace MandelbrotSharp.Rendering
 
                 ArithmeticType = settings.ArithmeticType;
 
-                Gradual = settings.Gradual;
-
-                MaxChunkSizes = settings.MaxChunkSizes;
-
-                ResetChunkSizes();
-
                 dynamic TMath = GenericMathResolver.CreateMathObject(ArithmeticType);
 
                 var genericType = typeof(PointMapper<>).MakeGenericType(ArithmeticType);
@@ -127,18 +120,12 @@ namespace MandelbrotSharp.Rendering
                 AlgorithmProvider = Activator.CreateInstance(genericType, TMath);
 
                 UpdateAlgorithmProvider();
+
+                OnConfigurationUpdated(new ConfigEventArgs(settings));
             }
             else
             {
                 throw new ApplicationException("Renderer is not Initialized!");
-            }
-        }
-
-        protected void ResetChunkSizes()
-        {
-            for (var i = 0; i < ChunkSizes.Length; i++)
-            {
-                ChunkSizes[i] = MaxChunkSizes[i];
             }
         }
 
@@ -150,7 +137,7 @@ namespace MandelbrotSharp.Rendering
                 offsetX = offsetX,
                 offsetY = offsetY,
                 MaxIterations = MaxIterations,
-                Token = Job.Token
+                Token = CancelTokenSource.Token
             });
         }
 
@@ -165,6 +152,26 @@ namespace MandelbrotSharp.Rendering
                 return new RgbaValue(0,0,0);
             else
                 return new RgbaValue(200, 200, 200);
+        }
+
+        protected virtual Pixel GetFrameFirstPixel()
+        {
+            return new Pixel(0, 0);
+        }
+
+        protected virtual Pixel GetFrameLastPixel()
+        {
+            return new Pixel(Width, Height);
+        }
+
+        protected virtual bool ShouldSkipPixel(Pixel p)
+        {
+            return false;
+        }
+
+        protected virtual void WritePixelToFrame(Pixel p, RgbaValue color)
+        {
+            CurrentFrame.SetPixel(p.X, p.Y, color);
         }
 
         #endregion
@@ -191,55 +198,6 @@ namespace MandelbrotSharp.Rendering
             PointMapper.SetOutputSpace(xMin, xMax, yMin, yMax);
         }
 
-        protected void IncrementCellCoords()
-        {
-            if (CellX < TotalCellsX - 1) { CellX++; }
-            else if (CellY < TotalCellsY - 1) { CellX = 0; CellY++; }
-            else { CellX = 0; CellY = 0; }
-        }
-
-        public void RenderCell()
-        {
-            int index = CellX + CellY * 4;
-            int chunkSize = ChunkSizes[index];
-            int maxChunkSize = MaxChunkSizes[index];
-
-            UpdatePointMapperOutputSpace();
-
-            var loop = Parallel.For(CellX * CellWidth, (CellX + 1) * CellWidth, new ParallelOptions { CancellationToken = Job.Token, MaxDegreeOfParallelism = ThreadCount }, px =>
-            {
-                var x0 = PointMapper.MapPointX(px);
-                for (int py = CellY * CellHeight; py < (CellY + 1) * CellHeight; py++)
-                {
-                    var y0 = PointMapper.MapPointY(py);
-                    if ((px % chunkSize != 0 ||
-                         py % chunkSize != 0) ||
-                       ((px / chunkSize) % 2 == 0 &&
-                        (py / chunkSize) % 2 == 0 &&
-                        maxChunkSize != chunkSize))
-                        continue;
-
-                    PixelData pixelData = AlgorithmProvider.Run(x0, y0);
-
-                    RgbaValue PixelColor = GetColorFromPixelData(pixelData);
-
-                    for (var i = px; i < px + chunkSize; i++)
-                    {
-                        for (var j = py; j < py + chunkSize; j++)
-                        {
-                            if (i < Width && j < Height)
-                            {
-                                CurrentFrame.SetPixel(i, j, PixelColor);
-                            }
-                        }
-                    }
-                }
-            });
-
-            if (chunkSize > 1)
-                ChunkSizes[index] /= 2;
-        }
-
         // Frame rendering method, using generic typing to reduce the amount 
         // of code used and to make the algorithm easily applicable to other number types
         public void RenderFrame()
@@ -247,29 +205,38 @@ namespace MandelbrotSharp.Rendering
             // Fire frame start event
             OnFrameStarted();
 
-            if (Gradual)
+            UpdatePointMapperOutputSpace();
+
+            var firstPoint = GetFrameFirstPixel();
+            var lastPoint = GetFrameLastPixel();
+
+            var loop = Parallel.For(firstPoint.X, lastPoint.X, new ParallelOptions { CancellationToken = CancelTokenSource.Token, MaxDegreeOfParallelism = ThreadCount }, px =>
             {
-                IncrementCellCoords();
-                RenderCell();
-            }
-            else
-            {
-                for (CellX = 0; CellX < TotalCellsX; CellX++)
+                var x0 = PointMapper.MapPointX(px);
+                for (int py = firstPoint.Y; py < lastPoint.Y; py++)
                 {
-                    for (CellY = 0; CellY < TotalCellsY; CellY++)
-                    {
-                        RenderCell();
-                    }
+                    var y0 = PointMapper.MapPointY(py);
+                    var p = new Pixel(px, py);
+
+                    if (ShouldSkipPixel(p))
+                        continue;
+
+                    PixelData pixelData = AlgorithmProvider.Run(x0, y0);
+
+                    RgbaValue PixelColor = GetColorFromPixelData(pixelData);
+
+                    WritePixelToFrame(p, PixelColor);
                 }
-            }
+            });
+
             OnFrameFinished(new FrameEventArgs(new RgbaImage(CurrentFrame)));
         }
 
         // Method that signals the render process to stop.  
         public void StopRender()
         {
-            Job.Cancel();
-            Job = new CancellationTokenSource();
+            CancelTokenSource.Cancel();
+            CancelTokenSource = new CancellationTokenSource();
         }
 
         #endregion

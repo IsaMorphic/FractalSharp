@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
+using MandelbrotSharp.Extras;
+using MandelbrotSharp.Imaging;
 using MandelbrotSharp.Rendering;
 
 namespace Mandelbrot.Movies
 {
-    class ZoomMovieSettings : RenderSettings
+    class ZoomMovieSettings : HistogramRenderSettings
     {
         private int _numFrames;
         private string _palettePath;
@@ -20,6 +22,9 @@ namespace Mandelbrot.Movies
         public override Type AlgorithmType { get => base.AlgorithmType; set => base.AlgorithmType = value; }
         [ScriptIgnore]
         public override Type ArithmeticType { get => base.ArithmeticType; set => base.ArithmeticType = value; }
+        [ScriptIgnore]
+        public override RgbaValue[] Palette { get => base.Palette; set => base.Palette = value; }
+
         public int NumFrames { get => _numFrames; set => _numFrames = value; }
 
         public string PalettePath { get => _palettePath; set => _palettePath = value; }

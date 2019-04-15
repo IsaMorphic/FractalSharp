@@ -9,13 +9,9 @@ using System.Threading.Tasks;
 
 namespace MandelbrotSharp.Extras
 {
-    public class HistogramRenderer : MandelbrotRenderer
+    public class HistogramRenderer : SuccessiveRenderer
     {
         private RgbaValue[] palette;
-
-        public void SetPalette(RgbaValue[] newPalette) {
-            palette = newPalette;
-        }
 
         protected override RgbaValue GetColorFromPixelData(PixelData data)
         {
@@ -40,6 +36,13 @@ namespace MandelbrotSharp.Extras
 
             // Return the result.
             return final;
+        }
+
+        protected override void OnConfigurationUpdated(ConfigEventArgs e)
+        {
+            var settings = e.Settings as HistogramRenderSettings;
+            palette = (RgbaValue[])settings?.Palette.Clone();
+            base.OnConfigurationUpdated(e);
         }
     }
 }

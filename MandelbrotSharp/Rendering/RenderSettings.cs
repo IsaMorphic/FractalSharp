@@ -22,22 +22,11 @@ namespace MandelbrotSharp.Rendering
         private int _width = 960;
         private int _height = 540;
 
-        private bool _gradual = false;
-
-        private int[] _maxChunkSizes = new int[12]
-        {
-            1, 1, 1, 1,
-            1, 1, 1, 1,
-            1, 1, 1, 1,
-        };
-
         public virtual Type AlgorithmType { get => _algorithmType; set => _algorithmType = value; }
         public virtual Type ArithmeticType { get => _arithmeticType; set => _arithmeticType = value; }
         public virtual int ThreadCount { get => _threadCount; set => _threadCount = value; }
         public virtual int Width { get => _width; set => _width = value; }
         public virtual int Height { get => _height; set => _height = value; }
-        public virtual bool Gradual { get => _gradual; set => _gradual = value; }
-        public virtual int[] MaxChunkSizes { get => _maxChunkSizes; set => _maxChunkSizes = value; }
 
 
         public virtual BigDecimal Magnification { get => _algorithmParams.Magnification; set => _algorithmParams.Magnification = value; }
