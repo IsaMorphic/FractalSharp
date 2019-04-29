@@ -33,6 +33,7 @@ namespace MandelbrotSharp.Rendering
     public class MandelbrotRenderer
     {
         public event EventHandler FrameStarted;
+        public event EventHandler RenderHalted;
         public event EventHandler<ConfigEventArgs> ConfigurationUpdated;
         public event EventHandler<FrameEventArgs> FrameFinished;
 
@@ -59,6 +60,10 @@ namespace MandelbrotSharp.Rendering
         private CancellationTokenSource CancelTokenSource;
 
         private bool isInitialized = false;
+
+        protected virtual void OnRenderHalted() {
+            RenderHalted?.Invoke(this, null);
+        }
 
         protected virtual void OnConfigurationUpdated(ConfigEventArgs e)
         {
@@ -149,7 +154,7 @@ namespace MandelbrotSharp.Rendering
         protected virtual RgbaValue GetColorFromPixelData(PixelData data)
         {
             if (data.Escaped)
-                return new RgbaValue(0,0,0);
+                return new RgbaValue(0, 0, 0);
             else
                 return new RgbaValue(200, 200, 200);
         }
@@ -162,6 +167,11 @@ namespace MandelbrotSharp.Rendering
         protected virtual Pixel GetFrameLastPixel()
         {
             return new Pixel(Width, Height);
+        }
+
+        protected virtual bool ShouldSkipRow(int y)
+        {
+            return false;
         }
 
         protected virtual bool ShouldSkipPixel(Pixel p)
@@ -210,23 +220,25 @@ namespace MandelbrotSharp.Rendering
             var firstPoint = GetFrameFirstPixel();
             var lastPoint = GetFrameLastPixel();
 
-            var loop = Parallel.For(firstPoint.X, lastPoint.X, new ParallelOptions { CancellationToken = CancelTokenSource.Token, MaxDegreeOfParallelism = ThreadCount }, px =>
+            var loop = Parallel.For(firstPoint.Y, lastPoint.Y, new ParallelOptions { CancellationToken = CancelTokenSource.Token, MaxDegreeOfParallelism = ThreadCount }, py =>
             {
-                var x0 = PointMapper.MapPointX(px);
-                for (int py = firstPoint.Y; py < lastPoint.Y; py++)
+                if (ShouldSkipRow(py))
+                    return;
+                var y0 = PointMapper.MapPointY(py);
+                Parallel.For(firstPoint.X, lastPoint.X, new ParallelOptions { CancellationToken = CancelTokenSource.Token, MaxDegreeOfParallelism = ThreadCount }, px =>
                 {
-                    var y0 = PointMapper.MapPointY(py);
                     var p = new Pixel(px, py);
-
                     if (ShouldSkipPixel(p))
-                        continue;
+                        return;
+
+                    var x0 = PointMapper.MapPointX(px);
 
                     PixelData pixelData = AlgorithmProvider.Run(x0, y0);
 
                     RgbaValue PixelColor = GetColorFromPixelData(pixelData);
 
                     WritePixelToFrame(p, PixelColor);
-                }
+                });
             });
 
             OnFrameFinished(new FrameEventArgs(new RgbaImage(CurrentFrame)));
@@ -237,6 +249,7 @@ namespace MandelbrotSharp.Rendering
         {
             CancelTokenSource.Cancel();
             CancelTokenSource = new CancellationTokenSource();
+            OnRenderHalted();
         }
 
         #endregion

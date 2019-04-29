@@ -22,10 +22,15 @@ namespace MandelbrotSharp.Extras
             ChunkSizes = (int[])MaxChunkSizes.Clone();
         }
 
+        protected override bool ShouldSkipRow(int py)
+        {
+            return (py % ChunkSize != 0);
+        }
+
         protected override bool ShouldSkipPixel(Pixel p)
         {
-            int px = p.X;
-            int py = p.Y;
+            var px = p.X;
+            var py = p.Y;
             return (px % ChunkSize != 0 || py % ChunkSize != 0) || ((px / ChunkSize) % 2 == 0 && (py / ChunkSize) % 2 == 0 && MaxChunkSize != ChunkSize);
         }
 
