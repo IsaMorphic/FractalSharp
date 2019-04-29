@@ -33,5 +33,6 @@ namespace MandelbrotSharp.Rendering
         public virtual BigDecimal offsetX { get => _algorithmParams.offsetX; set => _algorithmParams.offsetX = value; }
         public virtual BigDecimal offsetY { get => _algorithmParams.offsetY; set => _algorithmParams.offsetY = value; }
         public virtual int MaxIterations { get => _algorithmParams.MaxIterations; set => _algorithmParams.MaxIterations = value; }
+        public virtual AlgorithmParams AlgorithmParams { get => _algorithmParams; set => _algorithmParams = value; }
     }
 }

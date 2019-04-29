@@ -63,15 +63,10 @@ namespace Mandelbrot
             ExplorationSettings.offsetX = offsetX;
             ExplorationSettings.offsetY = offsetY;
 
-            ExplorationSettings.TilesX = 4;
-            ExplorationSettings.TilesY = 3;
+            ExplorationSettings.TilesX = 8;
+            ExplorationSettings.TilesY = 6;
 
-            ExplorationSettings.MaxChunkSizes = new int[12]
-            {
-                16,8, 8,16,
-                8, 4, 4, 8,
-                16,8, 8,16,
-            };
+            ExplorationSettings.MaxChunkSizes = Enumerable.Repeat(8, 48).ToArray();
 
             ExplorationSettings.AlgorithmType = algorithm;
             ExplorationSettings.ArithmeticType = numType;

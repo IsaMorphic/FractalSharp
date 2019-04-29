@@ -17,8 +17,7 @@ namespace MandelbrotSharp.Algorithms
 
         private int SkippedIterations;
         private int MostIterations;
-
-        private bool hasBeenUpdated = false;
+        private int PreviousMaxIterations;
 
         public PerturbationAlgorithmProvider(GenericMath<T> TMath) : base(TMath)
         {
@@ -45,14 +44,14 @@ namespace MandelbrotSharp.Algorithms
 
             MostIterations = 0;
 
-            if (!hasBeenUpdated)
+            if (PreviousMaxIterations != Params.MaxIterations)
             {
                 newReferenceX = TMath.fromBigDecimal(Params.offsetX);
                 newReferenceY = TMath.fromBigDecimal(Params.offsetY);
             }
 
-            referenceX = newReferenceX;
-            referenceY = newReferenceY;
+                referenceX = newReferenceX;
+                referenceY = newReferenceY;
 
             Random random = new Random();
             for (int i = 0; i < ProbePoints.Length; i++)
@@ -69,7 +68,7 @@ namespace MandelbrotSharp.Algorithms
             IterateReferencePoint();
             ApproximateSeries();
 
-            hasBeenUpdated = true;
+            PreviousMaxIterations = Params.MaxIterations;
         }
 
         private double MagnitudeSquared(Complex a)
