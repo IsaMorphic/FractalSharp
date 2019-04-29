@@ -5,9 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using MandelbrotSharp.Imaging;
 using MandelbrotSharp.Mathematics;
-using MandelbrotSharp.Rendering;
 
-namespace MandelbrotSharp.Extras
+namespace MandelbrotSharp.Rendering
 {
     public class SuccessiveRenderer : TiledRenderer
     {
@@ -48,12 +47,11 @@ namespace MandelbrotSharp.Extras
             }
         }
 
-        protected override void OnConfigurationUpdated(ConfigEventArgs e)
+        public void Setup(SuccessiveRenderSettings settings)
         {
-            var settings = e.Settings as SuccessiveRenderSettings;
-            MaxChunkSizes = (int[])settings?.MaxChunkSizes.Clone();
+            base.Setup(settings);
+            MaxChunkSizes = (int[])settings.MaxChunkSizes.Clone();
             ResetChunkSizes();
-            base.OnConfigurationUpdated(e);
         }
 
         protected override void OnFrameFinished(FrameEventArgs e)

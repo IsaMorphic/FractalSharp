@@ -1,12 +1,11 @@
 ﻿using MandelbrotSharp.Mathematics;
-using MandelbrotSharp.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MandelbrotSharp.Extras
+namespace MandelbrotSharp.Rendering
 {
     public class TiledRenderer : MandelbrotRenderer
     {
@@ -42,15 +41,10 @@ namespace MandelbrotSharp.Extras
             return new Pixel((CellX + 1) * CellWidth, (CellY + 1) * CellHeight);
         }
 
-        protected override void OnConfigurationUpdated(ConfigEventArgs e)
-        {
-            var settings = e.Settings as TiledRenderSettings;
-            if (settings != null)
-            {
-                TotalCellsX = settings.TilesX;
-                TotalCellsY = settings.TilesY;
-            }
-            base.OnConfigurationUpdated(e);
+        public void Setup(TiledRenderSettings settings) {
+            base.Setup(settings);
+            TotalCellsX = settings.TilesX;
+            TotalCellsY = settings.TilesY;
         }
     }
 }

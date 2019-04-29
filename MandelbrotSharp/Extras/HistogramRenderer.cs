@@ -38,11 +38,9 @@ namespace MandelbrotSharp.Extras
             return final;
         }
 
-        protected override void OnConfigurationUpdated(ConfigEventArgs e)
-        {
-            var settings = e.Settings as HistogramRenderSettings;
-            palette = (RgbaValue[])settings?.Palette.Clone();
-            base.OnConfigurationUpdated(e);
+        public void Setup(HistogramRenderSettings settings) {
+            base.Setup(settings);
+            palette = (RgbaValue[])settings.Palette.Clone();
         }
     }
 }
