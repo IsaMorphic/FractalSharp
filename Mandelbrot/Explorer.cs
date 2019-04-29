@@ -174,6 +174,8 @@ namespace Mandelbrot
             ExplorationRenderer.Initialize(
                 ExplorationSettings);
 
+            ExplorationRenderer.Setup(ExplorationSettings);
+
             //if (UseGPU)
             //    ExplorationRenderer.InitGPU();
 

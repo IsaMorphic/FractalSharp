@@ -47,10 +47,6 @@
     <Compile Include="Algorithms\TraditionalAlgorithmProvider.cs" />
     <Compile Include="Extras\HistogramRenderer.cs" />
     <Compile Include="Extras\HistogramRenderSettings.cs" />
-    <Compile Include="Extras\SuccessiveRenderer.cs" />
-    <Compile Include="Extras\SuccessiveRenderSettings.cs" />
-    <Compile Include="Extras\TiledRenderer.cs" />
-    <Compile Include="Extras\TiledRenderSettings.cs" />
     <Compile Include="Imaging\RgbaImage.cs" />
     <Compile Include="Imaging\PixelData.cs" />
     <Compile Include="Imaging\RgbaValue.cs" />
@@ -65,6 +61,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rendering\MandelbrotRenderer.cs" />
     <Compile Include="Rendering\RenderSettings.cs" />
+    <Compile Include="Rendering\SuccessiveRenderer.cs" />
+    <Compile Include="Rendering\SuccessiveRenderSettings.cs" />
+    <Compile Include="Rendering\TiledRenderer.cs" />
+    <Compile Include="Rendering\TiledRenderSettings.cs" />
     <Compile Include="Utilities\GenericMathResolver.cs" />
     <Compile Include="Utilities\PointMapper.cs" />
     <Compile Include="Utilities\Utils.cs" />

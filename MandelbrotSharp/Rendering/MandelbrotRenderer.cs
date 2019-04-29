@@ -92,8 +92,6 @@ namespace MandelbrotSharp.Rendering
             CurrentFrame = new RgbaImage(Width, Height);
 
             isInitialized = true;
-
-            Setup(settings);
         }
 
         public void Setup(RenderSettings settings)
@@ -130,7 +128,7 @@ namespace MandelbrotSharp.Rendering
             }
             else
             {
-                throw new ApplicationException("Renderer is not Initialized!");
+                throw new Exception("Renderer is not Initialized!");
             }
         }
 
