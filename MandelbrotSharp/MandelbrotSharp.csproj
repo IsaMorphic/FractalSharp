@@ -1,73 +1,11 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9FEA5D9E-C459-41EB-A7B6-41DA21EA7FC9}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MandelbrotSharp</RootNamespace>
-    <AssemblyName>MandelbrotSharp</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Algorithms\AlgorithmParams.cs" />
-    <Compile Include="Algorithms\AlgorithmProvider.cs" />
-    <Compile Include="Algorithms\PerturbationAlgorithmProvider.cs" />
-    <Compile Include="Algorithms\TraditionalAlgorithmProvider.cs" />
-    <Compile Include="Extras\HistogramRenderer.cs" />
-    <Compile Include="Extras\HistogramRenderSettings.cs" />
-    <Compile Include="Imaging\RgbaImage.cs" />
-    <Compile Include="Imaging\PixelData.cs" />
-    <Compile Include="Imaging\RgbaValue.cs" />
-    <Compile Include="Mathematics\BigDecimal.cs" />
-    <Compile Include="Mathematics\BigDecimalMath.cs" />
-    <Compile Include="Mathematics\ComplexMath.cs" />
-    <Compile Include="Mathematics\DoubleMath.cs" />
-    <Compile Include="Mathematics\FloatMath.cs" />
-    <Compile Include="Mathematics\GenericComplex.cs" />
-    <Compile Include="Mathematics\GenericMath.cs" />
-    <Compile Include="Mathematics\Pixel.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rendering\MandelbrotRenderer.cs" />
-    <Compile Include="Rendering\RenderSettings.cs" />
-    <Compile Include="Rendering\SuccessiveRenderer.cs" />
-    <Compile Include="Rendering\SuccessiveRenderSettings.cs" />
-    <Compile Include="Rendering\TiledRenderer.cs" />
-    <Compile Include="Rendering\TiledRenderSettings.cs" />
-    <Compile Include="Utilities\GenericMathResolver.cs" />
-    <Compile Include="Utilities\PointMapper.cs" />
-    <Compile Include="Utilities\Utils.cs" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
 </Project>

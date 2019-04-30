@@ -8,11 +8,12 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>Mandelbrot</RootNamespace>
     <AssemblyName>Mandelbrot</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -213,7 +214,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MandelbrotSharp\MandelbrotSharp.csproj">
-      <Project>{9fea5d9e-c459-41eb-a7b6-41da21ea7fc9}</Project>
+      <Project>{f4548262-991c-4cc6-b530-0707a916f6bc}</Project>
       <Name>MandelbrotSharp</Name>
     </ProjectReference>
   </ItemGroup>
