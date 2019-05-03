@@ -71,10 +71,7 @@ namespace Mandelbrot
             Directory.CreateDirectory("Renders");
             Directory.CreateDirectory("Photos");
 
-            GenericMathResolver.Assemblies.AddRange(new Assembly[]
-            { Assembly.GetExecutingAssembly(),
-              Assembly.Load("MandelbrotSharp")
-            });
+            GenericMathResolver.Assemblies.Add(Assembly.GetExecutingAssembly());
 
             startFrameInput.Value = RenderSettings.NumFrames;
             iterationCountInput.Value = RenderSettings.MaxIterations;

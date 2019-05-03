@@ -11,7 +11,7 @@ namespace MandelbrotSharp.Utilities
 {
     public static class GenericMathResolver
     {
-        public static List<Assembly> Assemblies = new List<Assembly>();
+        public static List<Assembly> Assemblies = new List<Assembly> { Assembly.Load("MandelbrotSharp") };
 
         private static Dictionary<Type, Type> CachedTypes =
             new Dictionary<Type, Type>();
