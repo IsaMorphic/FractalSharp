@@ -201,7 +201,7 @@ namespace MandelbrotSharp.Algorithms
                 MostIterations = n;
             }
 
-            return new PixelData(MagnitudeSquared(zn), n, n >= maxIterations);
+            return new PixelData(zn, n, n >= maxIterations);
         }
     }
 }

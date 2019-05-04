@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MandelbrotSharp.Mathematics
+namespace MandelbrotSharp.Imaging
 {
     public struct Pixel
     {

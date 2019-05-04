@@ -45,23 +45,29 @@ namespace MandelbrotSharp.Rendering
         protected int Width { get; private set; }
         protected int Height { get; private set; }
 
+        protected BigDecimal aspectRatio { get; private set; }
+
         protected int ThreadCount { get; private set; }
 
         protected dynamic AlgorithmProvider { get; private set; }
         protected dynamic PointMapper { get; private set; }
 
+        protected PixelColorator PixelColorator { get; private set; }
+
         protected RgbaImage CurrentFrame { get; private set; }
 
-        protected BigDecimal aspectRatio { get; private set; }
+        protected RgbaValue[] Palette;
 
         private Type AlgorithmType;
         private Type ArithmeticType;
+        private Type PixelColoratorType;
 
         private CancellationTokenSource CancelTokenSource;
 
         private bool isInitialized = false;
 
-        protected virtual void OnRenderHalted() {
+        protected virtual void OnRenderHalted()
+        {
             RenderHalted?.Invoke(this, null);
         }
 
@@ -112,6 +118,12 @@ namespace MandelbrotSharp.Rendering
 
                 ArithmeticType = settings.ArithmeticType;
 
+                PixelColoratorType = settings.PixelColoratorType;
+
+                Palette = (RgbaValue[])settings.Palette.Clone();
+
+                PixelColorator = (PixelColorator)Activator.CreateInstance(PixelColoratorType);
+
                 dynamic TMath = GenericMathResolver.CreateMathObject(ArithmeticType);
 
                 var genericType = typeof(PointMapper<>).MakeGenericType(ArithmeticType);
@@ -147,15 +159,6 @@ namespace MandelbrotSharp.Rendering
         #endregion
 
         #region Algorithm Methods
-
-        // Smooth Coloring Algorithm
-        protected virtual RgbaValue GetColorFromPixelData(PixelData data)
-        {
-            if (data.Escaped)
-                return new RgbaValue(0, 0, 0);
-            else
-                return new RgbaValue(200, 200, 200);
-        }
 
         protected virtual Pixel GetFrameFirstPixel()
         {
@@ -233,9 +236,16 @@ namespace MandelbrotSharp.Rendering
 
                     PixelData pixelData = AlgorithmProvider.Run(x0, y0);
 
-                    RgbaValue PixelColor = GetColorFromPixelData(pixelData);
+                    double colorIndex = PixelColorator.GetPaletteIndexFromPixelData(pixelData);
 
-                    WritePixelToFrame(p, PixelColor);
+                    // Grab two colors from the pallete
+                    RgbaValue color1 = Palette[(int)colorIndex % (Palette.Length - 1)];
+                    RgbaValue color2 = Palette[(int)(colorIndex + 1) % (Palette.Length - 1)];
+
+                    // Lerp between both colors
+                    RgbaValue final = RgbaValue.LerpColors(color1, color2, colorIndex % 1);
+
+                    WritePixelToFrame(p, final);
                 });
             });
 

@@ -1,5 +1,6 @@
 ﻿using MandelbrotSharp.Imaging;
 using MandelbrotSharp.Mathematics;
+using System.Numerics;
 
 namespace MandelbrotSharp.Algorithms
 {
@@ -54,7 +55,7 @@ namespace MandelbrotSharp.Algorithms
 
                 iter++;
             }
-            return new PixelData(TMath.toDouble(TMath.Add(xx, yy)), iter, iter >= Params.MaxIterations);
+            return new PixelData(new Complex(TMath.toDouble(x), TMath.toDouble(y)), iter, iter >= Params.MaxIterations);
         }
     }
 }

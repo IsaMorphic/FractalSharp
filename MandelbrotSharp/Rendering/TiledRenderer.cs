@@ -1,4 +1,5 @@
-﻿using MandelbrotSharp.Mathematics;
+﻿using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Linq;

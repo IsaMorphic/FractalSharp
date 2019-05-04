@@ -1,14 +1,14 @@
-﻿using System;
+﻿using MandelbrotSharp.Rendering;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using MandelbrotSharp.Extras;
 
 namespace Mandelbrot.Movies
 {
-    class MandelbrotMovieRenderer : HistogramRenderer
+    class MandelbrotMovieRenderer : MandelbrotRenderer
     {
 
         public int NumFrames { get; private set; }

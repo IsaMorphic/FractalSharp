@@ -4,13 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
-using MandelbrotSharp.Extras;
 using MandelbrotSharp.Imaging;
 using MandelbrotSharp.Rendering;
 
 namespace Mandelbrot.Movies
 {
-    class ZoomMovieSettings : HistogramRenderSettings
+    class ZoomMovieSettings : RenderSettings
     {
         private int _numFrames;
         private string _palettePath;
