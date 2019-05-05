@@ -1,4 +1,4 @@
-﻿using MandelbrotSharp.Mathematics;
+﻿using MiscUtil;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -7,12 +7,12 @@ namespace MandelbrotSharp.Utilities
 {
     public class Utils
     {
-        public static T Map<T>(GenericMath<T> TMath, T OldValue, T OldMin, T OldMax, T NewMin, T NewMax)
+        public static T Map<T>(T OldValue, T OldMin, T OldMax, T NewMin, T NewMax)
         {
-            T OldRange = TMath.Subtract(OldMax, OldMin);
-            T NewRange = TMath.Subtract(NewMax, NewMin);
+            T OldRange = Operator.Subtract(OldMax, OldMin);
+            T NewRange = Operator.Subtract(NewMax, NewMin);
             // (((OldValue - OldMin) * NewRange) / OldRange) + NewMin
-            T NewValue = TMath.Add(TMath.Divide(TMath.Multiply(TMath.Subtract(OldValue, OldMin), NewRange), OldRange), NewMin);
+            T NewValue = Operator.Add(Operator.Divide(Operator.Multiply(Operator.Subtract(OldValue, OldMin), NewRange), OldRange), NewMin);
             return NewValue;
         }
 

@@ -1,5 +1,6 @@
 ﻿using MandelbrotSharp.Imaging;
-using MandelbrotSharp.Mathematics;
+using MiscUtil;
+using System;
 using System.Numerics;
 
 namespace MandelbrotSharp.Algorithms
@@ -10,11 +11,11 @@ namespace MandelbrotSharp.Algorithms
         private T Two;
         private T Four;
 
-        public TraditionalAlgorithmProvider(GenericMath<T> TMath) : base(TMath)
+        public TraditionalAlgorithmProvider()
         {
-            Zero = TMath.fromInt32(0);
-            Two = TMath.fromInt32(2);
-            Four = TMath.fromInt32(4);
+            Zero = Operator.Convert<int, T>(0);
+            Two = Operator.Convert<int, T>(2);
+            Four = Operator.Convert<int, T>(4);
         }
 
         public override PixelData Run(T px, T py)
@@ -35,14 +36,14 @@ namespace MandelbrotSharp.Algorithms
             int iter = 0;
 
             // Mandelbrot algorithm
-            while (TMath.LessThan(TMath.Add(xx, yy), Four) && iter < Params.MaxIterations)
+            while (Operator.LessThan(Operator.Add(xx, yy), Four) && iter < Params.MaxIterations)
             {
                 // xtemp = xx - yy + x0
-                T xtemp = TMath.Add(TMath.Subtract(xx, yy), x0);
+                T xtemp = Operator.Add(Operator.Subtract(xx, yy), x0);
                 // ytemp = 2 * x * y + y0
-                T ytemp = TMath.Add(TMath.Multiply(Two, TMath.Multiply(x, y)), y0);
+                T ytemp = Operator.Add(Operator.Multiply(Two, Operator.Multiply(x, y)), y0);
 
-                if (TMath.EqualTo(x, xtemp) && TMath.EqualTo(y, ytemp))
+                if (Operator.Equal(x, xtemp) && Operator.Equal(y, ytemp))
                 {
                     iter = Params.MaxIterations;
                     break;
@@ -50,12 +51,12 @@ namespace MandelbrotSharp.Algorithms
 
                 x = xtemp;
                 y = ytemp;
-                xx = TMath.Multiply(x, x);
-                yy = TMath.Multiply(y, y);
+                xx = Operator.Multiply(x, x);
+                yy = Operator.Multiply(y, y);
 
                 iter++;
             }
-            return new PixelData(new Complex(TMath.toDouble(x), TMath.toDouble(y)), iter, iter >= Params.MaxIterations);
+            return new PixelData(new Complex(Operator.Convert<T, double>(x), Operator.Convert<T, double>(y)), iter, iter >= Params.MaxIterations);
         }
     }
 }

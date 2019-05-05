@@ -1,5 +1,5 @@
 using MandelbrotSharp.Imaging;
-using MandelbrotSharp.Mathematics;
+using MiscUtil;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -19,10 +19,10 @@ namespace MandelbrotSharp.Algorithms
         private int MostIterations;
         private int PreviousMaxIterations;
 
-        public PerturbationAlgorithmProvider(GenericMath<T> TMath) : base(TMath)
+        public PerturbationAlgorithmProvider()
         {
-            Zero = TMath.fromInt32(0);
-            Four = TMath.fromInt32(4);
+            Zero = Operator.Convert<int, T>(0);
+            Four = Operator.Convert<int, T>(4);
 
             A = new List<Complex>();
             B = new List<Complex>();
@@ -46,12 +46,12 @@ namespace MandelbrotSharp.Algorithms
 
             if (PreviousMaxIterations != Params.MaxIterations)
             {
-                newReferenceX = TMath.fromBigDecimal(Params.offsetX);
-                newReferenceY = TMath.fromBigDecimal(Params.offsetY);
+                newReferenceX = Operator.Convert<BigDecimal, T>(Params.offsetX);
+                newReferenceY = Operator.Convert<BigDecimal, T>(Params.offsetY);
             }
 
-                referenceX = newReferenceX;
-                referenceY = newReferenceY;
+            referenceX = newReferenceX;
+            referenceY = newReferenceY;
 
             Random random = new Random();
             for (int i = 0; i < ProbePoints.Length; i++)
@@ -85,24 +85,24 @@ namespace MandelbrotSharp.Algorithms
             {
                 Params.Token.ThrowIfCancellationRequested();
                 // pre multiply by two
-                T real = TMath.Add(xn_r, xn_r);
-                T imag = TMath.Add(xn_i, xn_i);
+                T real = Operator.Add(xn_r, xn_r);
+                T imag = Operator.Add(xn_i, xn_i);
 
-                T xn_r2 = TMath.Multiply(xn_r, xn_r);
-                T xn_i2 = TMath.Multiply(xn_i, xn_i);
+                T xn_r2 = Operator.Multiply(xn_r, xn_r);
+                T xn_i2 = Operator.Multiply(xn_i, xn_i);
 
-                Complex c = new Complex(TMath.toDouble(xn_r), TMath.toDouble(xn_i));
-                Complex two_c = new Complex(TMath.toDouble(real), TMath.toDouble(imag));
+                Complex c = new Complex(Operator.Convert<T, double>(xn_r), Operator.Convert<T, double>(xn_i));
+                Complex two_c = new Complex(Operator.Convert<T, double>(real), Operator.Convert<T, double>(imag));
 
                 X.Add(c);
                 TwoX.Add(two_c);
                 // calculate next iteration, remember real = 2 * xn_r
-                if (TMath.GreaterThan(TMath.Add(xn_r2, xn_i2), Four))
+                if (Operator.GreaterThan(Operator.Add(xn_r2, xn_i2), Four))
                     break;
 
 
-                xn_r = TMath.Add(TMath.Subtract(xn_r2, xn_i2), x0_r);
-                xn_i = TMath.Add(TMath.Multiply(real, xn_i), x0_i);
+                xn_r = Operator.Add(Operator.Subtract(xn_r2, xn_i2), x0_r);
+                xn_i = Operator.Add(Operator.Multiply(real, xn_i), x0_i);
             }
         }
 
@@ -164,6 +164,8 @@ namespace MandelbrotSharp.Algorithms
         // Iterates a point over its neighbors to approximate an iteration count.
         public override PixelData Run(T px, T py)
         {
+            T x = px;
+            T y = py;
             // Get max iterations.  
             int maxIterations = X.Count - 1;
 
@@ -173,7 +175,10 @@ namespace MandelbrotSharp.Algorithms
             // Initialize some variables...
             Complex zn;
 
-            Complex d0 = new Complex(TMath.toDouble(TMath.Subtract(px, referenceX)), TMath.toDouble(TMath.Subtract(py, referenceY)));
+            T deltaReal = Operator.Subtract(x, referenceX);
+            T deltaImag = Operator.Subtract(y, referenceY);
+
+            Complex d0 = new Complex(Operator.Convert<T, double>(deltaReal), Operator.Convert<T, double>(deltaImag));
 
             Complex dn = A[n] * d0 + B[n] * d0 * d0 + C[n] * d0 * d0 * d0;
 
@@ -196,8 +201,8 @@ namespace MandelbrotSharp.Algorithms
 
             if (n > MostIterations)
             {
-                newReferenceX = px;
-                newReferenceY = py;
+                newReferenceX = x;
+                newReferenceY = y;
                 MostIterations = n;
             }
 

@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace System.Numerics
 {
@@ -14,13 +11,13 @@ namespace System.Numerics
         /// <summary>
         /// Specifies whether the significant digits should be truncated to the given precision after each operation.
         /// </summary>
-        public static bool AlwaysTruncate = false;
+        public static bool AlwaysTruncate = true;
 
         /// <summary>
         /// Sets the maximum precision of division operations.
         /// If AlwaysTruncate is set to true all operations are affected.
         /// </summary>
-        public static int Precision = 50;
+        public static int Precision = 300;
 
         public BigInteger Mantissa { get; set; }
         public int Exponent { get; set; }
@@ -31,6 +28,10 @@ namespace System.Numerics
             Mantissa = mantissa;
             Exponent = exponent;
             Normalize();
+            if (AlwaysTruncate)
+            {
+                Truncate();
+            }
         }
 
         /// <summary>
@@ -77,6 +78,11 @@ namespace System.Numerics
             // normalize again to make sure there are no trailing zeros left
             shortened.Normalize();
             return shortened;
+        }
+
+        public void Truncate()
+        {
+            this = Truncate(Precision);
         }
 
         public BigDecimal Floor()

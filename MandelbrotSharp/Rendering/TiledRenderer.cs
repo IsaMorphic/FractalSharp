@@ -1,5 +1,4 @@
 ﻿using MandelbrotSharp.Imaging;
-using MandelbrotSharp.Mathematics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +18,7 @@ namespace MandelbrotSharp.Rendering
         protected int CellWidth => Width / TotalCellsX;
         protected int CellHeight => Height / TotalCellsY;
 
-        protected void IncrementCellCoords()
+        protected virtual void UpdateCellCoords()
         {
             if (CellX < TotalCellsX - 1) { CellX++; }
             else if (CellY < TotalCellsY - 1) { CellX = 0; CellY++; }
@@ -28,7 +27,7 @@ namespace MandelbrotSharp.Rendering
 
         protected override void OnFrameFinished(FrameEventArgs e)
         {
-            IncrementCellCoords();
+            UpdateCellCoords();
             base.OnFrameFinished(e);
         }
 

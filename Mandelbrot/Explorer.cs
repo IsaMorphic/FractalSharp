@@ -1,6 +1,5 @@
 using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Imaging;
-using MandelbrotSharp.Mathematics;
 using MandelbrotSharp.Rendering;
 using MandelbrotSharp.Utilities;
 using System;
@@ -18,6 +17,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using MiscUtil;
 
 namespace Mandelbrot
 {
@@ -62,8 +62,8 @@ namespace Mandelbrot
             ExplorationSettings.offsetX = offsetX;
             ExplorationSettings.offsetY = offsetY;
 
-            ExplorationSettings.TilesX = 8;
-            ExplorationSettings.TilesY = 6;
+            ExplorationSettings.TilesX = 4;
+            ExplorationSettings.TilesY = 3;
 
             ExplorationSettings.MaxChunkSizes = Enumerable.Repeat(8, 48).ToArray();
 

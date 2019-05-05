@@ -1,6 +1,5 @@
 using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Imaging;
-using MandelbrotSharp.Mathematics;
 using MandelbrotSharp.Utilities;
 using System;
 using System.Numerics;
@@ -49,18 +48,18 @@ namespace MandelbrotSharp.Rendering
 
         protected int ThreadCount { get; private set; }
 
-        protected dynamic AlgorithmProvider { get; private set; }
-        protected dynamic PointMapper { get; private set; }
+        protected IAlgorithmProvider AlgorithmProvider { get; private set; }
+        protected IPointMapper PointMapper { get; private set; }
 
         protected PixelColorator PixelColorator { get; private set; }
 
         protected RgbaImage CurrentFrame { get; private set; }
 
-        protected RgbaValue[] Palette;
+        protected RgbaValue[] Palette { get; private set; }
 
-        private Type AlgorithmType;
-        private Type ArithmeticType;
-        private Type PixelColoratorType;
+        protected Type AlgorithmType { get; private set; }
+        protected Type ArithmeticType { get; private set; }
+        protected Type PixelColoratorType { get; private set; }
 
         private CancellationTokenSource CancelTokenSource;
 
@@ -124,15 +123,13 @@ namespace MandelbrotSharp.Rendering
 
                 PixelColorator = (PixelColorator)Activator.CreateInstance(PixelColoratorType);
 
-                dynamic TMath = GenericMathResolver.CreateMathObject(ArithmeticType);
-
                 var genericType = typeof(PointMapper<>).MakeGenericType(ArithmeticType);
-                PointMapper = Activator.CreateInstance(genericType, TMath);
+                PointMapper = (IPointMapper)Activator.CreateInstance(genericType);
 
                 PointMapper.SetInputSpace(0, Width, 0, Height);
 
                 genericType = AlgorithmType.MakeGenericType(ArithmeticType);
-                AlgorithmProvider = Activator.CreateInstance(genericType, TMath);
+                AlgorithmProvider = (IAlgorithmProvider)Activator.CreateInstance(genericType);
 
                 UpdateAlgorithmProvider();
 

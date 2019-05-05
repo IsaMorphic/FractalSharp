@@ -1,5 +1,4 @@
 ﻿using MandelbrotSharp.Imaging;
-using MandelbrotSharp.Mathematics;
 using MandelbrotSharp.Rendering;
 using System;
 using System.Collections.Generic;
@@ -9,20 +8,24 @@ using System.Threading.Tasks;
 
 namespace MandelbrotSharp.Algorithms
 {
-    public abstract class AlgorithmProvider<T>
+    public interface IAlgorithmProvider
     {
-        protected readonly GenericMath<T> TMath;
+        void UpdateParams(AlgorithmParams Params);
+        PixelData Run(dynamic px, dynamic py);
+    }
+    public abstract class AlgorithmProvider<T> : IAlgorithmProvider
+    {
         protected AlgorithmParams Params { get; private set; }
 
-        public AlgorithmProvider(GenericMath<T> TMath)
-        {
-            this.TMath = TMath;
-        }
-
-        public void UpdateParams(AlgorithmParams Params)
+        void IAlgorithmProvider.UpdateParams(AlgorithmParams Params)
         {
             this.Params = Params;
             ParamsUpdated();
+        }
+
+        PixelData IAlgorithmProvider.Run(dynamic px, dynamic py)
+        {
+            return Run(px, py);
         }
 
         public abstract PixelData Run(T px, T py);
