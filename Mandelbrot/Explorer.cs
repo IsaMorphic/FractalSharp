@@ -53,6 +53,7 @@ namespace Mandelbrot
 
         private DirectBitmap CurrentFrame;
         private bool firstFrameDone;
+        private bool ShouldUpdateRenderer = false;
 
         private DateTime RenderStartTime;
 
@@ -169,17 +170,18 @@ namespace Mandelbrot
 
             ExplorationRenderer.FrameStarted += ExplorationRenderer_FrameStart;
             ExplorationRenderer.FrameFinished += ExplorationRenderer_FrameEnd;
+            ExplorationRenderer.ConfigurationUpdated += ExplorationRenderer_ConfigurationUpdated;
 
             ExplorationRenderer.Initialize(
                 ExplorationSettings);
 
             ExplorationRenderer.Setup(ExplorationSettings);
 
-            //if (UseGPU)
-            //    ExplorationRenderer.InitGPU();
-
             CurrentFrame = new DirectBitmap(ExplorationSettings.Width, ExplorationSettings.Height);
+        }
 
+        private void ExplorationRenderer_ConfigurationUpdated(object sender, EventArgs e)
+        {
             Task.Run((Action)NextFrame);
         }
 
@@ -201,8 +203,6 @@ namespace Mandelbrot
             if (ZoomingOut)
                 ExplorationSettings.Magnification /= 1.05;
 
-            ExplorationRenderer.Update(ExplorationSettings);
-
             RenderStartTime = DateTime.Now;
         }
 
@@ -210,7 +210,15 @@ namespace Mandelbrot
         {
             firstFrameDone = true;
             CurrentFrame.SetBits(e.Frame.CopyDataAsBits());
-            Task.Run((Action)NextFrame);
+            if (ShouldUpdateRenderer)
+            {
+                ExplorationRenderer.Update(ExplorationSettings);
+                ShouldUpdateRenderer = false;
+            }
+            else
+            {
+                Task.Run((Action)NextFrame);
+            }
         }
 
 
@@ -334,6 +342,7 @@ namespace Mandelbrot
                 out offsetY);
             ExplorationSettings.offsetX = offsetX;
             ExplorationSettings.offsetY = offsetY;
+            ShouldUpdateRenderer = true;
             MousePressed = false;
         }
 
@@ -372,6 +381,7 @@ namespace Mandelbrot
     }
     class ExplorationRenderer : SuccessiveRenderer
     {
+
         public void GetPointFromFrameLocation(int x, int y, out BigDecimal offsetX, out BigDecimal offsetY)
         {
             offsetX = PointMapper.MapPointX(x);
@@ -380,6 +390,7 @@ namespace Mandelbrot
 
         public void Update(RenderSettings settings)
         {
+            StopRender();
 
             bool hasChanged = (
                     offsetX != settings.offsetX ||
@@ -395,7 +406,6 @@ namespace Mandelbrot
             if (hasChanged)
             {
                 UpdateAlgorithmProvider();
-                ResetChunkSizes();
             }
         }
     }

@@ -17,7 +17,7 @@ namespace MandelbrotSharp.Rendering
 
         protected void ResetChunkSizes()
         {
-            ChunkSizes = (int[])MaxChunkSizes.Clone();
+            ChunkSizes = (int[])MaxChunkSizes?.Clone();
         }
 
         protected override bool ShouldSkipRow(int py)
@@ -50,7 +50,12 @@ namespace MandelbrotSharp.Rendering
         {
             base.Setup(settings);
             MaxChunkSizes = (int[])settings.MaxChunkSizes.Clone();
+        }
+
+        protected override void OnConfigurationUpdated()
+        {
             ResetChunkSizes();
+            base.OnConfigurationUpdated();
         }
 
         protected override void OnFrameFinished(FrameEventArgs e)

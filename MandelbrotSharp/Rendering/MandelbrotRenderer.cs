@@ -19,21 +19,11 @@ namespace MandelbrotSharp.Rendering
         public RgbaImage Frame;
     }
 
-    public class ConfigEventArgs : EventArgs
-    {
-        public ConfigEventArgs(RenderSettings settings)
-        {
-            Settings = settings;
-        }
-
-        public RenderSettings Settings;
-    }
-
     public class MandelbrotRenderer
     {
         public event EventHandler FrameStarted;
         public event EventHandler RenderHalted;
-        public event EventHandler<ConfigEventArgs> ConfigurationUpdated;
+        public event EventHandler ConfigurationUpdated;
         public event EventHandler<FrameEventArgs> FrameFinished;
 
         protected int MaxIterations;
@@ -70,9 +60,9 @@ namespace MandelbrotSharp.Rendering
             RenderHalted?.Invoke(this, null);
         }
 
-        protected virtual void OnConfigurationUpdated(ConfigEventArgs e)
+        protected virtual void OnConfigurationUpdated()
         {
-            ConfigurationUpdated?.Invoke(this, e);
+            ConfigurationUpdated?.Invoke(this, null);
         }
 
         protected virtual void OnFrameStarted()
@@ -130,10 +120,8 @@ namespace MandelbrotSharp.Rendering
 
                 genericType = AlgorithmType.MakeGenericType(ArithmeticType);
                 AlgorithmProvider = (IAlgorithmProvider)Activator.CreateInstance(genericType);
-
+                AlgorithmProvider.ParamsUpdated += (s, e) => OnConfigurationUpdated();
                 UpdateAlgorithmProvider();
-
-                OnConfigurationUpdated(new ConfigEventArgs(settings));
             }
             else
             {

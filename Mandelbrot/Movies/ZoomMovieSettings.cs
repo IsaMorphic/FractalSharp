@@ -22,6 +22,8 @@ namespace Mandelbrot.Movies
         [ScriptIgnore]
         public override Type ArithmeticType { get => base.ArithmeticType; set => base.ArithmeticType = value; }
         [ScriptIgnore]
+        public override Type PixelColoratorType { get => base.PixelColoratorType; set => base.PixelColoratorType = value; }
+        [ScriptIgnore]
         public override RgbaValue[] Palette { get => base.Palette; set => base.Palette = value; }
 
         public int NumFrames { get => _numFrames; set => _numFrames = value; }

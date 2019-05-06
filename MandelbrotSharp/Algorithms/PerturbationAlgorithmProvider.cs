@@ -3,6 +3,7 @@ using MiscUtil;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Threading.Tasks;
 
 namespace MandelbrotSharp.Algorithms
 {
@@ -34,7 +35,7 @@ namespace MandelbrotSharp.Algorithms
         // Perturbation Theory Algorithm, 
         // produces a list of iteration values used to compute the surrounding points
 
-        protected override void ParamsUpdated()
+        protected override void OnParamsUpdated()
         {
             A.Clear();
             B.Clear();
@@ -53,22 +54,26 @@ namespace MandelbrotSharp.Algorithms
             referenceX = newReferenceX;
             referenceY = newReferenceY;
 
-            Random random = new Random();
-            for (int i = 0; i < ProbePoints.Length; i++)
+            Task.Run(() =>
             {
-                ProbePoints[i] = new List<Complex[]>();
-                var point = new Complex((double)((random.NextDouble() * 4 - 2) / Params.Magnification + Params.offsetX), (double)((random.NextDouble() * 4 - 2) / Params.Magnification + Params.offsetY));
-                ProbePoints[i].Add(new Complex[3] { point, point * point, point * point * point });
-            }
+                Random random = new Random();
+                for (int i = 0; i < ProbePoints.Length; i++)
+                {
+                    ProbePoints[i] = new List<Complex[]>();
+                    var point = new Complex((double)((random.NextDouble() * 4 - 2) / Params.Magnification + Params.offsetX), (double)((random.NextDouble() * 4 - 2) / Params.Magnification + Params.offsetY));
+                    ProbePoints[i].Add(new Complex[3] { point, point * point, point * point * point });
+                }
 
-            A.Add(new Complex(1, 0));
-            B.Add(new Complex(0, 0));
-            C.Add(new Complex(0, 0));
+                A.Add(new Complex(1, 0));
+                B.Add(new Complex(0, 0));
+                C.Add(new Complex(0, 0));
 
-            IterateReferencePoint();
-            ApproximateSeries();
+                IterateReferencePoint();
+                ApproximateSeries();
 
-            PreviousMaxIterations = Params.MaxIterations;
+                PreviousMaxIterations = Params.MaxIterations;
+                base.OnParamsUpdated();
+            });
         }
 
         private double MagnitudeSquared(Complex a)

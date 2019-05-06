@@ -82,11 +82,17 @@ namespace Mandelbrot
 
             Renderer.FrameStarted += FrameStart;
             Renderer.FrameFinished += FrameEnd;
+            Renderer.ConfigurationUpdated += Renderer_ConfigurationUpdated;
 
             RenderSettings.PalettePath = PalletePath;
 
             Width = 960;
             Height = 540;
+        }
+
+        private void Renderer_ConfigurationUpdated(object sender, EventArgs e)
+        {
+            Task.Run((Action)Renderer.RenderFrame);
         }
 
         #region Renderer Events
@@ -346,25 +352,22 @@ namespace Mandelbrot
                 RenderSettings.NumFrames = (int)startFrameInput.Value;
                 RenderSettings.ThreadCount = (int)threadCountInput.Value;
 
-                Task.Run(() =>
+                if (!LoadedFile)
                 {
-                    if (!LoadedFile)
+                    Renderer.Setup(RenderSettings);
+                    if (!RenderHasBeenStarted)
                     {
-                        Renderer.Setup(RenderSettings);
-                        if (!RenderHasBeenStarted)
-                        {
-                            RenderHasBeenStarted = true;
-                            SaveFractal();
-                        }
+                        RenderHasBeenStarted = true;
+                        SaveFractal();
                     }
-                    else
-                    {
-                        RenderSettings.Palette = Utils.LoadPallete(RenderSettings.PalettePath);
-                        Renderer.Initialize(RenderSettings);
-                        Renderer.Setup(RenderSettings);
-                    }
-                    Renderer.RenderFrame();
-                });
+                }
+                else
+                {
+                    RenderSettings.Palette = Utils.LoadPallete(RenderSettings.PalettePath);
+                    Renderer.Initialize(RenderSettings);
+                    Renderer.Setup(RenderSettings);
+                }
+
                 intervalTimer.Start();
                 algorithmToolStripMenuItem.Enabled = false;
                 presicionStripMenuItem.Enabled = false;
