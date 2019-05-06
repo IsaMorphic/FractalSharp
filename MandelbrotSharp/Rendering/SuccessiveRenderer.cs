@@ -48,8 +48,8 @@ namespace MandelbrotSharp.Rendering
 
         public void Setup(SuccessiveRenderSettings settings)
         {
-            base.Setup(settings);
             MaxChunkSizes = (int[])settings.MaxChunkSizes.Clone();
+            base.Setup(settings);
         }
 
         protected override void OnConfigurationUpdated()

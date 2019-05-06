@@ -42,9 +42,9 @@ namespace MandelbrotSharp.Rendering
         }
 
         public void Setup(TiledRenderSettings settings) {
-            base.Setup(settings);
             TotalCellsX = settings.TilesX;
             TotalCellsY = settings.TilesY;
+            base.Setup(settings);
         }
     }
 }
