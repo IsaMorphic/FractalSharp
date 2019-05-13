@@ -118,6 +118,7 @@ namespace Mandelbrot
                     Task.Run((Action)RenderPhoto);
                     break;
             }
+            ShouldUpdateRenderer = true;
         }
 
         private void Explorer_KeyUp(object sender, KeyEventArgs e)

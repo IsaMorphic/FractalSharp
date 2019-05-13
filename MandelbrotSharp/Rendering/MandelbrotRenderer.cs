@@ -2,6 +2,7 @@ using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Imaging;
 using MandelbrotSharp.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,6 +51,8 @@ namespace MandelbrotSharp.Rendering
         protected Type AlgorithmType { get; private set; }
         protected Type ArithmeticType { get; private set; }
         protected Type PixelColoratorType { get; private set; }
+
+        protected Dictionary<string, object> ExtraParams { get; private set; }
 
         private CancellationTokenSource CancelTokenSource;
 
@@ -113,6 +116,8 @@ namespace MandelbrotSharp.Rendering
 
                 PixelColorator = (PixelColorator)Activator.CreateInstance(PixelColoratorType);
 
+                ExtraParams = new Dictionary<string, object>(settings.ExtraParams);
+
                 var genericType = typeof(PointMapper<>).MakeGenericType(ArithmeticType);
                 PointMapper = (IPointMapper)Activator.CreateInstance(genericType);
 
@@ -137,8 +142,9 @@ namespace MandelbrotSharp.Rendering
                 offsetX = offsetX,
                 offsetY = offsetY,
                 MaxIterations = MaxIterations,
-                Token = CancelTokenSource.Token
-            });
+                Token = CancelTokenSource.Token,
+                ExtraParams = new Dictionary<string, object>(ExtraParams)
+        });
         }
 
         #endregion

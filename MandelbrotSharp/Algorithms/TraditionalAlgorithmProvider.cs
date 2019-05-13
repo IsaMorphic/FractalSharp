@@ -10,12 +10,21 @@ namespace MandelbrotSharp.Algorithms
         private T Zero;
         private T Two;
         private T Four;
+        private T BailoutValue;
 
         public TraditionalAlgorithmProvider()
         {
+            // Constants
             Zero = Operator.Convert<int, T>(0);
             Two = Operator.Convert<int, T>(2);
             Four = Operator.Convert<int, T>(4);
+        }
+
+        protected override void OnParamsUpdated()
+        {
+            // Extra Params
+            BailoutValue = GetExtraParamValue("BailoutValue", Four);
+            base.OnParamsUpdated();
         }
 
         public override PixelData Run(T px, T py)
@@ -36,7 +45,7 @@ namespace MandelbrotSharp.Algorithms
             int iter = 0;
 
             // Mandelbrot algorithm
-            while (Operator.LessThan(Operator.Add(xx, yy), Four) && iter < Params.MaxIterations)
+            while (Operator.LessThan(Operator.Add(xx, yy), BailoutValue) && iter < Params.MaxIterations)
             {
                 // xtemp = xx - yy + x0
                 T xtemp = Operator.Add(Operator.Subtract(xx, yy), x0);

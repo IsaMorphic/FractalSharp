@@ -10,7 +10,7 @@ namespace MandelbrotSharp.Algorithms
     public class PerturbationAlgorithmProvider<T> : AlgorithmProvider<T>
     {
         private List<Complex> X, TwoX, A, B, C;
-        private List<Complex[]>[] ProbePoints = new List<Complex[]>[20];
+        private List<Complex[]>[] ProbePoints;
         private T newReferenceX, newReferenceY;
         private T referenceX, referenceY;
 
@@ -20,16 +20,21 @@ namespace MandelbrotSharp.Algorithms
         private int MostIterations;
         private int PreviousMaxIterations;
 
+        private bool ShouldUseSeriesApproximation;
+        private int NumProbePoints;
+
         public PerturbationAlgorithmProvider()
         {
+            // Constants
             Zero = Operator.Convert<int, T>(0);
             Four = Operator.Convert<int, T>(4);
 
+            // Initialize Lists
             A = new List<Complex>();
             B = new List<Complex>();
             C = new List<Complex>();
             X = new List<Complex>();
-            TwoX = new List<Complex>();
+            TwoX = new List<Complex>();            
         }
 
         // Perturbation Theory Algorithm, 
@@ -37,6 +42,12 @@ namespace MandelbrotSharp.Algorithms
 
         protected override void OnParamsUpdated()
         {
+            // Extra Params
+            ShouldUseSeriesApproximation = GetExtraParamValue("ShouldUseSeriesApproximation", true);
+            NumProbePoints = GetExtraParamValue("NumProbePoints", 20);
+
+            ProbePoints = new List<Complex[]>[NumProbePoints];
+
             A.Clear();
             B.Clear();
             C.Clear();
@@ -69,7 +80,9 @@ namespace MandelbrotSharp.Algorithms
                 C.Add(new Complex(0, 0));
 
                 IterateReferencePoint();
-                ApproximateSeries();
+
+                if (ShouldUseSeriesApproximation)
+                    ApproximateSeries();
 
                 PreviousMaxIterations = Params.MaxIterations;
                 base.OnParamsUpdated();

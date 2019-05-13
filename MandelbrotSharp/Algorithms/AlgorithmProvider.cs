@@ -1,5 +1,6 @@
 ﻿using MandelbrotSharp.Imaging;
 using MandelbrotSharp.Rendering;
+using MiscUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +38,15 @@ namespace MandelbrotSharp.Algorithms
         }
 
         public abstract PixelData Run(T px, T py);
+
+        protected virtual TOutput GetExtraParamValue<TOutput>(string name, TOutput def)
+        {
+            if (Params.ExtraParams.TryGetValue(name, out object val))
+                return Operator.Convert<object, TOutput>(val);
+            else
+                return def;
+        }
+
         protected virtual void OnParamsUpdated()
         {
             ParamsUpdated?.Invoke(this, null);
