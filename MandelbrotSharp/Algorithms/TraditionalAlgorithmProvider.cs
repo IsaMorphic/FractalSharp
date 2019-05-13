@@ -7,25 +7,12 @@ namespace MandelbrotSharp.Algorithms
 {
     public class TraditionalAlgorithmProvider<T> : AlgorithmProvider<T>
     {
-        private T Zero;
-        private T Two;
-        private T Four;
-        private T BailoutValue;
+        private T Zero = Operator.Convert<int, T>(0);
+        private T Two = Operator.Convert<int, T>(2);
+        private T Four = Operator.Convert<int, T>(4);
 
-        public TraditionalAlgorithmProvider()
-        {
-            // Constants
-            Zero = Operator.Convert<int, T>(0);
-            Two = Operator.Convert<int, T>(2);
-            Four = Operator.Convert<int, T>(4);
-        }
-
-        protected override void OnParamsUpdated()
-        {
-            // Extra Params
-            BailoutValue = GetExtraParamValue("BailoutValue", Four);
-            base.OnParamsUpdated();
-        }
+        [Parameter(DefaultValue = 4)]
+        public T BailoutValue;
 
         public override PixelData Run(T px, T py)
         {

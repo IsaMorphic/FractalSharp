@@ -20,8 +20,11 @@ namespace MandelbrotSharp.Algorithms
         private int MostIterations;
         private int PreviousMaxIterations;
 
-        private bool ShouldUseSeriesApproximation;
-        private int NumProbePoints;
+        [Parameter(DefaultValue = true)]
+        public bool ShouldUseSeriesApproximation;
+
+        [Parameter(DefaultValue = 20)]
+        public int NumProbePoints;
 
         public PerturbationAlgorithmProvider()
         {
@@ -42,10 +45,6 @@ namespace MandelbrotSharp.Algorithms
 
         protected override void OnParamsUpdated()
         {
-            // Extra Params
-            ShouldUseSeriesApproximation = GetExtraParamValue("ShouldUseSeriesApproximation", true);
-            NumProbePoints = GetExtraParamValue("NumProbePoints", 20);
-
             ProbePoints = new List<Complex[]>[NumProbePoints];
 
             A.Clear();

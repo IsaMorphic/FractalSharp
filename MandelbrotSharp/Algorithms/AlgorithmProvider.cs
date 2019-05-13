@@ -1,4 +1,5 @@
 ﻿using MandelbrotSharp.Imaging;
+using System.Reflection;
 using MandelbrotSharp.Rendering;
 using MiscUtil;
 using System;
@@ -29,6 +30,17 @@ namespace MandelbrotSharp.Algorithms
         void IAlgorithmProvider.UpdateParams(AlgorithmParams Params)
         {
             this.Params = Params;
+            Type t = GetType();
+            FieldInfo[] fields = t.GetFields();
+            foreach (var field in fields)
+            {
+                var attributes = (ParameterAttribute[])field.GetCustomAttributes(typeof(ParameterAttribute));
+                if (attributes.Length == 1)
+                {
+                    var attr = attributes.Single();
+                    field.SetValue(this, GetExtraParamValue(field.Name, attr.DefaultValue));
+                }
+            }
             OnParamsUpdated();
         }
 
