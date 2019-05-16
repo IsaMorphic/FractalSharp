@@ -1,4 +1,5 @@
-﻿using MiscUtil;
+﻿using MandelbrotSharp.Numerics;
+using MiscUtil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +14,8 @@ namespace MandelbrotSharp.Utilities
     {
         void SetInputSpace(BigDecimal xMin, BigDecimal xMax, BigDecimal yMin, BigDecimal yMax);
         void SetOutputSpace(BigDecimal xMin, BigDecimal xMax, BigDecimal yMin, BigDecimal yMax);
-        dynamic MapPointX(double x);
-        dynamic MapPointY(double y);
+        INumber MapPointX(double x);
+        INumber MapPointY(double y);
     }
 
     public class PointMapper<T> : IPointMapper
@@ -37,14 +38,14 @@ namespace MandelbrotSharp.Utilities
             outYMax = Operator.Convert<BigDecimal, T>(yMax);
         }
 
-        dynamic IPointMapper.MapPointX(double x)
+        INumber IPointMapper.MapPointX(double x)
         {
-            return MapPointX(x);
+            return new Number<T>(MapPointX(x));
         }
 
-        dynamic IPointMapper.MapPointY(double y)
+        INumber IPointMapper.MapPointY(double y)
         {
-            return MapPointY(y);
+            return new Number<T>(MapPointY(y));
         }
 
         private T MapPointX(double x)

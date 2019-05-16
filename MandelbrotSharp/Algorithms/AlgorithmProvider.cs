@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MandelbrotSharp.Numerics;
 
 namespace MandelbrotSharp.Algorithms
 {
@@ -14,7 +15,7 @@ namespace MandelbrotSharp.Algorithms
     {
         event EventHandler ParamsUpdated;
         void UpdateParams(AlgorithmParams Params);
-        PixelData Run(dynamic px, dynamic py);
+        PixelData Run(INumber px, INumber py);
     }
     public abstract class AlgorithmProvider<T> : IAlgorithmProvider
     {
@@ -34,19 +35,18 @@ namespace MandelbrotSharp.Algorithms
             FieldInfo[] fields = t.GetFields();
             foreach (var field in fields)
             {
-                var attributes = (ParameterAttribute[])field.GetCustomAttributes(typeof(ParameterAttribute));
-                if (attributes.Length == 1)
-                {
-                    var attr = attributes.Single();
+                var attr = (ParameterAttribute)field.GetCustomAttribute(typeof(ParameterAttribute));
+                if (attr != null)
                     field.SetValue(this, GetExtraParamValue(field.Name, attr.DefaultValue));
-                }
             }
             OnParamsUpdated();
         }
 
-        PixelData IAlgorithmProvider.Run(dynamic px, dynamic py)
+        PixelData IAlgorithmProvider.Run(INumber px, INumber py)
         {
-            return Run(px, py);
+            Number<T> x = (Number<T>)px;
+            Number<T> y = (Number<T>)py;
+            return Run(x.Value, y.Value);
         }
 
         public abstract PixelData Run(T px, T py);
