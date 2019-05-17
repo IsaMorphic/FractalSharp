@@ -1,4 +1,5 @@
 using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Numerics;
 using MiscUtil;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MandelbrotSharp.Algorithms
 {
-    public class PerturbationAlgorithmProvider<T> : AlgorithmProvider<T>
+    public class PerturbationAlgorithmProvider<T> : AlgorithmProvider<T> where T : struct
     {
         private List<Complex> X, TwoX, A, B, C;
         private List<Complex[]>[] ProbePoints;
@@ -29,8 +30,8 @@ namespace MandelbrotSharp.Algorithms
         public PerturbationAlgorithmProvider()
         {
             // Constants
-            Zero = Operator.Convert<int, T>(0);
-            Four = Operator.Convert<int, T>(4);
+            Zero = Number<T>.From(0);
+            Four = Number<T>.From(4);
 
             // Initialize Lists
             A = new List<Complex>();
@@ -179,7 +180,7 @@ namespace MandelbrotSharp.Algorithms
 
         // Non-Traditional Mandelbrot algorithm, 
         // Iterates a point over its neighbors to approximate an iteration count.
-        public override PixelData Run(T px, T py)
+        public override PixelData Run(Number<T> px, Number<T> py)
         {
             T x = px;
             T y = py;

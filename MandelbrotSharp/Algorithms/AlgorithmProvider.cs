@@ -1,4 +1,4 @@
-﻿using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Imaging;
 using System.Reflection;
 using MandelbrotSharp.Rendering;
 using MiscUtil;
@@ -17,7 +17,7 @@ namespace MandelbrotSharp.Algorithms
         void UpdateParams(AlgorithmParams Params);
         PixelData Run(INumber px, INumber py);
     }
-    public abstract class AlgorithmProvider<T> : IAlgorithmProvider
+    public abstract class AlgorithmProvider<T> : IAlgorithmProvider where T : struct
     {
         protected AlgorithmParams Params { get; private set; }
         protected event EventHandler ParamsUpdated;
@@ -37,19 +37,23 @@ namespace MandelbrotSharp.Algorithms
             {
                 var attr = (ParameterAttribute)field.GetCustomAttribute(typeof(ParameterAttribute));
                 if (attr != null)
-                    field.SetValue(this, GetExtraParamValue(field.Name, attr.DefaultValue));
+                {
+                    object val = GetExtraParamValue(field.Name, attr.DefaultValue);
+                    Type Operator = typeof(Operator);
+                    Type[] targs = new Type[] { val.GetType(), field.FieldType };
+                    MethodInfo converter = Operator.GetMethod("Convert").MakeGenericMethod(targs);
+                    field.SetValue(this, converter.Invoke(null, new object[] { val }));
+                }
             }
             OnParamsUpdated();
         }
 
         PixelData IAlgorithmProvider.Run(INumber px, INumber py)
         {
-            Number<T> x = (Number<T>)px;
-            Number<T> y = (Number<T>)py;
-            return Run(x.Value, y.Value);
+            return Run(px.As<T>(), py.As<T>());
         }
 
-        public abstract PixelData Run(T px, T py);
+        public abstract PixelData Run(Number<T> px, Number<T> py);
 
         protected virtual TOutput GetExtraParamValue<TOutput>(string name, TOutput def)
         {

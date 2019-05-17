@@ -385,8 +385,8 @@ namespace Mandelbrot
 
         public void GetPointFromFrameLocation(int x, int y, out BigDecimal offsetX, out BigDecimal offsetY)
         {
-            offsetX = PointMapper.MapPointX(x).GetValueAs<BigDecimal>();
-            offsetY = PointMapper.MapPointY(y).GetValueAs<BigDecimal>();
+            offsetX = PointMapper.MapPointX(x).As<BigDecimal>();
+            offsetY = PointMapper.MapPointY(y).As<BigDecimal>();
         }
 
         public void Update(RenderSettings settings)
