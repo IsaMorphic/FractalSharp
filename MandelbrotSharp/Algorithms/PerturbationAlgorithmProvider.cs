@@ -12,10 +12,8 @@ namespace MandelbrotSharp.Algorithms
     {
         private List<Complex> X, TwoX, A, B, C;
         private List<Complex[]>[] ProbePoints;
-        private T newReferenceX, newReferenceY;
-        private T referenceX, referenceY;
-
-        private T Zero, Four;
+        private Number<T> newReferenceX, newReferenceY;
+        private Number<T> referenceX, referenceY;
 
         private int SkippedIterations;
         private int MostIterations;
@@ -29,10 +27,6 @@ namespace MandelbrotSharp.Algorithms
 
         public PerturbationAlgorithmProvider()
         {
-            // Constants
-            Zero = Number<T>.From(0);
-            Four = Number<T>.From(4);
-
             // Initialize Lists
             A = new List<Complex>();
             B = new List<Complex>();
@@ -58,8 +52,8 @@ namespace MandelbrotSharp.Algorithms
 
             if (PreviousMaxIterations != Params.MaxIterations)
             {
-                newReferenceX = Operator.Convert<BigDecimal, T>(Params.offsetX);
-                newReferenceY = Operator.Convert<BigDecimal, T>(Params.offsetY);
+                newReferenceX = Number<T>.From(Params.offsetX);
+                newReferenceY = Number<T>.From(Params.offsetY);
             }
 
             referenceX = newReferenceX;
@@ -96,31 +90,30 @@ namespace MandelbrotSharp.Algorithms
 
         public void IterateReferencePoint()
         {
-            T xn_r, x0_r = xn_r = referenceX;
-            T xn_i, x0_i = xn_i = referenceY;
+            Number<T> xn_r, x0_r = xn_r = referenceX;
+            Number<T> xn_i, x0_i = xn_i = referenceY;
 
             for (int i = 0; i < Params.MaxIterations; i++)
             {
                 Params.Token.ThrowIfCancellationRequested();
                 // pre multiply by two
-                T real = Operator.Add(xn_r, xn_r);
-                T imag = Operator.Add(xn_i, xn_i);
+                Number<T> real = xn_r + xn_r;
+                Number<T> imag = xn_i + xn_i;
 
-                T xn_r2 = Operator.Multiply(xn_r, xn_r);
-                T xn_i2 = Operator.Multiply(xn_i, xn_i);
+                Number<T> xn_r2 = xn_r * xn_r;
+                Number<T> xn_i2 = xn_i * xn_i;
 
-                Complex c = new Complex(Operator.Convert<T, double>(xn_r), Operator.Convert<T, double>(xn_i));
-                Complex two_c = new Complex(Operator.Convert<T, double>(real), Operator.Convert<T, double>(imag));
+                Complex c = new Complex((double)xn_r, (double)xn_i);
+                Complex two_c = new Complex((double)real, (double)imag);
 
                 X.Add(c);
                 TwoX.Add(two_c);
                 // calculate next iteration, remember real = 2 * xn_r
-                if (Operator.GreaterThan(Operator.Add(xn_r2, xn_i2), Four))
+                if (xn_r2 + xn_i2  > 4)
                     break;
 
-
-                xn_r = Operator.Add(Operator.Subtract(xn_r2, xn_i2), x0_r);
-                xn_i = Operator.Add(Operator.Multiply(real, xn_i), x0_i);
+                xn_r = xn_r2 - xn_i2 + x0_r;
+                xn_i = real * xn_i + x0_i;
             }
         }
 
@@ -182,8 +175,6 @@ namespace MandelbrotSharp.Algorithms
         // Iterates a point over its neighbors to approximate an iteration count.
         public override PixelData Run(Number<T> px, Number<T> py)
         {
-            T x = px;
-            T y = py;
             // Get max iterations.  
             int maxIterations = X.Count - 1;
 
@@ -193,10 +184,10 @@ namespace MandelbrotSharp.Algorithms
             // Initialize some variables...
             Complex zn;
 
-            T deltaReal = Operator.Subtract(x, referenceX);
-            T deltaImag = Operator.Subtract(y, referenceY);
+            Number<T> deltaReal = px - referenceX;
+            Number<T> deltaImag = py - referenceY;
 
-            Complex d0 = new Complex(Operator.Convert<T, double>(deltaReal), Operator.Convert<T, double>(deltaImag));
+            Complex d0 = new Complex((double)deltaReal, (double)deltaImag);
 
             Complex dn = A[n] * d0 + B[n] * d0 * d0 + C[n] * d0 * d0 * d0;
 
@@ -219,8 +210,8 @@ namespace MandelbrotSharp.Algorithms
 
             if (n > MostIterations)
             {
-                newReferenceX = x;
-                newReferenceY = y;
+                newReferenceX = px;
+                newReferenceY = py;
                 MostIterations = n;
             }
 

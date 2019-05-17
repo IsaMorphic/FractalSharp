@@ -1,4 +1,5 @@
-﻿using MiscUtil;
+﻿using MandelbrotSharp.Numerics;
+using MiscUtil;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -7,12 +8,11 @@ namespace MandelbrotSharp.Utilities
 {
     public class Utils
     {
-        public static T Map<T>(T OldValue, T OldMin, T OldMax, T NewMin, T NewMax)
+        public static Number<T> Map<T>(Number<T> OldValue, Number<T> OldMin, Number<T> OldMax, Number<T> NewMin, Number<T> NewMax) where T : struct
         {
-            T OldRange = Operator.Subtract(OldMax, OldMin);
-            T NewRange = Operator.Subtract(NewMax, NewMin);
-            // (((OldValue - OldMin) * NewRange) / OldRange) + NewMin
-            T NewValue = Operator.Add(Operator.Divide(Operator.Multiply(Operator.Subtract(OldValue, OldMin), NewRange), OldRange), NewMin);
+            T OldRange = OldMax - OldMin;
+            T NewRange = NewMax - NewMin;
+            T NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
             return NewValue;
         }
 

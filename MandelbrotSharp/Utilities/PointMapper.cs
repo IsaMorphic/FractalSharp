@@ -18,45 +18,45 @@ namespace MandelbrotSharp.Utilities
         INumber MapPointY(double y);
     }
 
-    public class PointMapper<T> : IPointMapper
+    public class PointMapper<T> : IPointMapper where T : struct
     {
-        private T inXMin, inXMax, inYMin, inYMax;
-        private T outXMin, outXMax, outYMin, outYMax;
+        private Number<T> inXMin, inXMax, inYMin, inYMax;
+        private Number<T> outXMin, outXMax, outYMin, outYMax;
 
         void IPointMapper.SetInputSpace(BigDecimal xMin, BigDecimal xMax, BigDecimal yMin, BigDecimal yMax)
         {
-            inXMin = Operator.Convert<BigDecimal, T>(xMin);
-            inXMax = Operator.Convert<BigDecimal, T>(xMax);
-            inYMin = Operator.Convert<BigDecimal, T>(yMin);
-            inYMax = Operator.Convert<BigDecimal, T>(yMax);
+            inXMin = Number<T>.From(xMin);
+            inXMax = Number<T>.From(xMax);
+            inYMin = Number<T>.From(yMin);
+            inYMax = Number<T>.From(yMax);
         }
         void IPointMapper.SetOutputSpace(BigDecimal xMin, BigDecimal xMax, BigDecimal yMin, BigDecimal yMax)
         {
-            outXMin = Operator.Convert<BigDecimal, T>(xMin);
-            outXMax = Operator.Convert<BigDecimal, T>(xMax);
-            outYMin = Operator.Convert<BigDecimal, T>(yMin);
-            outYMax = Operator.Convert<BigDecimal, T>(yMax);
+            outXMin = Number<T>.From(xMin);
+            outXMax = Number<T>.From(xMax);
+            outYMin = Number<T>.From(yMin);
+            outYMax = Number<T>.From(yMax);
         }
 
         INumber IPointMapper.MapPointX(double x)
         {
-            return new Number<T>(MapPointX(x));
+            return MapPointX(x);
         }
 
         INumber IPointMapper.MapPointY(double y)
         {
-            return new Number<T>(MapPointY(y));
+            return MapPointY(y);
         }
 
-        private T MapPointX(double x)
+        private Number<T> MapPointX(double x)
         {
-            T real = Utils.Map(Operator.Convert<double, T>(x), inXMin, inXMax, outXMin, outXMax);
+            Number<T> real = Utils.Map(x, inXMin, inXMax, outXMin, outXMax);
             return real;
         }
 
-        private T MapPointY(double y)
+        private Number<T> MapPointY(double y)
         {
-            T imag = Utils.Map(Operator.Convert<double, T>(y), inYMin, inYMax, outYMin, outYMax);
+            Number<T> imag = Utils.Map(y, inYMin, inYMax, outYMin, outYMax);
             return imag;
         }
     }

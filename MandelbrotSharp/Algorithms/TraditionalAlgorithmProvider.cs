@@ -11,11 +11,8 @@ namespace MandelbrotSharp.Algorithms
         [Parameter(DefaultValue = 4)]
         public Number<T> BailoutValue;
 
-        public override PixelData Run(Number<T> px, Number<T> py)
+        public override PixelData Run(Number<T> x0, Number<T> y0)
         {
-            Number<T> x0 = px;
-            Number<T> y0 = py;
-
             // Initialize some variables..
             Number<T> x = 0;
             Number<T> y = 0;
@@ -31,9 +28,7 @@ namespace MandelbrotSharp.Algorithms
             // Mandelbrot algorithm
             while (xx + yy < BailoutValue && iter < Params.MaxIterations)
             {
-                // xtemp = xx - yy + x0
                 Number<T> xtemp = xx - yy + x0;
-                // ytemp = 2 * x * y + y0
                 Number<T> ytemp = 2 * x * y + y0;
 
                 if (x == xtemp && y == ytemp)
@@ -49,7 +44,7 @@ namespace MandelbrotSharp.Algorithms
 
                 iter++;
             }
-            return new PixelData(new Complex(x.As<double>(), y.As<double>()), iter, iter >= Params.MaxIterations);
+            return new PixelData(new Complex((double)x, (double)y), iter, iter >= Params.MaxIterations);
         }
     }
 }

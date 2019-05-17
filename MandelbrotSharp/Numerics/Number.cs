@@ -11,7 +11,7 @@ namespace MandelbrotSharp.Numerics
         Number<T> As<T>() where T : struct;
     }
 
-    public struct Number<T> : INumber where T : struct
+    public struct Number<T> : INumber, IComparable<Number<T>> where T : struct
     {
         public T Value;
 
@@ -20,11 +20,6 @@ namespace MandelbrotSharp.Numerics
         public Number(T v)
         {
             Value = v;
-        }
-
-        public static implicit operator T(Number<T> n)
-        {
-            return n.Value;
         }
 
         public static implicit operator Number<T>(T n)
@@ -52,6 +47,11 @@ namespace MandelbrotSharp.Numerics
             return From(n);
         }
 
+        public static implicit operator T(Number<T> n)
+        {
+            return n.Value;
+        }
+
         public static explicit operator int(Number<T> n)
         {
             return n.As<int>();
@@ -70,6 +70,26 @@ namespace MandelbrotSharp.Numerics
         public static explicit operator decimal(Number<T> n)
         {
             return n.As<decimal>();
+        }
+
+        public static Number<T> operator +(Number<T> value)
+        {
+            return value;
+        }
+
+        public static Number<T> operator -(Number<T> value)
+        {
+            return value * -1;
+        }
+
+        public static Number<T> operator ++(Number<T> value)
+        {
+            return value + 1;
+        }
+
+        public static Number<T> operator --(Number<T> value)
+        {
+            return value - 1;
         }
 
         public static Number<T> operator +(Number<T> left, Number<T> right)
@@ -122,8 +142,6 @@ namespace MandelbrotSharp.Numerics
             return Operator.LessThanOrEqual(left.Value, right.Value);
         }
 
-
-
         public static Number<T> From<TOut>(TOut n) where TOut : struct
         {
             return new Number<TOut>(n).As<T>();
@@ -132,6 +150,21 @@ namespace MandelbrotSharp.Numerics
         public Number<TOut> As<TOut>() where TOut : struct
         {
             return Operator.Convert<T, TOut>(Value);
+        }
+
+        public int CompareTo(Number<T> other)
+        {
+            return this < other ? -1 : (this > other ? 1 : 0);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 }
