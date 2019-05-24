@@ -60,7 +60,7 @@ namespace System.Numerics
             {
                 Exponent = 0;
             }
-            else
+            else if(Mantissa.IsEven)
             {
                 BigInteger remainder = 0;
                 while (remainder == 0)
