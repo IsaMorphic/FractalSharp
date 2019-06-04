@@ -16,9 +16,6 @@
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 using System;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Text;
 
 namespace MandelbrotSharp.Imaging
 {

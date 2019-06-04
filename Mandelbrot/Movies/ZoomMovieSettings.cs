@@ -16,14 +16,14 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
-using MandelbrotSharp.Imaging;
-using MandelbrotSharp.Rendering;
 
 namespace Mandelbrot.Movies
 {

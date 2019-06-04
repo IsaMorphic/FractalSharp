@@ -16,7 +16,6 @@
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 using MandelbrotSharp.Numerics;
-using MiscUtil;
 using System;
 using System.Collections.Generic;
 using System.Reflection;

@@ -16,15 +16,10 @@
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 using MandelbrotSharp.Imaging;
-using System.Reflection;
-using MandelbrotSharp.Rendering;
+using MandelbrotSharp.Numerics;
 using MiscUtil;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MandelbrotSharp.Numerics;
+using System.Reflection;
 
 namespace MandelbrotSharp.Algorithms
 {

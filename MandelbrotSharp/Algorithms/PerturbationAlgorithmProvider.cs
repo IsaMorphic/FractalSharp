@@ -17,7 +17,6 @@
  */
 using MandelbrotSharp.Imaging;
 using MandelbrotSharp.Numerics;
-using MiscUtil;
 using System;
 using System.Collections.Generic;
 using System.Numerics;

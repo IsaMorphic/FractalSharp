@@ -17,8 +17,6 @@
  */
 using MandelbrotSharp.Imaging;
 using MandelbrotSharp.Numerics;
-using MiscUtil;
-using System;
 using System.Numerics;
 
 namespace MandelbrotSharp.Algorithms

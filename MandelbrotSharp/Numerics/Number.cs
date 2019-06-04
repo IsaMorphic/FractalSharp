@@ -17,8 +17,6 @@
  */
 using MiscUtil;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MandelbrotSharp.Numerics
 {

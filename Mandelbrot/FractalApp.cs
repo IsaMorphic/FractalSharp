@@ -16,6 +16,11 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+using Mandelbrot.Movies;
+using MandelbrotSharp.Algorithms;
+using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Rendering;
+using MandelbrotSharp.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -25,21 +30,13 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
-
-using MandelbrotSharp.Imaging;
-using MandelbrotSharp.Rendering;
-using MandelbrotSharp.Utilities;
-using MandelbrotSharp.Algorithms;
-
-using Mandelbrot.Movies;
-
-using System.Reflection;
 
 namespace Mandelbrot
 {
