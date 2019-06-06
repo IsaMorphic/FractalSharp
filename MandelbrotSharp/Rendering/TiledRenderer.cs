@@ -53,10 +53,10 @@ namespace MandelbrotSharp.Rendering
             return new Pixel((CellX + 1) * CellWidth, (CellY + 1) * CellHeight);
         }
 
-        public void Setup(TiledRenderSettings settings) {
-            TotalCellsX = settings.TilesX;
-            TotalCellsY = settings.TilesY;
-            base.Setup(settings);
+        protected override void Configure(RenderSettings settings) {
+            var renderSettings = (TiledRenderSettings)settings;
+            TotalCellsX = renderSettings.TilesX;
+            TotalCellsY = renderSettings.TilesY;
         }
     }
 }

@@ -97,17 +97,11 @@ namespace Mandelbrot
 
             Renderer.FrameStarted += FrameStart;
             Renderer.FrameFinished += FrameEnd;
-            Renderer.ConfigurationUpdated += Renderer_ConfigurationUpdated;
 
             RenderSettings.PalettePath = PalletePath;
 
             Width = 960;
             Height = 540;
-        }
-
-        private void Renderer_ConfigurationUpdated(object sender, EventArgs e)
-        {
-            Task.Run((Action)Renderer.RenderFrame);
         }
 
         #region Renderer Events
@@ -381,6 +375,7 @@ namespace Mandelbrot
                     RenderSettings.Palette = Utils.LoadPallete(RenderSettings.PalettePath);
                     Renderer.Initialize(RenderSettings);
                     Renderer.Setup(RenderSettings);
+                    Task.Run((Action)Renderer.RenderFrame);
                 }
 
                 intervalTimer.Start();

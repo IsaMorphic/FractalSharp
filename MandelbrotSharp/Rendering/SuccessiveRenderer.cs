@@ -16,6 +16,8 @@
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 using MandelbrotSharp.Imaging;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MandelbrotSharp.Rendering
 {
@@ -58,22 +60,23 @@ namespace MandelbrotSharp.Rendering
             }
         }
 
-        public void Setup(SuccessiveRenderSettings settings)
+        protected override void Configure(RenderSettings settings)
         {
-            MaxChunkSizes = (int[])settings.MaxChunkSizes.Clone();
-            base.Setup(settings);
+            var renderSettings = (SuccessiveRenderSettings)settings;
+            MaxChunkSizes = (int[])renderSettings.MaxChunkSizes.Clone();
+            ResetChunkSizes();
         }
 
-        protected override void OnConfigurationUpdated()
+        protected override void OnFrameStarted()
         {
-            ResetChunkSizes();
-            base.OnConfigurationUpdated();
+            if (ChunkSizes.All(n => n == 0))
+                StopRender();
+            base.OnFrameStarted();
         }
 
         protected override void OnFrameFinished(FrameEventArgs e)
         {
-            if (ChunkSize > 1)
-                ChunkSizes[CellX + CellY * TotalCellsX] /= 2;
+            ChunkSizes[CellX + CellY * TotalCellsX] /= 2;
             base.OnFrameFinished(e);
         }
     }

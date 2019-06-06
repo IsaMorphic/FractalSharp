@@ -20,25 +20,20 @@ using MandelbrotSharp.Numerics;
 using MiscUtil;
 using System;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MandelbrotSharp.Algorithms
 {
     public interface IAlgorithmProvider
     {
-        event EventHandler ParamsUpdated;
         void UpdateParams(AlgorithmParams Params);
+        void Initialize(CancellationToken token);
         PixelData Run(INumber px, INumber py);
     }
     public abstract class AlgorithmProvider<T> : IAlgorithmProvider where T : struct
     {
         protected AlgorithmParams Params { get; private set; }
-        protected event EventHandler ParamsUpdated;
-
-        event EventHandler IAlgorithmProvider.ParamsUpdated
-        {
-            add => ParamsUpdated += value;
-            remove => ParamsUpdated -= value;
-        }
 
         void IAlgorithmProvider.UpdateParams(AlgorithmParams Params)
         {
@@ -67,6 +62,8 @@ namespace MandelbrotSharp.Algorithms
 
         public abstract PixelData Run(Number<T> px, Number<T> py);
 
+        public virtual void Initialize(CancellationToken token) { }
+
         protected virtual TOutput GetExtraParamValue<TOutput>(string name, TOutput def)
         {
             if (Params.ExtraParams.TryGetValue(name, out object val))
@@ -75,9 +72,6 @@ namespace MandelbrotSharp.Algorithms
                 return def;
         }
 
-        protected virtual void OnParamsUpdated()
-        {
-            ParamsUpdated?.Invoke(this, null);
-        }
+        protected virtual void OnParamsUpdated() { }
     }
 }

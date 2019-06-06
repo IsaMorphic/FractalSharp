@@ -20,6 +20,7 @@ using MandelbrotSharp.Numerics;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MandelbrotSharp.Algorithms
@@ -74,29 +75,29 @@ namespace MandelbrotSharp.Algorithms
 
             referenceX = newReferenceX;
             referenceY = newReferenceY;
+        }
 
-            Task.Run(() =>
+        public override void Initialize(CancellationToken token)
+        {
+            Random random = new Random();
+            for (int i = 0; i < ProbePoints.Length; i++)
             {
-                Random random = new Random();
-                for (int i = 0; i < ProbePoints.Length; i++)
-                {
-                    ProbePoints[i] = new List<Complex[]>();
-                    var point = new Complex((double)((random.NextDouble() * 4 - 2) / Params.Magnification + Params.offsetX), (double)((random.NextDouble() * 4 - 2) / Params.Magnification + Params.offsetY));
-                    ProbePoints[i].Add(new Complex[3] { point, point * point, point * point * point });
-                }
+                ProbePoints[i] = new List<Complex[]>();
+                var point = new Complex((double)((random.NextDouble() * 4 - 2) / Params.Magnification + Params.offsetX), (double)((random.NextDouble() * 4 - 2) / Params.Magnification + Params.offsetY));
+                ProbePoints[i].Add(new Complex[3] { point, point * point, point * point * point });
+            }
 
-                A.Add(new Complex(1, 0));
-                B.Add(new Complex(0, 0));
-                C.Add(new Complex(0, 0));
+            A.Add(new Complex(1, 0));
+            B.Add(new Complex(0, 0));
+            C.Add(new Complex(0, 0));
 
-                IterateReferencePoint();
+            IterateReferencePoint(token);
 
-                if (ShouldUseSeriesApproximation)
-                    ApproximateSeries();
+            if (ShouldUseSeriesApproximation)
+                ApproximateSeries();
 
-                PreviousMaxIterations = Params.MaxIterations;
-                base.OnParamsUpdated();
-            });
+            PreviousMaxIterations = Params.MaxIterations;
+            base.OnParamsUpdated();
         }
 
         private double MagnitudeSquared(Complex a)
@@ -104,14 +105,14 @@ namespace MandelbrotSharp.Algorithms
             return a.Real * a.Real + a.Imaginary * a.Imaginary;
         }
 
-        public void IterateReferencePoint()
+        public void IterateReferencePoint(CancellationToken token)
         {
             Number<T> xn_r, x0_r = xn_r = referenceX;
             Number<T> xn_i, x0_i = xn_i = referenceY;
 
             for (int i = 0; i < Params.MaxIterations; i++)
             {
-                Params.Token.ThrowIfCancellationRequested();
+                token.ThrowIfCancellationRequested();
                 // pre multiply by two
                 Number<T> real = xn_r + xn_r;
                 Number<T> imag = xn_i + xn_i;

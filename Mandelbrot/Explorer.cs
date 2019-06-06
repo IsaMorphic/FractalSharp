@@ -47,8 +47,7 @@ namespace Mandelbrot
 
         private int Iterations = 400;
 
-        private bool ShouldRestartRender = true;
-        private bool UseGPU = false;
+        private bool IsRenderHalted;
 
         private bool MovingUp;
         private bool MovingDown;
@@ -58,7 +57,7 @@ namespace Mandelbrot
         private bool ZoomingIn;
         private bool ZoomingOut;
 
-        private bool MousePressed = false;
+        private bool MousePressed;
 
         private Point MouseStart;
         private Point MouseEnd;
@@ -71,7 +70,7 @@ namespace Mandelbrot
 
         private DirectBitmap CurrentFrame;
         private bool firstFrameDone;
-        private bool ShouldUpdateRenderer = false;
+        private bool ShouldUpdateRenderer;
 
         private DateTime RenderStartTime;
 
@@ -84,7 +83,7 @@ namespace Mandelbrot
             ExplorationSettings.TilesX = 4;
             ExplorationSettings.TilesY = 3;
 
-            ExplorationSettings.MaxChunkSizes = Enumerable.Repeat(8, 48).ToArray();
+            ExplorationSettings.MaxChunkSizes = Enumerable.Repeat(8, 12).ToArray();
 
             ExplorationSettings.AlgorithmType = algorithm;
             ExplorationSettings.ArithmeticType = numType;
@@ -187,9 +186,9 @@ namespace Mandelbrot
 
             ExplorationSettings.ThreadCount = Environment.ProcessorCount - 1;
 
+            ExplorationRenderer.RenderHalted += ExplorationRenderer_RenderHalted;
             ExplorationRenderer.FrameStarted += ExplorationRenderer_FrameStart;
             ExplorationRenderer.FrameFinished += ExplorationRenderer_FrameEnd;
-            ExplorationRenderer.ConfigurationUpdated += ExplorationRenderer_ConfigurationUpdated;
 
             ExplorationRenderer.Initialize(
                 ExplorationSettings);
@@ -197,11 +196,13 @@ namespace Mandelbrot
             ExplorationRenderer.Setup(ExplorationSettings);
 
             CurrentFrame = new DirectBitmap(ExplorationSettings.Width, ExplorationSettings.Height);
+
+            NextFrame();
         }
 
-        private void ExplorationRenderer_ConfigurationUpdated(object sender, EventArgs e)
+        private void ExplorationRenderer_RenderHalted(object sender, EventArgs e)
         {
-            Task.Run((Action)NextFrame);
+            IsRenderHalted = true;
         }
 
         private void ExplorationRenderer_FrameStart(object sender, EventArgs e)
@@ -234,19 +235,14 @@ namespace Mandelbrot
                 ExplorationRenderer.Update(ExplorationSettings);
                 ShouldUpdateRenderer = false;
             }
-            else
-            {
-                Task.Run((Action)NextFrame);
-            }
+            NextFrame();
         }
 
 
         private void NextFrame()
         {
-            //if (UseGPU)
-            //    ExplorationRenderer.RenderFrameGPU();
-            //else
-            ExplorationRenderer.RenderFrame();
+            Task.Run((Action)ExplorationRenderer.RenderFrame);
+            IsRenderHalted = false;
         }
 
         private void RenderPhoto()
@@ -264,16 +260,8 @@ namespace Mandelbrot
             PhotoSettings.Height = 1080;
             PhotoSettings.Palette = ExplorationSettings.Palette;
             PhotoRenderer.Initialize(PhotoSettings);
-            if (UseGPU)
-            {
-                //PhotoRenderer.InitGPU();
-                //PhotoRenderer.RenderFrameGPU();
-                //PhotoRenderer.CleanupGPU();
-            }
-            else
-            {
-                PhotoRenderer.RenderFrame();
-            }
+
+            PhotoRenderer.RenderFrame();
         }
 
         private void PhotoRenderer_FrameEnd(object sender, FrameEventArgs e)
@@ -290,7 +278,8 @@ namespace Mandelbrot
                 string tempFileName = string.Format("{0}({1})", fileNameOnly, count++);
                 newFullPath = Path.Combine(path, tempFileName + extension);
             }
-            using (DirectBitmap bitmap = new DirectBitmap(e.Frame.Width, e.Frame.Height)) {
+            using (DirectBitmap bitmap = new DirectBitmap(e.Frame.Width, e.Frame.Height))
+            {
                 bitmap.SetBits(e.Frame.CopyDataAsBits());
                 bitmap.Bitmap.Save(newFullPath, ImageFormat.Png);
             }
@@ -313,7 +302,7 @@ namespace Mandelbrot
             ExplorationRenderer.StopRender();
             CurrentFrame.Dispose();
             pictureBox1.Image.Dispose();
-            ShouldRestartRender = false;
+            IsRenderHalted = false;
         }
 
         private void Explorer_MouseMove(object sender, MouseEventArgs e)
@@ -361,7 +350,15 @@ namespace Mandelbrot
                 out offsetY);
             ExplorationSettings.offsetX = offsetX;
             ExplorationSettings.offsetY = offsetY;
-            ShouldUpdateRenderer = true;
+            if (IsRenderHalted)
+            {
+                ExplorationRenderer.Update(ExplorationSettings);
+                NextFrame();
+            }
+            else
+            {
+                ShouldUpdateRenderer = true;
+            }
             MousePressed = false;
         }
 
@@ -409,8 +406,6 @@ namespace Mandelbrot
 
         public void Update(RenderSettings settings)
         {
-            StopRender();
-
             bool hasChanged = (
                     offsetX != settings.offsetX ||
                     offsetY != settings.offsetY ||
@@ -425,6 +420,7 @@ namespace Mandelbrot
             if (hasChanged)
             {
                 UpdateAlgorithmProvider();
+                ResetChunkSizes();
             }
         }
     }
