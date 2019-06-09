@@ -41,13 +41,13 @@ namespace Mandelbrot
 {
     public partial class Explorer : Form
     {
+        private const int RenderWidth = 1280;
+        private const int RenderHeight = 720;
         private List<SuccessiveRenderSettings> UndoBuffer = new List<SuccessiveRenderSettings>();
 
         private int UndoIndex = 0;
 
         private int Iterations = 400;
-
-        private bool IsRenderHalted;
 
         private bool MovingUp;
         private bool MovingDown;
@@ -66,7 +66,7 @@ namespace Mandelbrot
         private float DeltaY;
 
         private SuccessiveRenderSettings ExplorationSettings = new SuccessiveRenderSettings();
-        private ExplorationRenderer ExplorationRenderer = new ExplorationRenderer();
+        private ExplorationRenderer ExplorationRenderer = new ExplorationRenderer(RenderWidth, RenderHeight);
 
         private DirectBitmap CurrentFrame;
         private bool firstFrameDone;
@@ -80,14 +80,8 @@ namespace Mandelbrot
             ExplorationSettings.offsetX = offsetX;
             ExplorationSettings.offsetY = offsetY;
 
-            ExplorationSettings.TilesX = 4;
-            ExplorationSettings.TilesY = 3;
-
-            ExplorationSettings.MaxChunkSizes = Enumerable.Repeat(8, 12).ToArray();
-
             ExplorationSettings.AlgorithmType = algorithm;
             ExplorationSettings.ArithmeticType = numType;
-
 
             InitializeComponent();
 
@@ -176,33 +170,26 @@ namespace Mandelbrot
             //    UseGPU = false;
             //}
 
-            ExplorationSettings.Width = 1280;
-            ExplorationSettings.Height = 720;
+            DeltaX = Bounds.Width / (float)RenderWidth;
+            DeltaY = Bounds.Height / (float)RenderHeight;
 
-            DeltaX = Bounds.Width / (float)ExplorationSettings.Width;
-            DeltaY = Bounds.Height / (float)ExplorationSettings.Height;
+            ExplorationSettings.TilesX = 4;
+            ExplorationSettings.TilesY = 3;
+
+            ExplorationSettings.MaxChunkSizes = Enumerable.Repeat(8, 12).ToArray();
 
             ExplorationSettings.MaxIterations = Iterations;
 
             ExplorationSettings.ThreadCount = Environment.ProcessorCount - 1;
 
-            ExplorationRenderer.RenderHalted += ExplorationRenderer_RenderHalted;
             ExplorationRenderer.FrameStarted += ExplorationRenderer_FrameStart;
             ExplorationRenderer.FrameFinished += ExplorationRenderer_FrameEnd;
 
-            ExplorationRenderer.Initialize(
-                ExplorationSettings);
-
             ExplorationRenderer.Setup(ExplorationSettings);
 
-            CurrentFrame = new DirectBitmap(ExplorationSettings.Width, ExplorationSettings.Height);
+            CurrentFrame = new DirectBitmap(RenderWidth, RenderHeight);
 
             NextFrame();
-        }
-
-        private void ExplorationRenderer_RenderHalted(object sender, EventArgs e)
-        {
-            IsRenderHalted = true;
         }
 
         private void ExplorationRenderer_FrameStart(object sender, EventArgs e)
@@ -241,13 +228,12 @@ namespace Mandelbrot
 
         private void NextFrame()
         {
-            Task.Run((Action)ExplorationRenderer.RenderFrame);
-            IsRenderHalted = false;
+            ExplorationRenderer.StartRenderFrame();
         }
 
         private void RenderPhoto()
         {
-            MandelbrotRenderer PhotoRenderer = new MandelbrotRenderer();
+            MandelbrotRenderer PhotoRenderer = new MandelbrotRenderer(1920, 1080);
             PhotoRenderer.FrameFinished += PhotoRenderer_FrameEnd;
             RenderSettings PhotoSettings = new RenderSettings();
             PhotoSettings.offsetX = ExplorationSettings.offsetX;
@@ -256,12 +242,10 @@ namespace Mandelbrot
             PhotoSettings.MaxIterations = ExplorationSettings.MaxIterations;
             PhotoSettings.AlgorithmType = ExplorationSettings.AlgorithmType;
             PhotoSettings.ArithmeticType = ExplorationSettings.ArithmeticType;
-            PhotoSettings.Width = 1920;
-            PhotoSettings.Height = 1080;
             PhotoSettings.Palette = ExplorationSettings.Palette;
-            PhotoRenderer.Initialize(PhotoSettings);
+            PhotoRenderer.Setup(PhotoSettings);
 
-            PhotoRenderer.RenderFrame();
+            PhotoRenderer.StartRenderFrame();
         }
 
         private void PhotoRenderer_FrameEnd(object sender, FrameEventArgs e)
@@ -299,10 +283,9 @@ namespace Mandelbrot
         {
             UpdateTimer.Stop();
             Cursor.Show();
-            ExplorationRenderer.StopRender();
+            ExplorationRenderer.StopRenderFrame();
             CurrentFrame.Dispose();
             pictureBox1.Image.Dispose();
-            IsRenderHalted = false;
         }
 
         private void Explorer_MouseMove(object sender, MouseEventArgs e)
@@ -341,7 +324,7 @@ namespace Mandelbrot
             int cornerX = (startX > endX) ? endX : startX;
             int cornerY = (startY > endY) ? endY : startY;
 
-            ExplorationSettings.Magnification *= ExplorationSettings.Height / rectHeight;
+            ExplorationSettings.Magnification *= RenderHeight / rectHeight;
             Point centerPoint = new Point(cornerX + rectWidth / 2, cornerY + rectHeight / 2);
             BigDecimal offsetX, offsetY;
             ExplorationRenderer.GetPointFromFrameLocation(
@@ -350,7 +333,7 @@ namespace Mandelbrot
                 out offsetY);
             ExplorationSettings.offsetX = offsetX;
             ExplorationSettings.offsetY = offsetY;
-            if (IsRenderHalted)
+            if (ExplorationRenderer.RenderStatus == TaskStatus.Canceled)
             {
                 ExplorationRenderer.Update(ExplorationSettings);
                 NextFrame();
@@ -397,6 +380,9 @@ namespace Mandelbrot
     }
     class ExplorationRenderer : SuccessiveRenderer
     {
+        public ExplorationRenderer(int width, int height) : base(width, height)
+        {
+        }
 
         public void GetPointFromFrameLocation(int x, int y, out BigDecimal offsetX, out BigDecimal offsetY)
         {

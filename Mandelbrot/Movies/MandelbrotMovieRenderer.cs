@@ -28,6 +28,9 @@ namespace Mandelbrot.Movies
 {
     class MandelbrotMovieRenderer : MandelbrotRenderer
     {
+        public MandelbrotMovieRenderer(int width, int height) : base(width, height)
+        {
+        }
 
         public int NumFrames { get; private set; }
         public int MaxIterations { get => base.MaxIterations; }

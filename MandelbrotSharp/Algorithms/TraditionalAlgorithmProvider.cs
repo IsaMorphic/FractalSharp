@@ -26,7 +26,7 @@ namespace MandelbrotSharp.Algorithms
         [Parameter(DefaultValue = 4)]
         public Number<T> BailoutValue;
 
-        public override PixelData Run(Number<T> x0, Number<T> y0)
+        protected override PixelData Run(Number<T> x0, Number<T> y0)
         {
             // Initialize some variables..
             Number<T> x = 0;

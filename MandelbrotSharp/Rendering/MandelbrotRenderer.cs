@@ -43,6 +43,8 @@ namespace MandelbrotSharp.Rendering
         public event EventHandler RenderHalted;
         public event EventHandler<FrameEventArgs> FrameFinished;
 
+        public TaskStatus? RenderStatus => RenderTask?.Status;
+
         protected int MaxIterations;
         protected BigDecimal Magnification;
         protected BigDecimal offsetX;
@@ -70,10 +72,9 @@ namespace MandelbrotSharp.Rendering
 
         protected Dictionary<string, object> ExtraParams { get; private set; }
 
-        private CancellationTokenSource CancelTokenSource;
-        private Task AlgorithmProviderInit;
-
-        private bool isInitialized = false;
+        private CancellationTokenSource TokenSource;
+        private Task AlgorithmInitTask;
+        private Task RenderTask;
 
         protected virtual void OnRenderHalted()
         {
@@ -92,59 +93,50 @@ namespace MandelbrotSharp.Rendering
 
         #region Initialization and Configuration Methods
 
-        public void Initialize(RenderSettings settings)
+        public MandelbrotRenderer(int width, int height)
         {
-            Width = settings.Width;
-            Height = settings.Height;
+            Width = width;
+            Height = height;
 
             aspectRatio = ((BigDecimal)Width / (BigDecimal)Height) * 2;
 
             CurrentFrame = new RgbaImage(Width, Height);
-
-            isInitialized = true;
         }
 
         public void Setup(RenderSettings settings)
         {
-            if (isInitialized)
-            {
-                CancelTokenSource = new CancellationTokenSource();
+            TokenSource = new CancellationTokenSource();
 
-                offsetX = settings.offsetX;
-                offsetY = settings.offsetY;
+            offsetX = settings.offsetX;
+            offsetY = settings.offsetY;
 
-                Magnification = settings.Magnification;
-                MaxIterations = settings.MaxIterations;
+            Magnification = settings.Magnification;
+            MaxIterations = settings.MaxIterations;
 
-                ThreadCount = settings.ThreadCount;
+            ThreadCount = settings.ThreadCount;
 
-                AlgorithmType = settings.AlgorithmType;
+            AlgorithmType = settings.AlgorithmType;
 
-                ArithmeticType = settings.ArithmeticType;
+            ArithmeticType = settings.ArithmeticType;
 
-                PixelColoratorType = settings.PixelColoratorType;
+            PixelColoratorType = settings.PixelColoratorType;
 
-                Palette = (RgbaValue[])settings.Palette.Clone();
+            Palette = (RgbaValue[])settings.Palette.Clone();
 
-                PixelColorator = (PixelColorator)Activator.CreateInstance(PixelColoratorType);
+            PixelColorator = (PixelColorator)Activator.CreateInstance(PixelColoratorType);
 
-                ExtraParams = new Dictionary<string, object>(settings.ExtraParams);
+            ExtraParams = new Dictionary<string, object>(settings.ExtraParams);
 
-                var genericType = typeof(PointMapper<>).MakeGenericType(ArithmeticType);
-                PointMapper = (IPointMapper)Activator.CreateInstance(genericType);
+            var genericType = typeof(PointMapper<>).MakeGenericType(ArithmeticType);
+            PointMapper = (IPointMapper)Activator.CreateInstance(genericType);
 
-                PointMapper.SetInputSpace(0, Width, 0, Height);
+            PointMapper.SetInputSpace(0, Width, 0, Height);
 
-                genericType = AlgorithmType.MakeGenericType(ArithmeticType);
-                AlgorithmProvider = (IAlgorithmProvider)Activator.CreateInstance(genericType);
-                UpdateAlgorithmProvider();
+            genericType = AlgorithmType.MakeGenericType(ArithmeticType);
+            AlgorithmProvider = (IAlgorithmProvider)Activator.CreateInstance(genericType);
+            UpdateAlgorithmProvider();
 
-                Configure(settings);
-            }
-            else
-            {
-                throw new Exception("Renderer is not Initialized!");
-            }
+            Configure(settings);
         }
 
         protected virtual void Configure(RenderSettings settings) { }
@@ -159,10 +151,10 @@ namespace MandelbrotSharp.Rendering
                 MaxIterations = MaxIterations,
                 ExtraParams = new Dictionary<string, object>(ExtraParams)
             });
-            AlgorithmProviderInit = Task.Run(() =>
-            {
-                AlgorithmProvider.Initialize(CancelTokenSource.Token);
-            });
+            AlgorithmInitTask = Task.Factory.StartNew(
+                AlgorithmProvider.Initialize, 
+                TokenSource.Token, 
+                TokenSource.Token);
         }
 
         #endregion
@@ -218,9 +210,17 @@ namespace MandelbrotSharp.Rendering
             PointMapper.SetOutputSpace(xMin, xMax, yMin, yMax);
         }
 
+        public void StartRenderFrame()
+        {
+            if (RenderStatus == TaskStatus.Running)
+                throw new Exception("The running task has not yet completed.");
+            RenderTask = Task.Factory.StartNew(RenderFrame, TokenSource.Token);
+            RenderTask.ContinueWith(RenderTaskFinished);
+        }
+
         // Frame rendering method, using generic typing to reduce the amount 
         // of code used and to make the algorithm easily applicable to other number types
-        public void RenderFrame()
+        private void RenderFrame()
         {
             // Fire frame start event
             OnFrameStarted();
@@ -230,58 +230,66 @@ namespace MandelbrotSharp.Rendering
             var firstPoint = GetFrameFirstPixel();
             var lastPoint = GetFrameLastPixel();
 
-            var options = new ParallelOptions
-            {
-                CancellationToken = CancelTokenSource.Token,
-                MaxDegreeOfParallelism = ThreadCount
-            };
-            try
-            {
-                AlgorithmProviderInit.Wait();
+            var options = new ParallelOptions { MaxDegreeOfParallelism = ThreadCount };
 
-                Parallel.For(firstPoint.Y, lastPoint.Y, options, py =>
+            AlgorithmInitTask.Wait();
+
+            Parallel.For(firstPoint.Y, lastPoint.Y, options, py =>
+            {
+                if (ShouldSkipRow(py))
+                    return;
+                var y0 = PointMapper.MapPointY(py);
+                Parallel.For(firstPoint.X, lastPoint.X, options, px =>
                 {
-                    if (ShouldSkipRow(py))
+                    var p = new Pixel(px, py);
+                    if (ShouldSkipPixel(p))
                         return;
-                    var y0 = PointMapper.MapPointY(py);
-                    Parallel.For(firstPoint.X, lastPoint.X, options, px =>
-                    {
-                        var p = new Pixel(px, py);
-                        if (ShouldSkipPixel(p))
-                            return;
 
-                        var x0 = PointMapper.MapPointX(px);
+                    var x0 = PointMapper.MapPointX(px);
 
-                        PixelData pixelData = AlgorithmProvider.Run(x0, y0);
+                    PixelData pixelData = AlgorithmProvider.Run(x0, y0);
 
-                        double colorIndex = PixelColorator.GetPaletteIndexFromPixelData(pixelData);
+                    double colorIndex = PixelColorator.GetPaletteIndexFromPixelData(pixelData);
 
-                        // Grab two colors from the pallete
-                        RgbaValue color1 = Palette[(int)colorIndex % (Palette.Length - 1)];
-                        RgbaValue color2 = Palette[(int)(colorIndex + 1) % (Palette.Length - 1)];
+                    // Grab two colors from the pallete
+                    RgbaValue color1 = Palette[(int)colorIndex % (Palette.Length - 1)];
+                    RgbaValue color2 = Palette[(int)(colorIndex + 1) % (Palette.Length - 1)];
 
-                        // Lerp between both colors
-                        RgbaValue final = RgbaValue.LerpColors(color1, color2, colorIndex % 1);
+                    // Lerp between both colors
+                    RgbaValue final = RgbaValue.LerpColors(color1, color2, colorIndex % 1);
 
-                        WritePixelToFrame(p, final);
-                    });
+                    WritePixelToFrame(p, final);
+
+                    TokenSource.Token.ThrowIfCancellationRequested();
                 });
-                OnFrameFinished(new FrameEventArgs(new RgbaImage(CurrentFrame)));
-            }
-            catch (OperationCanceledException)
+            });
+        }
+
+        private void RenderTaskFinished(Task task)
+        {
+            if (task != RenderTask)
+                throw new Exception("This is not the task you are looking for...");
+            RenderTask.Dispose();
+            if (RenderStatus == TaskStatus.Canceled)
             {
-                CancelTokenSource.Dispose();
-                CancelTokenSource = new CancellationTokenSource();
+                TokenSource.Dispose();
+                TokenSource = new CancellationTokenSource();
                 OnRenderHalted();
             }
+            else
+            {
+                RgbaImage copy = new RgbaImage(CurrentFrame);
+                OnFrameFinished(new FrameEventArgs(copy));
+            }
         }
 
-        // Method that signals the render process to stop.  
-        public void StopRender()
+        public void StopRenderFrame()
         {
-            CancelTokenSource.Cancel();
+            if (RenderStatus == TaskStatus.Running)
+                TokenSource.Cancel();
+            else
+                throw new Exception("There is no running task to cancel");
         }
-
         #endregion
     }
 }

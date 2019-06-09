@@ -62,7 +62,7 @@ namespace Mandelbrot
         private Type PreferredAlgorithm =
             typeof(TraditionalAlgorithmProvider<>);
 
-        private MandelbrotMovieRenderer Renderer = new MandelbrotMovieRenderer();
+        private MandelbrotMovieRenderer Renderer;
         private ZoomMovieSettings RenderSettings = new ZoomMovieSettings();
 
         // Fractal loading and saving properties.  
@@ -95,13 +95,17 @@ namespace Mandelbrot
             threadCountInput.Value = RenderSettings.ThreadCount / 2;
             threadCountInput.Maximum = RenderSettings.ThreadCount - 1;
 
-            Renderer.FrameStarted += FrameStart;
-            Renderer.FrameFinished += FrameEnd;
-
             RenderSettings.PalettePath = PalletePath;
 
-            Width = 960;
-            Height = 540;
+            Width = RenderSettings.Width = 960;
+            Height = RenderSettings.Height = 540;
+        }
+
+        private void InitializeRenderer()
+        {
+            Renderer = new MandelbrotMovieRenderer(RenderSettings.Width, RenderSettings.Height);
+            Renderer.FrameStarted += FrameStart;
+            Renderer.FrameFinished += FrameEnd;
         }
 
         #region Renderer Events
@@ -119,7 +123,7 @@ namespace Mandelbrot
             if (Renderer.Magnification > ExtraPrecisionThreshold &&
                 RenderSettings.AlgorithmType != perturbationAlgorithm)
             {
-                RenderSettings.ArithmeticType = typeof(BigDecimal);
+                RenderSettings.ArithmeticType = typeof(BigBinary);
                 PrecisionSwitched = true;
             }
         }
@@ -142,7 +146,7 @@ namespace Mandelbrot
 
             Renderer.SetFrame(Renderer.NumFrames + 1);
 
-            Task.Run((Action)Renderer.RenderFrame);
+            Renderer.StartRenderFrame();
         }
 
         public void Shutdown()
@@ -283,7 +287,7 @@ namespace Mandelbrot
         {
             RenderSettings.Palette = Utils.LoadPallete(RenderSettings.PalettePath);
 
-            Renderer.Initialize(RenderSettings);
+            InitializeRenderer();
 
             VideoPath = RenderSaveDialog.FileName;
 
@@ -366,6 +370,7 @@ namespace Mandelbrot
                     Renderer.Setup(RenderSettings);
                     if (!RenderHasBeenStarted)
                     {
+                        Renderer.StartRenderFrame();
                         RenderHasBeenStarted = true;
                         SaveFractal();
                     }
@@ -373,9 +378,9 @@ namespace Mandelbrot
                 else
                 {
                     RenderSettings.Palette = Utils.LoadPallete(RenderSettings.PalettePath);
-                    Renderer.Initialize(RenderSettings);
+                    InitializeRenderer();
                     Renderer.Setup(RenderSettings);
-                    Task.Run((Action)Renderer.RenderFrame);
+                    Renderer.StartRenderFrame();
                 }
 
                 intervalTimer.Start();
@@ -393,7 +398,7 @@ namespace Mandelbrot
 
         private void stopToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Renderer.StopRender();
+            Renderer.StopRenderFrame();
             Shutdown();
         }
 

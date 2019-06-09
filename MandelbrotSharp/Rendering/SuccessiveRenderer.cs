@@ -26,6 +26,10 @@ namespace MandelbrotSharp.Rendering
         private int[] ChunkSizes;
         private int[] MaxChunkSizes;
 
+        public SuccessiveRenderer(int width, int height) : base(width, height)
+        {
+        }
+
         private int MaxChunkSize => MaxChunkSizes[CellX + CellY * TotalCellsX];
         private int ChunkSize => ChunkSizes[CellX + CellY * TotalCellsX];
 
@@ -62,6 +66,7 @@ namespace MandelbrotSharp.Rendering
 
         protected override void Configure(RenderSettings settings)
         {
+            base.Configure(settings);
             var renderSettings = (SuccessiveRenderSettings)settings;
             MaxChunkSizes = (int[])renderSettings.MaxChunkSizes.Clone();
             ResetChunkSizes();
@@ -70,7 +75,7 @@ namespace MandelbrotSharp.Rendering
         protected override void OnFrameStarted()
         {
             if (ChunkSizes.All(n => n == 0))
-                StopRender();
+                StopRenderFrame();
             base.OnFrameStarted();
         }
 

@@ -21,8 +21,14 @@ namespace MandelbrotSharp.Rendering
 {
     public class TiledRenderer : MandelbrotRenderer
     {
-        protected int TotalCellsX { get; private set; } = 1;
-        protected int TotalCellsY { get; private set; } = 1;
+        public TiledRenderer(int width, int height) : base(width, height)
+        {
+            TotalCellsX = 1;
+            TotalCellsY = 1;
+        }
+
+        protected int TotalCellsX { get; private set; }
+        protected int TotalCellsY { get; private set; }
 
         protected int CellX { get; private set; }
         protected int CellY { get; private set; }

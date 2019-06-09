@@ -34,6 +34,8 @@ namespace Mandelbrot.Movies
         private string _videoPath;
         private bool _extraPrecision;
         private int _version;
+        private int _width;
+        private int _height;
 
         [ScriptIgnore]
         public override Type AlgorithmType { get => base.AlgorithmType; set => base.AlgorithmType = value; }
@@ -51,5 +53,8 @@ namespace Mandelbrot.Movies
 
         public bool ExtraPrecision { get => _extraPrecision; set => _extraPrecision = value; }
         public int Version { get => _version; set => _version = value; }
+
+        public int Width { get => _width; set => _width = value; }
+        public int Height { get => _height; set => _height = value; }
     }
 }

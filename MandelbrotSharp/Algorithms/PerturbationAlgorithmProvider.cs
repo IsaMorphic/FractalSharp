@@ -77,7 +77,7 @@ namespace MandelbrotSharp.Algorithms
             referenceY = newReferenceY;
         }
 
-        public override void Initialize(CancellationToken token)
+        protected override void Initialize(CancellationToken token)
         {
             Random random = new Random();
             for (int i = 0; i < ProbePoints.Length; i++)
@@ -190,7 +190,7 @@ namespace MandelbrotSharp.Algorithms
 
         // Non-Traditional Mandelbrot algorithm, 
         // Iterates a point over its neighbors to approximate an iteration count.
-        public override PixelData Run(Number<T> px, Number<T> py)
+        protected override PixelData Run(Number<T> px, Number<T> py)
         {
             // Get max iterations.  
             int maxIterations = X.Count - 1;

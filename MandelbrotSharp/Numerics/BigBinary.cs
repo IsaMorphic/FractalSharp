@@ -293,7 +293,7 @@ namespace System.Numerics
         /// </summary>
         private static BigInteger AlignExponent(BigBinary value, BigBinary reference)
         {
-            return value.Mantissa << value.Exponent - reference.Exponent;
+            return value.Mantissa << (value.Exponent - reference.Exponent);
         }
 
         #endregion
