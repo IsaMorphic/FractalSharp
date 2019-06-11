@@ -210,12 +210,12 @@ namespace MandelbrotSharp.Rendering
             PointMapper.SetOutputSpace(xMin, xMax, yMin, yMax);
         }
 
-        public void StartRenderFrame()
+        public Task StartRenderFrame()
         {
             if (RenderStatus == TaskStatus.Running)
                 throw new Exception("The running task has not yet completed.");
             RenderTask = Task.Factory.StartNew(RenderFrame, TokenSource.Token);
-            RenderTask.ContinueWith(RenderTaskFinished);
+            return RenderTask.ContinueWith(RenderTaskFinished);
         }
 
         // Frame rendering method, using generic typing to reduce the amount 
