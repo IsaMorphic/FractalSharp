@@ -16,25 +16,15 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-using MandelbrotSharp.Algorithms;
-using MandelbrotSharp.Imaging;
 using MandelbrotSharp.Numerics;
 using MandelbrotSharp.Rendering;
-using MandelbrotSharp.Utilities;
-using MiscUtil;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Numerics;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -127,7 +117,7 @@ namespace Mandelbrot
                         Iterations -= 100;
                     break;
                 case Keys.Enter:
-                    Task.Run((Action)RenderPhoto);
+                    RenderPhoto();
                     break;
             }
             ShouldUpdateRenderer = true;
