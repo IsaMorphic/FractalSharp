@@ -33,15 +33,17 @@ namespace MandelbrotSharp.Rendering
 
         private int _threadCount = Environment.ProcessorCount;
 
-        private RgbaValue[] _palette;
+        private Gradient _outerColors;
+        private RgbaValue _innerColor;
 
         public virtual AlgorithmParams AlgorithmParams { get => _algorithmParams; set => _algorithmParams = value; }
         public virtual Type AlgorithmType { get => _algorithmType; set => _algorithmType = value; }
         public virtual Type ArithmeticType { get => _arithmeticType; set => _arithmeticType = value; }
         public virtual Type PixelColoratorType { get => _pixelColoratorType; set => _pixelColoratorType = value; }
-        public virtual RgbaValue[] Palette { get => _palette; set => _palette = value; }
         public virtual int ThreadCount { get => _threadCount; set => _threadCount = value; }
 
+        public virtual Gradient OuterColors { get => _outerColors; set => _outerColors = value; }
+        public virtual RgbaValue InnerColor { get => _innerColor; set => _innerColor = value; }
 
         public virtual BigDecimal Magnification { get => _algorithmParams.Magnification; set => _algorithmParams.Magnification = value; }
         public virtual BigDecimal offsetX { get => _algorithmParams.offsetX; set => _algorithmParams.offsetX = value; }

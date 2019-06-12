@@ -64,7 +64,8 @@ namespace MandelbrotSharp.Rendering
 
         protected RgbaImage CurrentFrame { get; private set; }
 
-        protected RgbaValue[] Palette { get; private set; }
+        protected Gradient OuterColors { get; private set; }
+        protected RgbaValue InnerColor { get; private set; }
 
         protected Type AlgorithmType { get; private set; }
         protected Type ArithmeticType { get; private set; }
@@ -121,7 +122,7 @@ namespace MandelbrotSharp.Rendering
 
             PixelColoratorType = settings.PixelColoratorType;
 
-            Palette = (RgbaValue[])settings.Palette.Clone();
+            OuterColors = settings.OuterColors;
 
             PixelColorator = (PixelColorator)Activator.CreateInstance(PixelColoratorType);
 
@@ -249,17 +250,16 @@ namespace MandelbrotSharp.Rendering
 
                     PixelData pixelData = AlgorithmProvider.Run(x0, y0);
 
-                    double colorIndex = PixelColorator.GetPaletteIndexFromPixelData(pixelData);
+                    if (pixelData.Escaped)
+                    {
+                        WritePixelToFrame(p, InnerColor);
+                    }
+                    else
+                    {
+                        double colorIndex = PixelColorator.GetIndexFromPixelData(pixelData);
 
-                    // Grab two colors from the pallete
-                    RgbaValue color1 = Palette[(int)colorIndex % (Palette.Length - 1)];
-                    RgbaValue color2 = Palette[(int)(colorIndex + 1) % (Palette.Length - 1)];
-
-                    // Lerp between both colors
-                    RgbaValue final = RgbaValue.LerpColors(color1, color2, colorIndex % 1);
-
-                    WritePixelToFrame(p, final);
-
+                        WritePixelToFrame(p, OuterColors[colorIndex]);
+                    }
                     TokenSource.Token.ThrowIfCancellationRequested();
                 });
             });

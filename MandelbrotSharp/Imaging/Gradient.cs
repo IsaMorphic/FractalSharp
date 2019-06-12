@@ -1,6 +1,7 @@
 ﻿/*
  *  Copyright 2018-2019 Chosen Few Software
- *  This file is part of MandelbrotSharp.
+ *  This file is part of an example application that demostrates 
+ *  the usage of the MandelbrotSharp library.
  *
  *  MandelbrotSharp is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,24 +16,29 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-using System;
-
 namespace MandelbrotSharp.Imaging
 {
-    public class PixelColorator
+    public struct Gradient
     {
-        public virtual double GetIndexFromPixelData(PixelData data)
-        {
-            // sqrt of inner term removed using log simplification rules.
-            double log_zn = Math.Log(data.ZValue.Magnitude);
-            double nu = Math.Log(log_zn / Math.Log(2)) / Math.Log(2);
-            // Rearranging the potential function.
-            // Dividing log_zn by log(2) instead of log(N = 1<<8)
-            // because we want the entire palette to range from the
-            // center to radius 2, NOT our bailout radius.
+        public RgbaValue[] KeyPoints;
+        public int Length;
 
-            // Return the result.
-            return data.IterCount + 1 - nu;
+        public RgbaValue this[double index]
+        {
+            get
+            {
+                double scaled = index / Length % 1 * (KeyPoints.Length - 1);
+                int firstIndex = (int)scaled;
+                int secondIndex = firstIndex + 1;
+                double alpha = scaled % 1;
+                return RgbaValue.LerpColors(KeyPoints[firstIndex], KeyPoints[secondIndex], alpha);
+            }
+        }
+
+        public Gradient(RgbaValue[] KeyPoints, int Length)
+        {
+            this.KeyPoints = (RgbaValue[])KeyPoints.Clone();
+            this.Length = Length;
         }
     }
 }

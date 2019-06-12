@@ -33,7 +33,7 @@ using System.Web.Script.Serialization;
 namespace Mandelbrot
 {
     public class Utils {
-        public static RgbaValue[] LoadPallete(string path)
+        public static Gradient LoadPallete(string path)
         {
             List<RgbaValue> pallete = new List<RgbaValue>();
             StreamReader palleteData = new StreamReader(path);
@@ -51,7 +51,7 @@ namespace Mandelbrot
                 }
                 catch (FormatException) { }
             }
-            return pallete.ToArray();
+            return new Gradient(pallete.ToArray(), 256);
         }
     }
 

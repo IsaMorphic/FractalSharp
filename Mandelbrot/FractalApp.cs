@@ -285,7 +285,7 @@ namespace Mandelbrot
 
         private void RenderSaveDialog_OK(object sender, CancelEventArgs e)
         {
-            RenderSettings.Palette = Utils.LoadPallete(RenderSettings.PalettePath);
+            RenderSettings.OuterColors = Utils.LoadPallete(RenderSettings.PalettePath);
 
             InitializeRenderer();
 
@@ -377,7 +377,7 @@ namespace Mandelbrot
                 }
                 else
                 {
-                    RenderSettings.Palette = Utils.LoadPallete(RenderSettings.PalettePath);
+                    RenderSettings.OuterColors = Utils.LoadPallete(RenderSettings.PalettePath);
                     InitializeRenderer();
                     Renderer.Setup(RenderSettings);
                     Renderer.StartRenderFrame();

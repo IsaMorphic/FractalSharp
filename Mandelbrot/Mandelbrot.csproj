@@ -153,7 +153,9 @@
     <None Include="Palettes\glasses2.map">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Palettes\golden.map" />
+    <None Include="Palettes\golden.map">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Palettes\goodega.map">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -44,7 +44,7 @@ namespace Mandelbrot.Movies
         [ScriptIgnore]
         public override Type PixelColoratorType { get => base.PixelColoratorType; set => base.PixelColoratorType = value; }
         [ScriptIgnore]
-        public override RgbaValue[] Palette { get => base.Palette; set => base.Palette = value; }
+        public override Gradient OuterColors { get => base.OuterColors; set => base.OuterColors = value; }
 
         public int NumFrames { get => _numFrames; set => _numFrames = value; }
 

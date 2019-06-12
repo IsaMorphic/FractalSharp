@@ -76,7 +76,7 @@ namespace Mandelbrot
 
         public Explorer(string palettePath, BigDecimal offsetX, BigDecimal offsetY, Type algorithm, Type numType)
         {
-            ExplorationSettings.Palette = Utils.LoadPallete(palettePath);
+            ExplorationSettings.OuterColors = Utils.LoadPallete(palettePath);
             ExplorationSettings.offsetX = offsetX;
             ExplorationSettings.offsetY = offsetY;
 
@@ -242,7 +242,7 @@ namespace Mandelbrot
             PhotoSettings.MaxIterations = ExplorationSettings.MaxIterations;
             PhotoSettings.AlgorithmType = ExplorationSettings.AlgorithmType;
             PhotoSettings.ArithmeticType = ExplorationSettings.ArithmeticType;
-            PhotoSettings.Palette = ExplorationSettings.Palette;
+            PhotoSettings.OuterColors = ExplorationSettings.OuterColors;
             PhotoRenderer.Setup(PhotoSettings);
 
             PhotoRenderer.StartRenderFrame();
