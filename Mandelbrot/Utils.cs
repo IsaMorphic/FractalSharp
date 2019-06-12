@@ -17,6 +17,7 @@
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Numerics;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

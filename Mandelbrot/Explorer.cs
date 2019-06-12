@@ -18,6 +18,7 @@
  */
 using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Numerics;
 using MandelbrotSharp.Rendering;
 using MandelbrotSharp.Utilities;
 using MiscUtil;

@@ -15,10 +15,18 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+using System;
 using System.Linq;
+using System.Numerics;
 
-namespace System.Numerics
+namespace MandelbrotSharp.Numerics
 {
+    /// <summary>
+    /// Arbitrary precision decimal.
+    /// All operations are exact, except for division. Division never determines more digits than the given precision.
+    /// Original Source: https://gist.github.com/JcBernack/0b4eef59ca97ee931a2f45542b9ff06d (licensed under public domain)
+    /// Modified for better performance
+    /// </summary>
     public struct BigDecimal
     : IComparable
     , IComparable<BigDecimal>

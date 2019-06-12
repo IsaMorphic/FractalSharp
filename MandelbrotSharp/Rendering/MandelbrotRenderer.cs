@@ -17,10 +17,10 @@
  */
 using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Numerics;
 using MandelbrotSharp.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 

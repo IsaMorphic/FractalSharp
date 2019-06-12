@@ -17,9 +17,9 @@
  */
 using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Numerics;
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 
 namespace MandelbrotSharp.Rendering
 {

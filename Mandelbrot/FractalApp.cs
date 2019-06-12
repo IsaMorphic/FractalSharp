@@ -19,6 +19,7 @@
 using Mandelbrot.Movies;
 using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Numerics;
 using MandelbrotSharp.Rendering;
 using MandelbrotSharp.Utilities;
 using System;
@@ -171,7 +172,7 @@ namespace Mandelbrot
                 {
                     standardPrecisionToolStripMenuItem.Checked = false;
                     extraPrescisionToolStripMenuItem.Checked = true;
-                    RenderSettings.ArithmeticType = typeof(BigDecimal);
+                    RenderSettings.ArithmeticType = typeof(BigBinary);
                 }
             }));
         }
@@ -219,7 +220,7 @@ namespace Mandelbrot
                 {
                     standardPrecisionToolStripMenuItem.Checked = false;
                     extraPrescisionToolStripMenuItem.Checked = true;
-                    RenderSettings.ArithmeticType = typeof(BigDecimal);
+                    RenderSettings.ArithmeticType = typeof(BigBinary);
                 }
                 else
                 {
@@ -416,7 +417,7 @@ namespace Mandelbrot
         {
             standardPrecisionToolStripMenuItem.Checked = false;
             extraPrescisionToolStripMenuItem.Checked = true;
-            RenderSettings.ArithmeticType = typeof(BigDecimal);
+            RenderSettings.ArithmeticType = typeof(BigBinary);
             RenderSettings.ExtraPrecision = true;
         }
 

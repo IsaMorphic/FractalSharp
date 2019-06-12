@@ -15,10 +15,16 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-using System.Linq;
 
-namespace System.Numerics
+using System;
+using System.Numerics;
+
+namespace MandelbrotSharp.Numerics
 {
+    /// <summary>
+    /// Arbitrary precision binary floating point number type
+    /// Based on the BigDecimal type
+    /// </summary>
     public struct BigBinary
     : IComparable
     , IComparable<BigBinary>
@@ -328,14 +334,12 @@ namespace System.Numerics
 
         public override string ToString()
         {
-            return string.Concat(Mantissa.ToString(), "E", Exponent);
+            return ((BigDecimal)this).ToString();
         }
 
         public static BigBinary Parse(string s)
         {
-            var tokens = s.Split('E');
-            var mantissa = BigInteger.Parse(tokens.First());
-            return new BigBinary(mantissa, int.Parse(tokens.Last()));
+            return BigDecimal.Parse(s);
         }
 
         public bool Equals(BigBinary other)
