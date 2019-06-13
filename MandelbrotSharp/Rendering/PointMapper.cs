@@ -16,9 +16,8 @@
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 using MandelbrotSharp.Numerics;
-using System.Numerics;
 
-namespace MandelbrotSharp.Utilities
+namespace MandelbrotSharp.Rendering
 {
     public interface IPointMapper
     {
@@ -58,15 +57,23 @@ namespace MandelbrotSharp.Utilities
             return MapPointY(y);
         }
 
+        public static Number<T> MapValue(Number<T> OldValue, Number<T> OldMin, Number<T> OldMax, Number<T> NewMin, Number<T> NewMax)
+        {
+            T OldRange = OldMax - OldMin;
+            T NewRange = NewMax - NewMin;
+            T NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
+            return NewValue;
+        }
+
         private Number<T> MapPointX(double x)
         {
-            Number<T> real = Utils.Map(x, inXMin, inXMax, outXMin, outXMax);
+            Number<T> real = MapValue(x, inXMin, inXMax, outXMin, outXMax);
             return real;
         }
 
         private Number<T> MapPointY(double y)
         {
-            Number<T> imag = Utils.Map(y, inYMin, inYMax, outYMin, outYMax);
+            Number<T> imag = MapValue(y, inYMin, inYMax, outYMin, outYMax);
             return imag;
         }
     }

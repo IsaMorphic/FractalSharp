@@ -15,8 +15,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-using MandelbrotSharp.Utilities;
-
 namespace MandelbrotSharp.Imaging
 {
     public struct RgbaValue
@@ -34,6 +32,11 @@ namespace MandelbrotSharp.Imaging
             alpha = a;
         }
 
+        private static double lerp(double v0, double v1, double t)
+        {
+            return (1 - t) * v0 + t * v1;
+        }
+
         public static explicit operator int(RgbaValue rgba) {
             return (rgba.alpha << 24) | (rgba.red << 16) | (rgba.green << 8) | (rgba.blue);
         }
@@ -43,13 +46,13 @@ namespace MandelbrotSharp.Imaging
             RgbaValue c = new RgbaValue();
 
             // Linear interpolate red, green, and blue values.
-            c.red = (byte)Utils.lerp(a.red, b.red, alpha);
+            c.red = (byte)lerp(a.red, b.red, alpha);
 
-            c.green = (byte)Utils.lerp(a.green, b.green, alpha);
+            c.green = (byte)lerp(a.green, b.green, alpha);
 
-            c.blue = (byte)Utils.lerp(a.blue, b.blue, alpha);
+            c.blue = (byte)lerp(a.blue, b.blue, alpha);
 
-            c.alpha = (byte)Utils.lerp(a.alpha, b.alpha, alpha);
+            c.alpha = (byte)lerp(a.alpha, b.alpha, alpha);
 
             return c;
         }

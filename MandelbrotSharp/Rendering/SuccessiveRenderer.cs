@@ -43,14 +43,14 @@ namespace MandelbrotSharp.Rendering
             return (py % ChunkSize != 0);
         }
 
-        protected override bool ShouldSkipPixel(Pixel p)
+        protected override bool ShouldSkipPixel(IntPoint p)
         {
             var px = p.X;
             var py = p.Y;
             return (px % ChunkSize != 0 || py % ChunkSize != 0) || ((px / ChunkSize) % 2 == 0 && (py / ChunkSize) % 2 == 0 && MaxChunkSize != ChunkSize);
         }
 
-        protected override void WritePixelToFrame(Pixel p, RgbaValue color)
+        protected override void WritePixelToFrame(IntPoint p, RgbaValue color)
         {
             for (var i = p.X; i < p.X + ChunkSize; i++)
             {

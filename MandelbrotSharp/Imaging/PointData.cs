@@ -15,17 +15,21 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+using System.Numerics;
 
 namespace MandelbrotSharp.Imaging
 {
-    public struct Pixel
+    public class PointData
     {
-        public int X;
-        public int Y;
-        public Pixel(int x, int y)
+        public Complex ZValue { get; private set; }
+        public int IterCount { get; private set; }
+        public bool Escaped { get; private set; }
+
+        public PointData(Complex ZValue, int IterCount, bool Escaped)
         {
-            X = x;
-            Y = y;
+            this.ZValue = ZValue;
+            this.IterCount = IterCount;
+            this.Escaped = Escaped;
         }
     }
 }

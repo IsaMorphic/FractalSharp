@@ -42,7 +42,7 @@ namespace Mandelbrot.Movies
         [ScriptIgnore]
         public override Type ArithmeticType { get => base.ArithmeticType; set => base.ArithmeticType = value; }
         [ScriptIgnore]
-        public override Type PixelColoratorType { get => base.PixelColoratorType; set => base.PixelColoratorType = value; }
+        public override Type PointColorerType { get => base.PointColorerType; set => base.PointColorerType = value; }
         [ScriptIgnore]
         public override Gradient OuterColors { get => base.OuterColors; set => base.OuterColors = value; }
 

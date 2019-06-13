@@ -18,7 +18,6 @@
 using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Imaging;
 using MandelbrotSharp.Numerics;
-using MandelbrotSharp.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -60,7 +59,7 @@ namespace MandelbrotSharp.Rendering
         protected IAlgorithmProvider AlgorithmProvider { get; private set; }
         protected IPointMapper PointMapper { get; private set; }
 
-        protected PixelColorator PixelColorator { get; private set; }
+        protected PointColorer PointColorer { get; private set; }
 
         protected RgbaImage CurrentFrame { get; private set; }
 
@@ -69,7 +68,7 @@ namespace MandelbrotSharp.Rendering
 
         protected Type AlgorithmType { get; private set; }
         protected Type ArithmeticType { get; private set; }
-        protected Type PixelColoratorType { get; private set; }
+        protected Type PointColorerType { get; private set; }
 
         protected Dictionary<string, object> ExtraParams { get; private set; }
 
@@ -120,11 +119,11 @@ namespace MandelbrotSharp.Rendering
 
             ArithmeticType = settings.ArithmeticType;
 
-            PixelColoratorType = settings.PixelColoratorType;
+            PointColorerType = settings.PointColorerType;
 
             OuterColors = settings.OuterColors;
 
-            PixelColorator = (PixelColorator)Activator.CreateInstance(PixelColoratorType);
+            PointColorer = (PointColorer)Activator.CreateInstance(PointColorerType);
 
             ExtraParams = new Dictionary<string, object>(settings.ExtraParams);
 
@@ -160,16 +159,16 @@ namespace MandelbrotSharp.Rendering
 
         #endregion
 
-        #region Algorithm Methods
+        #region Rendering Methods
 
-        protected virtual Pixel GetFrameFirstPixel()
+        protected virtual IntPoint GetFrameFirstPixel()
         {
-            return new Pixel(0, 0);
+            return new IntPoint(0, 0);
         }
 
-        protected virtual Pixel GetFrameLastPixel()
+        protected virtual IntPoint GetFrameLastPixel()
         {
-            return new Pixel(Width, Height);
+            return new IntPoint(Width, Height);
         }
 
         protected virtual bool ShouldSkipRow(int y)
@@ -177,19 +176,15 @@ namespace MandelbrotSharp.Rendering
             return false;
         }
 
-        protected virtual bool ShouldSkipPixel(Pixel p)
+        protected virtual bool ShouldSkipPixel(IntPoint p)
         {
             return false;
         }
 
-        protected virtual void WritePixelToFrame(Pixel p, RgbaValue color)
+        protected virtual void WritePixelToFrame(IntPoint p, RgbaValue color)
         {
             CurrentFrame.SetPixel(p.X, p.Y, color);
         }
-
-        #endregion
-
-        #region Rendering Methods
 
         protected void UpdatePointMapperOutputSpace()
         {
@@ -231,10 +226,9 @@ namespace MandelbrotSharp.Rendering
             var firstPoint = GetFrameFirstPixel();
             var lastPoint = GetFrameLastPixel();
 
-            var options = new ParallelOptions { MaxDegreeOfParallelism = ThreadCount };
-
             AlgorithmInitTask.Wait();
 
+            var options = new ParallelOptions { MaxDegreeOfParallelism = ThreadCount };
             Parallel.For(firstPoint.Y, lastPoint.Y, options, py =>
             {
                 if (ShouldSkipRow(py))
@@ -242,22 +236,21 @@ namespace MandelbrotSharp.Rendering
                 var y0 = PointMapper.MapPointY(py);
                 Parallel.For(firstPoint.X, lastPoint.X, options, px =>
                 {
-                    var p = new Pixel(px, py);
+                    var p = new IntPoint(px, py);
                     if (ShouldSkipPixel(p))
                         return;
 
                     var x0 = PointMapper.MapPointX(px);
 
-                    PixelData pixelData = AlgorithmProvider.Run(x0, y0);
+                    PointData pointData = AlgorithmProvider.Run(x0, y0);
 
-                    if (pixelData.Escaped)
+                    if (pointData.Escaped)
                     {
                         WritePixelToFrame(p, InnerColor);
                     }
                     else
                     {
-                        double colorIndex = PixelColorator.GetIndexFromPixelData(pixelData);
-
+                        double colorIndex = PointColorer.GetIndexFromPointData(pointData);
                         WritePixelToFrame(p, OuterColors[colorIndex]);
                     }
                     TokenSource.Token.ThrowIfCancellationRequested();

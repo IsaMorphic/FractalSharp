@@ -190,7 +190,7 @@ namespace MandelbrotSharp.Algorithms
 
         // Non-Traditional Mandelbrot algorithm, 
         // Iterates a point over its neighbors to approximate an iteration count.
-        protected override PixelData Run(Number<T> px, Number<T> py)
+        protected override PointData Run(Number<T> px, Number<T> py)
         {
             // Get max iterations.  
             int maxIterations = X.Count - 1;
@@ -232,7 +232,7 @@ namespace MandelbrotSharp.Algorithms
                 MostIterations = n;
             }
 
-            return new PixelData(zn, n, n >= maxIterations);
+            return new PointData(zn, n, n >= maxIterations);
         }
     }
 }

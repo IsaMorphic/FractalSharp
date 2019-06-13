@@ -15,21 +15,24 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-using System.Numerics;
+using System;
 
 namespace MandelbrotSharp.Imaging
 {
-    public class PixelData
+    public class PointColorer
     {
-        public Complex ZValue { get; private set; }
-        public int IterCount { get; private set; }
-        public bool Escaped { get; private set; }
-
-        public PixelData(Complex ZValue, int IterCount, bool Escaped)
+        public virtual double GetIndexFromPointData(PointData data)
         {
-            this.ZValue = ZValue;
-            this.IterCount = IterCount;
-            this.Escaped = Escaped;
+            // sqrt of inner term removed using log simplification rules.
+            double log_zn = Math.Log(data.ZValue.Magnitude);
+            double nu = Math.Log(log_zn / Math.Log(2)) / Math.Log(2);
+            // Rearranging the potential function.
+            // Dividing log_zn by log(2) instead of log(N = 1<<8)
+            // because we want the entire palette to range from the
+            // center to radius 2, NOT our bailout radius.
+
+            // Return the result.
+            return data.IterCount + 1 - nu;
         }
     }
 }

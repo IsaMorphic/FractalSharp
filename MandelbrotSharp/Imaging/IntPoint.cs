@@ -15,24 +15,17 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-using System;
 
 namespace MandelbrotSharp.Imaging
 {
-    public class PixelColorator
+    public struct IntPoint
     {
-        public virtual double GetIndexFromPixelData(PixelData data)
+        public int X;
+        public int Y;
+        public IntPoint(int x, int y)
         {
-            // sqrt of inner term removed using log simplification rules.
-            double log_zn = Math.Log(data.ZValue.Magnitude);
-            double nu = Math.Log(log_zn / Math.Log(2)) / Math.Log(2);
-            // Rearranging the potential function.
-            // Dividing log_zn by log(2) instead of log(N = 1<<8)
-            // because we want the entire palette to range from the
-            // center to radius 2, NOT our bailout radius.
-
-            // Return the result.
-            return data.IterCount + 1 - nu;
+            X = x;
+            Y = y;
         }
     }
 }

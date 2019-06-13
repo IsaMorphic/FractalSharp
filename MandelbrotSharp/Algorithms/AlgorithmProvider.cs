@@ -29,7 +29,7 @@ namespace MandelbrotSharp.Algorithms
     {
         void UpdateParams(AlgorithmParams Params);
         void Initialize(object state);
-        PixelData Run(INumber px, INumber py);
+        PointData Run(INumber px, INumber py);
     }
     public abstract class AlgorithmProvider<T> : IAlgorithmProvider where T : struct
     {
@@ -55,7 +55,7 @@ namespace MandelbrotSharp.Algorithms
             OnParamsUpdated();
         }
 
-        PixelData IAlgorithmProvider.Run(INumber px, INumber py)
+        PointData IAlgorithmProvider.Run(INumber px, INumber py)
         {
             return Run(px.As<T>(), py.As<T>());
         }
@@ -65,7 +65,7 @@ namespace MandelbrotSharp.Algorithms
             Initialize((CancellationToken)state);
         }
 
-        protected abstract PixelData Run(Number<T> px, Number<T> py);
+        protected abstract PointData Run(Number<T> px, Number<T> py);
 
         protected virtual void Initialize(CancellationToken token) { }
 

@@ -49,14 +49,14 @@ namespace MandelbrotSharp.Rendering
             base.OnFrameFinished(e);
         }
 
-        protected override Pixel GetFrameFirstPixel()
+        protected override IntPoint GetFrameFirstPixel()
         {
-            return new Pixel(CellX * CellWidth, CellY * CellHeight);
+            return new IntPoint(CellX * CellWidth, CellY * CellHeight);
         }
 
-        protected override Pixel GetFrameLastPixel()
+        protected override IntPoint GetFrameLastPixel()
         {
-            return new Pixel((CellX + 1) * CellWidth, (CellY + 1) * CellHeight);
+            return new IntPoint((CellX + 1) * CellWidth, (CellY + 1) * CellHeight);
         }
 
         protected override void Configure(RenderSettings settings) {
