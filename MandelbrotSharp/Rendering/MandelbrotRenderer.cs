@@ -46,8 +46,7 @@ namespace MandelbrotSharp.Rendering
 
         protected int MaxIterations;
         protected BigDecimal Magnification;
-        protected BigDecimal offsetX;
-        protected BigDecimal offsetY;
+        protected Complex<BigDecimal> Location;
 
         protected int Width { get; private set; }
         protected int Height { get; private set; }
@@ -107,8 +106,7 @@ namespace MandelbrotSharp.Rendering
         {
             TokenSource = new CancellationTokenSource();
 
-            offsetX = settings.offsetX;
-            offsetY = settings.offsetY;
+            Location = settings.Location;
 
             Magnification = settings.Magnification;
             MaxIterations = settings.MaxIterations;
@@ -146,8 +144,7 @@ namespace MandelbrotSharp.Rendering
             AlgorithmProvider.UpdateParams(new AlgorithmParams
             {
                 Magnification = Magnification,
-                offsetX = offsetX,
-                offsetY = offsetY,
+                Location = Location,
                 MaxIterations = MaxIterations,
                 ExtraParams = new Dictionary<string, object>(ExtraParams)
             });
@@ -195,13 +192,13 @@ namespace MandelbrotSharp.Rendering
 
             // x_min = -scaleFactor / zoom
             // x_max =  scaleFactor / zoom
-            BigDecimal xMin = -scaleFactor / zoom + offsetX;
-            BigDecimal xMax = scaleFactor / zoom + offsetX;
+            BigDecimal xMin = -scaleFactor / zoom + Location.Real;
+            BigDecimal xMax = scaleFactor / zoom + Location.Real;
 
             // y_min = -2 / zoom
             // y_max =  2 / zoom
-            BigDecimal yMin = -2 / zoom + offsetY;
-            BigDecimal yMax = 2 / zoom + offsetY;
+            BigDecimal yMin = -2 / zoom + Location.Imag;
+            BigDecimal yMax = 2 / zoom + Location.Imag;
 
             PointMapper.SetOutputSpace(xMin, xMax, yMin, yMax);
         }

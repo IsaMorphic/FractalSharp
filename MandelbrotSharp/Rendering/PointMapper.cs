@@ -59,9 +59,9 @@ namespace MandelbrotSharp.Rendering
 
         public static Number<T> MapValue(Number<T> OldValue, Number<T> OldMin, Number<T> OldMax, Number<T> NewMin, Number<T> NewMax)
         {
-            T OldRange = OldMax - OldMin;
-            T NewRange = NewMax - NewMin;
-            T NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
+            Number<T> OldRange = OldMax - OldMin;
+            Number<T> NewRange = NewMax - NewMin;
+            Number<T> NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
             return NewValue;
         }
 

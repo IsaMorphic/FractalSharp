@@ -29,8 +29,8 @@ namespace MandelbrotSharp.Algorithms
     {
         private List<Complex> X, TwoX, A, B, C;
         private List<Complex[]>[] ProbePoints;
-        private Number<T> newReferenceX, newReferenceY;
-        private Number<T> referenceX, referenceY;
+        private Complex<T> newReferencePoint;
+        private Complex<T> referencePoint;
 
         private int SkippedIterations;
         private int MostIterations;
@@ -69,12 +69,10 @@ namespace MandelbrotSharp.Algorithms
 
             if (PreviousMaxIterations != Params.MaxIterations)
             {
-                newReferenceX = Number<T>.From(Params.offsetX);
-                newReferenceY = Number<T>.From(Params.offsetY);
+                newReferencePoint = Params.Location.As<T>();
             }
 
-            referenceX = newReferenceX;
-            referenceY = newReferenceY;
+            referencePoint = newReferencePoint;
         }
 
         protected override void Initialize(CancellationToken token)
@@ -83,7 +81,9 @@ namespace MandelbrotSharp.Algorithms
             for (int i = 0; i < ProbePoints.Length; i++)
             {
                 ProbePoints[i] = new List<Complex[]>();
-                var point = new Complex((double)((random.NextDouble() * 4 - 2) / Params.Magnification + Params.offsetX), (double)((random.NextDouble() * 4 - 2) / Params.Magnification + Params.offsetY));
+                BigDecimal real = (random.NextDouble() * 4 - 2) / Params.Magnification;
+                BigDecimal imag = (random.NextDouble() * 4 - 2) / Params.Magnification;
+                var point = new Complex<BigDecimal>(real, imag) + Params.Location;
                 ProbePoints[i].Add(new Complex[3] { point, point * point, point * point * point });
             }
 
@@ -107,30 +107,19 @@ namespace MandelbrotSharp.Algorithms
 
         public void IterateReferencePoint(CancellationToken token)
         {
-            Number<T> xn_r, x0_r = xn_r = referenceX;
-            Number<T> xn_i, x0_i = xn_i = referenceY;
+            Complex<T> x0, xn = x0 = referencePoint;
 
             for (int i = 0; i < Params.MaxIterations; i++)
             {
                 token.ThrowIfCancellationRequested();
-                // pre multiply by two
-                Number<T> real = xn_r + xn_r;
-                Number<T> imag = xn_i + xn_i;
 
-                Number<T> xn_r2 = xn_r * xn_r;
-                Number<T> xn_i2 = xn_i * xn_i;
+                X.Add(xn);
+                TwoX.Add(xn * 2);
 
-                Complex c = new Complex((double)xn_r, (double)xn_i);
-                Complex two_c = new Complex((double)real, (double)imag);
-
-                X.Add(c);
-                TwoX.Add(two_c);
-                // calculate next iteration, remember real = 2 * xn_r
-                if (xn_r2 + xn_i2  > 4)
+                if (xn.MagnitudeSqu > 4)
                     break;
 
-                xn_r = xn_r2 - xn_i2 + x0_r;
-                xn_i = real * xn_i + x0_i;
+                xn = xn * xn + x0;
             }
         }
 
@@ -190,7 +179,7 @@ namespace MandelbrotSharp.Algorithms
 
         // Non-Traditional Mandelbrot algorithm, 
         // Iterates a point over its neighbors to approximate an iteration count.
-        protected override PointData Run(Number<T> px, Number<T> py)
+        protected override PointData Run(Complex<T> point)
         {
             // Get max iterations.  
             int maxIterations = X.Count - 1;
@@ -201,11 +190,7 @@ namespace MandelbrotSharp.Algorithms
             // Initialize some variables...
             Complex zn;
 
-            Number<T> deltaReal = px - referenceX;
-            Number<T> deltaImag = py - referenceY;
-
-            Complex d0 = new Complex((double)deltaReal, (double)deltaImag);
-
+            Complex d0 = point - referencePoint;
             Complex dn = A[n] * d0 + B[n] * d0 * d0 + C[n] * d0 * d0 * d0;
 
             // Mandelbrot algorithm
@@ -227,8 +212,7 @@ namespace MandelbrotSharp.Algorithms
 
             if (n > MostIterations)
             {
-                newReferenceX = px;
-                newReferenceY = py;
+                newReferencePoint = point;
                 MostIterations = n;
             }
 

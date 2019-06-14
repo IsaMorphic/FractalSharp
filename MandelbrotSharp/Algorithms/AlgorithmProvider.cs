@@ -57,7 +57,7 @@ namespace MandelbrotSharp.Algorithms
 
         PointData IAlgorithmProvider.Run(INumber px, INumber py)
         {
-            return Run(px.As<T>(), py.As<T>());
+            return Run(new Complex<T>(px.As<T>(), py.As<T>()));
         }
 
         void IAlgorithmProvider.Initialize(object state)
@@ -65,7 +65,7 @@ namespace MandelbrotSharp.Algorithms
             Initialize((CancellationToken)state);
         }
 
-        protected abstract PointData Run(Number<T> px, Number<T> py);
+        protected abstract PointData Run(Complex<T> point);
 
         protected virtual void Initialize(CancellationToken token) { }
 

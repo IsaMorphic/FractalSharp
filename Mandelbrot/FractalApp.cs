@@ -81,8 +81,8 @@ namespace Mandelbrot
             startFrameInput.Value = RenderSettings.NumFrames;
             iterationCountInput.Value = RenderSettings.MaxIterations;
 
-            xOffInput.Text = RenderSettings.offsetX.ToString();
-            yOffInput.Text = RenderSettings.offsetY.ToString();
+            xOffInput.Text = RenderSettings.Location.Real.ToString();
+            yOffInput.Text = RenderSettings.Location.Imag.ToString();
 
             threadCountInput.Value = RenderSettings.ThreadCount / 2;
             threadCountInput.Maximum = RenderSettings.ThreadCount - 1;
@@ -226,8 +226,8 @@ namespace Mandelbrot
 
                 threadCountInput.Value = RenderSettings.ThreadCount;
 
-                xOffInput.Text = RenderSettings.offsetX.ToString();
-                yOffInput.Text = RenderSettings.offsetY.ToString();
+                xOffInput.Text = RenderSettings.Location.Real.ToString();
+                yOffInput.Text = RenderSettings.Location.Imag.ToString();
 
                 success = true;
             }
@@ -350,9 +350,8 @@ namespace Mandelbrot
                 CurrentFrame = new DirectBitmap(RenderSettings.Width, RenderSettings.Height);
 
                 Rendering = true;
-                RenderSettings.offsetX = BigDecimal.Parse(xOffInput.Text);
-                RenderSettings.offsetY = BigDecimal.Parse(yOffInput.Text);
 
+                RenderSettings.Location = new Complex<BigDecimal>(BigDecimal.Parse(xOffInput.Text), BigDecimal.Parse(yOffInput.Text));
                 RenderSettings.MaxIterations = (int)iterationCountInput.Value;
                 RenderSettings.NumFrames = (int)startFrameInput.Value;
                 RenderSettings.ThreadCount = (int)threadCountInput.Value;
@@ -455,8 +454,10 @@ namespace Mandelbrot
         {
             var exploreWindow = new Explorer(
                 PalletePath,
-                BigDecimal.Parse(xOffInput.Text),
-                BigDecimal.Parse(yOffInput.Text),
+                new Complex<BigDecimal>(
+                    BigDecimal.Parse(xOffInput.Text),
+                    BigDecimal.Parse(yOffInput.Text)
+                ),
                 RenderSettings.AlgorithmType,
                 RenderSettings.ArithmeticType);
             exploreWindow.ShowDialog();

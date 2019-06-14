@@ -37,11 +37,6 @@ namespace MandelbrotSharp.Numerics
             Value = v;
         }
 
-        public static implicit operator Number<T>(T n)
-        {
-            return new Number<T>(n);
-        }
-
         public static implicit operator Number<T>(int n)
         {
             return From(n);
@@ -109,22 +104,22 @@ namespace MandelbrotSharp.Numerics
 
         public static Number<T> operator +(Number<T> left, Number<T> right)
         {
-            return Operator.Add(left.Value, right.Value);
+            return new Number<T>(Operator.Add(left.Value, right.Value));
         }
 
         public static Number<T> operator -(Number<T> left, Number<T> right)
         {
-            return Operator.Subtract(left.Value, right.Value);
+            return new Number<T>(Operator.Subtract(left.Value, right.Value));
         }
 
         public static Number<T> operator *(Number<T> left, Number<T> right)
         {
-            return Operator.Multiply(left.Value, right.Value);
+            return new Number<T>(Operator.Multiply(left.Value, right.Value));
         }
 
         public static Number<T> operator /(Number<T> left, Number<T> right)
         {
-            return Operator.Divide(left.Value, right.Value);
+            return new Number<T>(Operator.Divide(left.Value, right.Value));
         }
 
         public static bool operator ==(Number<T> left, Number<T> right)
@@ -164,7 +159,7 @@ namespace MandelbrotSharp.Numerics
 
         public Number<TOut> As<TOut>() where TOut : struct
         {
-            return Operator.Convert<T, TOut>(Value);
+            return new Number<TOut>(Operator.Convert<T, TOut>(Value));
         }
 
         public int CompareTo(Number<T> other)
@@ -172,9 +167,14 @@ namespace MandelbrotSharp.Numerics
             return this < other ? -1 : (this > other ? 1 : 0);
         }
 
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
+
         public override bool Equals(object obj)
         {
-            return base.Equals(obj);
+            return this == (Number<T>)obj;
         }
 
         public override int GetHashCode()

@@ -26,40 +26,21 @@ namespace MandelbrotSharp.Algorithms
         [Parameter(DefaultValue = 4)]
         public Number<T> BailoutValue;
 
-        protected override PointData Run(Number<T> x0, Number<T> y0)
+        protected override PointData Run(Complex<T> z0)
         {
             // Initialize some variables..
-            Number<T> x = 0;
-            Number<T> y = 0;
-
-            // Define x squared and y squared as their own variables
-            // To avoid unnecisarry multiplication.
-            Number<T> xx = 0;
-            Number<T> yy = 0;
+            Complex<T> z = 0;
 
             // Initialize our iteration count.
             int iter = 0;
 
             // Mandelbrot algorithm
-            while (xx + yy < BailoutValue && iter < Params.MaxIterations)
+            while (z.MagnitudeSqu < BailoutValue && iter < Params.MaxIterations)
             {
-                Number<T> xtemp = xx - yy + x0;
-                Number<T> ytemp = 2 * x * y + y0;
-
-                if (x == xtemp && y == ytemp)
-                {
-                    iter = Params.MaxIterations;
-                    break;
-                }
-
-                x = xtemp;
-                y = ytemp;
-                xx = x * x;
-                yy = y * y;
-
+                z = z * z + z0;
                 iter++;
             }
-            return new PointData(new Complex((double)x, (double)y), iter, iter >= Params.MaxIterations);
+            return new PointData(z, iter, iter >= Params.MaxIterations);
         }
     }
 }
