@@ -249,7 +249,8 @@ namespace Mandelbrot
         {
             UpdateTimer.Stop();
             Cursor.Show();
-            ExplorationRenderer.StopRenderFrame();
+            if (ExplorationRenderer.RenderStatus == TaskStatus.Running)
+                ExplorationRenderer.StopRenderFrame();
             CurrentFrame.Dispose();
             pictureBox1.Image.Dispose();
         }
@@ -290,7 +291,7 @@ namespace Mandelbrot
             int cornerY = (startY > endY) ? endY : startY;
 
             ExplorationSettings.Magnification *= RenderHeight / rectHeight;
-            Point centerPoint = new Point(cornerX + rectWidth / 2, cornerY + rectHeight / 2);            
+            Point centerPoint = new Point(cornerX + rectWidth / 2, cornerY + rectHeight / 2);
             ExplorationSettings.Location = ExplorationRenderer.GetPointFromFrameLocation(
                 centerPoint.X, centerPoint.Y);
             if (ExplorationRenderer.RenderStatus == TaskStatus.Canceled)

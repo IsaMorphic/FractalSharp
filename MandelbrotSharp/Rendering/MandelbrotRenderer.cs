@@ -121,6 +121,8 @@ namespace MandelbrotSharp.Rendering
 
             OuterColors = settings.OuterColors;
 
+            InnerColor = settings.InnerColor;
+
             PointColorer = (PointColorer)Activator.CreateInstance(PointColorerType);
 
             ExtraParams = new Dictionary<string, object>(settings.ExtraParams);
@@ -225,7 +227,11 @@ namespace MandelbrotSharp.Rendering
 
             AlgorithmInitTask.Wait();
 
-            var options = new ParallelOptions { MaxDegreeOfParallelism = ThreadCount };
+            var options = new ParallelOptions
+            {
+                MaxDegreeOfParallelism = ThreadCount,
+                CancellationToken = TokenSource.Token
+            };
             Parallel.For(firstPoint.Y, lastPoint.Y, options, py =>
             {
                 if (ShouldSkipRow(py))
@@ -250,7 +256,6 @@ namespace MandelbrotSharp.Rendering
                         double colorIndex = PointColorer.GetIndexFromPointData(pointData);
                         WritePixelToFrame(p, OuterColors[colorIndex]);
                     }
-                    TokenSource.Token.ThrowIfCancellationRequested();
                 });
             });
         }
