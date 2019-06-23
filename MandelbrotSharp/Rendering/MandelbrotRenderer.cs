@@ -192,15 +192,11 @@ namespace MandelbrotSharp.Rendering
             // Predefine minimum and maximum values of the plane, 
             // In order to avoid making unnecisary calculations on each pixel.  
 
-            // x_min = -scaleFactor / zoom
-            // x_max =  scaleFactor / zoom
             BigDecimal xMin = -scaleFactor / zoom + Location.Real;
             BigDecimal xMax = scaleFactor / zoom + Location.Real;
 
-            // y_min = -2 / zoom
-            // y_max =  2 / zoom
-            BigDecimal yMin = -2 / zoom + Location.Imag;
-            BigDecimal yMax = 2 / zoom + Location.Imag;
+            BigDecimal yMin = 2 / zoom + Location.Imag;
+            BigDecimal yMax = -2 / zoom + Location.Imag;
 
             PointMapper.SetOutputSpace(xMin, xMax, yMin, yMax);
         }
