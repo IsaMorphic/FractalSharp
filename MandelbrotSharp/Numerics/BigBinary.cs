@@ -38,7 +38,7 @@ namespace MandelbrotSharp.Numerics
         /// Sets the maximum precision of division operations.
         /// If AlwaysTruncate is set to true all operations are affected.
         /// </summary>
-        public static int Precision = 996;
+        public static int Precision = 512;
 
         public BigInteger Mantissa { get; set; }
         public int Exponent { get; set; }
@@ -125,7 +125,7 @@ namespace MandelbrotSharp.Numerics
             var mantissa = (BigInteger)value;
             var exponent = 0;
             double scaleFactor = 1;
-            while (Math.Abs(value * scaleFactor - (double)mantissa) > 0)
+            while ((double)mantissa != value * scaleFactor)
             {
                 exponent -= 1;
                 scaleFactor *= 2;
@@ -139,7 +139,7 @@ namespace MandelbrotSharp.Numerics
             var mantissa = (BigInteger)value;
             var exponent = 0;
             decimal scaleFactor = 1;
-            while ((decimal)mantissa != value * scaleFactor)
+            while (Math.Abs(value * scaleFactor - (decimal)mantissa) > 0)
             {
                 exponent -= 1;
                 scaleFactor *= 2;
@@ -148,7 +148,7 @@ namespace MandelbrotSharp.Numerics
             return new BigBinary(mantissa, exponent);
         }
 
-        public static implicit operator BigBinary(BigDecimal value)
+        public static explicit operator BigBinary(BigDecimal value)
         {
             if (value.Exponent < 0)
             {
@@ -179,12 +179,18 @@ namespace MandelbrotSharp.Numerics
 
         public static explicit operator int(BigBinary value)
         {
-            return (int)(value.Mantissa << value.Exponent);
+            BigBinary truncated = value.Floor();
+            return (int)(truncated.Mantissa << truncated.Exponent);
         }
 
-        public static explicit operator uint(BigBinary value)
+        public static explicit operator BigInteger(BigBinary value)
         {
-            return (uint)(value.Mantissa << value.Exponent);
+            return value.Floor().Mantissa;
+        }
+
+        public static explicit operator BigBinary(BigInteger value)
+        {
+            return new BigBinary(value, 0);
         }
 
         public static explicit operator BigDecimal(BigBinary value)
@@ -339,7 +345,7 @@ namespace MandelbrotSharp.Numerics
 
         public static BigBinary Parse(string s)
         {
-            return BigDecimal.Parse(s);
+            return (BigBinary)BigDecimal.Parse(s);
         }
 
         public bool Equals(BigBinary other)

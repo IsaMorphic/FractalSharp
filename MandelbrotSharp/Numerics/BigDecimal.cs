@@ -66,7 +66,7 @@ namespace MandelbrotSharp.Numerics
             {
                 Exponent = 0;
             }
-            else if(Mantissa.IsEven)
+            else if (Mantissa.IsEven)
             {
                 BigInteger remainder = 0;
                 while (remainder == 0)
@@ -174,12 +174,19 @@ namespace MandelbrotSharp.Numerics
 
         public static explicit operator int(BigDecimal value)
         {
-            return (int)(value.Mantissa * BigInteger.Pow(10, value.Exponent));
+            BigDecimal truncated = value.Floor();
+            return (int)(truncated.Mantissa * BigInteger.Pow(10, truncated.Exponent));
         }
 
-        public static explicit operator uint(BigDecimal value)
+
+        public static explicit operator BigInteger(BigDecimal value)
         {
-            return (uint)(value.Mantissa * BigInteger.Pow(10, value.Exponent));
+            return value.Floor().Mantissa;
+        }
+
+        public static explicit operator BigDecimal(BigInteger value)
+        {
+            return new BigDecimal(value, 0);
         }
 
         #endregion
@@ -312,17 +319,30 @@ namespace MandelbrotSharp.Numerics
             return tmp * Math.Pow(basis, exponent);
         }
 
+        public static BigDecimal Abs(BigDecimal value)
+        {
+            return new BigDecimal(value.Mantissa * value.Mantissa.Sign, value.Exponent);
+        }
+
         #endregion
 
         public override string ToString()
         {
-            return string.Concat(Mantissa.ToString(), "E", Exponent);
+            string digits = (Mantissa * Mantissa.Sign).ToString();
+            string padded = "1";
+            if (-Exponent >= digits.Length)
+                padded = "0." + digits.PadLeft(digits.Length - (digits.Length + Exponent), '0');
+            else if (Exponent < 0)
+                padded = digits.Insert(digits.Length + Exponent, ".");
+            else
+                padded = digits.PadRight(digits.Length + Exponent, '0') + ".0";
+            return ((Mantissa.Sign < 0) ? "-" : "") + padded;
         }
 
-        public static BigDecimal Parse(string s) {
-            var tokens = s.Split('E');
-            var mantissa = BigInteger.Parse(tokens.First());
-            return new BigDecimal(mantissa, int.Parse(tokens.Last()));
+        public static BigDecimal Parse(string s)
+        {
+            var mantissa = BigInteger.Parse(s.Replace(".", ""));
+            return new BigDecimal(mantissa, s.IndexOf('.') - s.Length + 1);
         }
 
         public bool Equals(BigDecimal other)
