@@ -15,7 +15,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-using MandelbrotSharp.Imaging;
 using MandelbrotSharp.Numerics;
 using System.Numerics;
 
