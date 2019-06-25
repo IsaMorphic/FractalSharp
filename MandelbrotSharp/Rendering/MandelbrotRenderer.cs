@@ -245,12 +245,12 @@ namespace MandelbrotSharp.Rendering
 
                     if (pointData.Escaped)
                     {
-                        WritePixelToFrame(p, InnerColor);
+                        double colorIndex = PointColorer.GetIndexFromPointData(pointData);
+                        WritePixelToFrame(p, OuterColors[colorIndex]);
                     }
                     else
                     {
-                        double colorIndex = PointColorer.GetIndexFromPointData(pointData);
-                        WritePixelToFrame(p, OuterColors[colorIndex]);
+                        WritePixelToFrame(p, InnerColor);
                     }
                 });
             });

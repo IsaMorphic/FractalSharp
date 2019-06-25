@@ -40,7 +40,7 @@ namespace MandelbrotSharp.Algorithms
                 z = z * z + z0;
                 iter++;
             }
-            return new PointData(z, iter, iter >= Params.MaxIterations);
+            return new PointData((Complex)z, iter, iter < Params.MaxIterations);
         }
     }
 }

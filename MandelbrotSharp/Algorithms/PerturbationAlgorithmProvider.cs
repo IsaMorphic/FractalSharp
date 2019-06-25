@@ -27,6 +27,7 @@ namespace MandelbrotSharp.Algorithms
 {
     public class PerturbationAlgorithmProvider<T> : AlgorithmProvider<T> where T : struct
     {
+        Random Random;
         private List<Complex> X, TwoX, A, B, C;
         private List<Complex[]>[] ProbePoints;
         private Complex<T> newReferencePoint;
@@ -49,7 +50,7 @@ namespace MandelbrotSharp.Algorithms
             B = new List<Complex>();
             C = new List<Complex>();
             X = new List<Complex>();
-            TwoX = new List<Complex>();            
+            TwoX = new List<Complex>();
         }
 
         // Perturbation Theory Algorithm, 
@@ -57,6 +58,7 @@ namespace MandelbrotSharp.Algorithms
 
         protected override void OnParamsUpdated()
         {
+            Random = new Random();
             ProbePoints = new List<Complex[]>[NumProbePoints];
 
             A.Clear();
@@ -65,25 +67,17 @@ namespace MandelbrotSharp.Algorithms
             X.Clear();
             TwoX.Clear();
 
-            MostIterations = 0;
-
-            if (PreviousMaxIterations != Params.MaxIterations)
-            {
-                newReferencePoint = Params.Location.As<T>();
-            }
-
             referencePoint = newReferencePoint;
         }
 
         protected override void Initialize(CancellationToken token)
         {
-            Random random = new Random();
             for (int i = 0; i < ProbePoints.Length; i++)
             {
                 ProbePoints[i] = new List<Complex[]>();
-                BigDecimal real = (random.NextDouble() * 4 - 2) / Params.Magnification;
-                BigDecimal imag = (random.NextDouble() * 4 - 2) / Params.Magnification;
-                var point = new Complex<BigDecimal>(real, imag) + Params.Location;
+                BigDecimal real = (Random.NextDouble() * 4 - 2) / Params.Magnification;
+                BigDecimal imag = (Random.NextDouble() * 4 - 2) / Params.Magnification;
+                var point = (Complex)(new Complex<BigDecimal>(real, imag) + Params.Location);
                 ProbePoints[i].Add(new Complex[3] { point, point * point, point * point * point });
             }
 
@@ -92,6 +86,8 @@ namespace MandelbrotSharp.Algorithms
             C.Add(new Complex(0, 0));
 
             IterateReferencePoint(token);
+
+            MostIterations = X.Count - 1;
 
             if (ShouldUseSeriesApproximation)
                 ApproximateSeries();
@@ -113,8 +109,8 @@ namespace MandelbrotSharp.Algorithms
             {
                 token.ThrowIfCancellationRequested();
 
-                X.Add(xn);
-                TwoX.Add(xn * 2);
+                X.Add((Complex)xn);
+                TwoX.Add((Complex)(xn * 2));
 
                 if (xn.MagnitudeSqu > 4)
                     break;
@@ -190,7 +186,7 @@ namespace MandelbrotSharp.Algorithms
             // Initialize some variables...
             Complex zn;
 
-            Complex d0 = point - referencePoint;
+            Complex d0 = (Complex)(point - referencePoint);
             Complex dn = A[n] * d0 + B[n] * d0 * d0 + C[n] * d0 * d0 * d0;
 
             // Mandelbrot algorithm
@@ -210,13 +206,28 @@ namespace MandelbrotSharp.Algorithms
 
             } while (MagnitudeSquared(zn) < 256 && n < maxIterations);
 
+            var pointData = new PointData(zn, n, n < maxIterations);
+
+            // Only test a small percentage of points
+            if (Random.NextDouble() > .05)
+                return pointData;
+
+            // Iterate this small percentage a little further to find good references.  
+            Complex<T> y = (Complex<T>)zn;
+            while (y.MagnitudeSqu < 256 && n < Math.Min(MostIterations + 1, maxIterations * 1.2))
+            {
+                y = y * y + point;
+                n++;
+            }
+
+            // May the best point win.
             if (n > MostIterations)
             {
                 newReferencePoint = point;
                 MostIterations = n;
             }
 
-            return new PointData(zn, n, n >= maxIterations);
+            return pointData;
         }
     }
 }
