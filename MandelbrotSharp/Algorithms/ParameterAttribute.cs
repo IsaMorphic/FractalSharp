@@ -20,7 +20,7 @@ using System;
 namespace MandelbrotSharp.Algorithms
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-    class ParameterAttribute : System.Attribute
+    public class ParameterAttribute : System.Attribute
     {
         public object DefaultValue;
     }

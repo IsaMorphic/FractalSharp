@@ -17,7 +17,7 @@
  */
 using System.Numerics;
 
-namespace MandelbrotSharp.Imaging
+namespace MandelbrotSharp.Algorithms
 {
     public class PointData
     {
