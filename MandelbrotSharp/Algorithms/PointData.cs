@@ -15,17 +15,17 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-using System.Numerics;
+using MandelbrotSharp.Numerics;
 
 namespace MandelbrotSharp.Algorithms
 {
     public class PointData
     {
-        public Complex ZValue { get; private set; }
+        public Complex<double> ZValue { get; private set; }
         public int IterCount { get; private set; }
         public bool Escaped { get; private set; }
 
-        public PointData(Complex ZValue, int IterCount, bool Escaped)
+        public PointData(Complex<double> ZValue, int IterCount, bool Escaped)
         {
             this.ZValue = ZValue;
             this.IterCount = IterCount;

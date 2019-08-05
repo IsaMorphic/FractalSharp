@@ -16,7 +16,6 @@
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 using MandelbrotSharp.Numerics;
-using System.Numerics;
 
 namespace MandelbrotSharp.Algorithms
 {
@@ -39,7 +38,7 @@ namespace MandelbrotSharp.Algorithms
                 z = z * z + z0;
                 iter++;
             }
-            return new PointData((Complex)z, iter, iter < Params.MaxIterations);
+            return new PointData(z.As<double>(), iter, iter < Params.MaxIterations);
         }
     }
 }

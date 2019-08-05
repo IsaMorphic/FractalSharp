@@ -62,26 +62,6 @@ namespace MandelbrotSharp.Numerics
             return n.Value;
         }
 
-        public static explicit operator int(Number<T> n)
-        {
-            return n.As<int>();
-        }
-
-        public static explicit operator double(Number<T> n)
-        {
-            return n.As<double>();
-        }
-
-        public static explicit operator float(Number<T> n)
-        {
-            return n.As<float>();
-        }
-
-        public static explicit operator decimal(Number<T> n)
-        {
-            return n.As<decimal>();
-        }
-
         public static Number<T> operator +(Number<T> value)
         {
             return value;

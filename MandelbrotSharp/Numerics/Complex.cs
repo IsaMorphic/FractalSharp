@@ -16,7 +16,6 @@
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using System.Numerics;
 
 namespace MandelbrotSharp.Numerics
 {
@@ -62,17 +61,6 @@ namespace MandelbrotSharp.Numerics
         public static implicit operator Complex<T>(decimal n)
         {
             return new Complex<T>(n, 0);
-        }        
-
-        public static implicit operator Complex<T>(Complex z)
-        {
-            return new Complex<T>(z.Real, z.Imaginary);
-        }
-
-        public static explicit operator Complex(Complex<T> z)
-        {
-            Complex<double> complex = z.As<double>();
-            return new Complex(complex.Real, complex.Imag);
         }
 
         public static Complex<T> operator +(Complex<T> value)
