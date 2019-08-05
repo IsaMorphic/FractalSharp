@@ -33,7 +33,7 @@ namespace MandelbrotSharp.Rendering
             Frame = frame;
         }
 
-        public RgbaImage Frame;
+        public RgbaImage Frame { get; }
     }
 
     public class MandelbrotRenderer
@@ -44,14 +44,14 @@ namespace MandelbrotSharp.Rendering
 
         public TaskStatus? RenderStatus => RenderTask?.Status;
 
+        public int Width { get; private set; }
+        public int Height { get; private set; }
+
         protected int MaxIterations;
         protected BigDecimal Magnification;
         protected Complex<BigDecimal> Location;
 
-        protected int Width { get; private set; }
-        protected int Height { get; private set; }
-
-        protected BigDecimal aspectRatio { get; private set; }
+        protected BigDecimal AspectRatio { get; private set; }
 
         protected int ThreadCount { get; private set; }
 
@@ -97,7 +97,7 @@ namespace MandelbrotSharp.Rendering
             Width = width;
             Height = height;
 
-            aspectRatio = ((BigDecimal)Width / (BigDecimal)Height) * 2;
+            AspectRatio = (BigDecimal)Width / Height * 2;
 
             CurrentFrame = new RgbaImage(Width, Height);
         }
@@ -187,7 +187,7 @@ namespace MandelbrotSharp.Rendering
 
         protected void UpdatePointMapperOutputSpace()
         {
-            BigDecimal scaleFactor = aspectRatio;
+            BigDecimal scaleFactor = AspectRatio;
             BigDecimal zoom = Magnification;
             // Predefine minimum and maximum values of the plane, 
             // In order to avoid making unnecisary calculations on each pixel.  
