@@ -20,12 +20,6 @@ using System;
 
 namespace MandelbrotSharp.Numerics
 {
-    public interface INumber
-    {
-        object Value { get; set; }
-        Number<T> As<T>() where T : struct;
-    }
-
     public struct Number<T> : INumber, IComparable<Number<T>> where T : struct
     {
         public T Value;

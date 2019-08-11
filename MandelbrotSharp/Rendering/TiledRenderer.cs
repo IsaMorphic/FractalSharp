@@ -19,7 +19,7 @@ using MandelbrotSharp.Imaging;
 
 namespace MandelbrotSharp.Rendering
 {
-    public class TiledRenderer : MandelbrotRenderer
+    public class TiledRenderer : FractalRenderer
     {
         public TiledRenderer(int width, int height) : base(width, height)
         {
@@ -49,14 +49,14 @@ namespace MandelbrotSharp.Rendering
             base.OnFrameFinished(e);
         }
 
-        protected override IntPoint GetFrameFirstPixel()
+        protected override PointI GetFrameFirstPixel()
         {
-            return new IntPoint(CellX * CellWidth, CellY * CellHeight);
+            return new PointI(CellX * CellWidth, CellY * CellHeight);
         }
 
-        protected override IntPoint GetFrameLastPixel()
+        protected override PointI GetFrameLastPixel()
         {
-            return new IntPoint((CellX + 1) * CellWidth, (CellY + 1) * CellHeight);
+            return new PointI((CellX + 1) * CellWidth, (CellY + 1) * CellHeight);
         }
 
         protected override void Configure(RenderSettings settings) {

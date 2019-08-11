@@ -23,20 +23,19 @@ using System.Threading;
 
 namespace MandelbrotSharp.Algorithms
 {
-    public interface IAlgorithmProvider
+    public abstract class AlgorithmProvider<TNumber> where TNumber : struct
     {
-        void UpdateParams(AlgorithmParams Params);
-        void Initialize(object state);
-        PointData Run(INumber px, INumber py);
-    }
-    public abstract class AlgorithmProvider<T> : IAlgorithmProvider where T : struct
-    {
-        protected AlgorithmParams Params { get; private set; }
+        protected AlgorithmParams<TNumber> Params { get; }
 
-        void IAlgorithmProvider.UpdateParams(AlgorithmParams Params)
+        public abstract PointData Run(Complex<TNumber> point);
+
+        public AlgorithmProvider(AlgorithmParams<TNumber> @params)
         {
-            this.Params = Params;
+            Params = @params;
+
             Type t = GetType();
+            Type Operator = typeof(Operator);
+
             FieldInfo[] fields = t.GetFields();
             foreach (var field in fields)
             {
@@ -44,30 +43,12 @@ namespace MandelbrotSharp.Algorithms
                 if (attr != null)
                 {
                     object val = GetExtraParamValue(field.Name, attr.DefaultValue);
-                    Type Operator = typeof(Operator);
                     Type[] targs = new Type[] { val.GetType(), field.FieldType };
                     MethodInfo converter = Operator.GetMethod("Convert").MakeGenericMethod(targs);
                     field.SetValue(this, converter.Invoke(null, new object[] { val }));
                 }
             }
-            OnParamsUpdated();
         }
-
-        PointData IAlgorithmProvider.Run(INumber px, INumber py)
-        {
-            return Run(new Complex<T>(px.As<T>(), py.As<T>()));
-        }
-
-        void IAlgorithmProvider.Initialize(object state)
-        {
-            Initialize((CancellationToken)state);
-        }
-
-        protected abstract PointData Run(Complex<T> point);
-
-        protected virtual void Initialize(CancellationToken token) { }
-
-        protected virtual void OnParamsUpdated() { }
 
         private TOutput GetExtraParamValue<TOutput>(string name, TOutput def)
         {

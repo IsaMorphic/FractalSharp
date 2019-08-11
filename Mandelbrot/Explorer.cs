@@ -200,7 +200,7 @@ namespace Mandelbrot
 
         private void RenderPhoto()
         {
-            MandelbrotRenderer PhotoRenderer = new MandelbrotRenderer(1920, 1080);
+            FractalRenderer PhotoRenderer = new FractalRenderer(1920, 1080);
             PhotoRenderer.FrameFinished += PhotoRenderer_FrameEnd;
             RenderSettings PhotoSettings = new RenderSettings();
             PhotoSettings.Location = ExplorationSettings.Location;

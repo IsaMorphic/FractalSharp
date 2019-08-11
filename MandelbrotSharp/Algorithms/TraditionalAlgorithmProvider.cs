@@ -19,25 +19,30 @@ using MandelbrotSharp.Numerics;
 
 namespace MandelbrotSharp.Algorithms
 {
-    public class TraditionalAlgorithmProvider<T> : AlgorithmProvider<T> where T : struct
+    public class TraditionalAlgorithmProvider<TNumber> : AlgorithmProvider<TNumber> where TNumber : struct
     {
         [Parameter(DefaultValue = 4)]
-        public Number<T> BailoutValue;
+        public Number<TNumber> EscapeRadius;
 
-        protected override PointData Run(Complex<T> z0)
+        public TraditionalAlgorithmProvider(AlgorithmParams<TNumber> @params) : base(@params)
+        {
+        }
+
+        public override PointData Run(Complex<TNumber> z0)
         {
             // Initialize some variables..
-            Complex<T> z = 0;
+            Complex<TNumber> z = 0;
 
             // Initialize our iteration count.
             int iter = 0;
 
             // Mandelbrot algorithm
-            while (z.MagnitudeSqu < BailoutValue && iter < Params.MaxIterations)
+            while (z.MagnitudeSqu < EscapeRadius && iter < Params.MaxIterations)
             {
                 z = z * z + z0;
                 iter++;
             }
+
             return new PointData(z.As<double>(), iter, iter < Params.MaxIterations);
         }
     }

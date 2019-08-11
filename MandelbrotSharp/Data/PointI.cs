@@ -18,11 +18,11 @@
 
 namespace MandelbrotSharp.Imaging
 {
-    public struct IntPoint
+    public struct PointI
     {
         public int X;
         public int Y;
-        public IntPoint(int x, int y)
+        public PointI(int x, int y)
         {
             X = x;
             Y = y;

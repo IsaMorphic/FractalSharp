@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 
 namespace Mandelbrot.Movies
 {
-    class MandelbrotMovieRenderer : MandelbrotRenderer
+    class MandelbrotMovieRenderer : FractalRenderer
     {
         public MandelbrotMovieRenderer(int width, int height) : base(width, height)
         {

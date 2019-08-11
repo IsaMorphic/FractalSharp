@@ -16,6 +16,7 @@
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 using MandelbrotSharp.Algorithms;
+using MandelbrotSharp.Data;
 using MandelbrotSharp.Imaging;
 using MandelbrotSharp.Numerics;
 using System;
@@ -36,44 +37,28 @@ namespace MandelbrotSharp.Rendering
         public RgbaImage Frame { get; }
     }
 
-    public class MandelbrotRenderer
+    public class FractalRenderer<TNumber, TAlgorithm> where TNumber : struct where TAlgorithm : AlgorithmProvider<TNumber>
     {
         public event EventHandler FrameStarted;
         public event EventHandler RenderHalted;
         public event EventHandler<FrameEventArgs> FrameFinished;
 
-        public TaskStatus? RenderStatus => RenderTask?.Status;
-
         public int Width { get; private set; }
         public int Height { get; private set; }
 
-        protected int MaxIterations;
-        protected BigDecimal Magnification;
-        protected Complex<BigDecimal> Location;
+        public TaskStatus? RenderStatus => RenderTask?.Status;
 
-        protected BigDecimal AspectRatio { get; private set; }
+        protected RenderSettings<TNumber> Settings { get; private set; }
 
-        protected int ThreadCount { get; private set; }
-
-        protected IAlgorithmProvider AlgorithmProvider { get; private set; }
-        protected IPointMapper PointMapper { get; private set; }
-
+        protected AlgorithmProvider<TNumber> AlgorithmProvider { get; private set; }
+        protected PointMapper<int, TNumber> PointMapper { get; private set; }
         protected PointColorer PointColorer { get; private set; }
 
         protected RgbaImage CurrentFrame { get; private set; }
 
-        protected Gradient OuterColors { get; private set; }
-        protected RgbaValue InnerColor { get; private set; }
-
-        protected Type AlgorithmType { get; private set; }
-        protected Type ArithmeticType { get; private set; }
-        protected Type PointColorerType { get; private set; }
-
-        protected Dictionary<string, object> ExtraParams { get; private set; }
-
-        private CancellationTokenSource TokenSource;
-        private Task AlgorithmInitTask;
-        private Task RenderTask;
+        private CancellationTokenSource TokenSource { get; set; }
+        private Task AlgorithmInitTask { get; set; }
+        private Task RenderTask { get; set; }
 
         protected virtual void OnRenderHalted()
         {
@@ -92,82 +77,46 @@ namespace MandelbrotSharp.Rendering
 
         #region Initialization and Configuration Methods
 
-        public MandelbrotRenderer(int width, int height)
+        public FractalRenderer(int width, int height)
         {
             Width = width;
             Height = height;
 
-            AspectRatio = (BigDecimal)Width / Height * 2;
-
             CurrentFrame = new RgbaImage(Width, Height);
         }
 
-        public void Setup(RenderSettings settings)
+        public void Setup(RenderSettings<TNumber> settings)
         {
-            TokenSource = new CancellationTokenSource();
+            Settings = settings;
 
-            Location = settings.Location;
+            Number<TNumber> aspectRatio = Number<TNumber>.From(Width) / Height;
 
-            Magnification = settings.Magnification;
-            MaxIterations = settings.MaxIterations;
+            Number<TNumber> xMin = -aspectRatio * 2 / Settings.Magnification + Settings.Location.Real;
+            Number<TNumber> xMax = aspectRatio * 2 / Settings.Magnification + Settings.Location.Real;
 
-            ThreadCount = settings.ThreadCount;
+            Number<TNumber> yMin = 2 / Settings.Magnification + Settings.Location.Imag;
+            Number<TNumber> yMax = -2 / Settings.Magnification + Settings.Location.Imag;
 
-            AlgorithmType = settings.AlgorithmType;
-
-            ArithmeticType = settings.ArithmeticType;
-
-            PointColorerType = settings.PointColorerType;
-
-            OuterColors = settings.OuterColors;
-
-            InnerColor = settings.InnerColor;
-
-            PointColorer = (PointColorer)Activator.CreateInstance(PointColorerType);
-
-            ExtraParams = new Dictionary<string, object>(settings.ExtraParams);
-
-            var genericType = typeof(PointMapper<>).MakeGenericType(ArithmeticType);
-            PointMapper = (IPointMapper)Activator.CreateInstance(genericType);
-
-            PointMapper.SetInputSpace(0, Width, 0, Height);
-
-            genericType = AlgorithmType.MakeGenericType(ArithmeticType);
-            AlgorithmProvider = (IAlgorithmProvider)Activator.CreateInstance(genericType);
-            UpdateAlgorithmProvider();
-
-            Configure(settings);
+            PointMapper = new PointMapper<int, TNumber>(
+                new Rectangle<int>(0, Width, 0, Height), 
+                new Rectangle<TNumber>(xMin, xMax, yMin, yMax)
+                );
         }
 
-        protected virtual void Configure(RenderSettings settings) { }
-
-        protected void UpdateAlgorithmProvider()
-        {
-            AlgorithmProvider.UpdateParams(new AlgorithmParams
-            {
-                Magnification = Magnification,
-                Location = Location,
-                MaxIterations = MaxIterations,
-                ExtraParams = new Dictionary<string, object>(ExtraParams)
-            });
-            AlgorithmInitTask = Task.Factory.StartNew(
-                AlgorithmProvider.Initialize, 
-                TokenSource.Token, 
-                TokenSource.Token);
-        }
+        protected virtual void Configure(RenderSettings<TNumber> settings) { }
 
         #endregion
 
         #region Rendering Methods
 
-        protected virtual IntPoint GetFrameFirstPixel()
+        protected virtual PointI GetFrameFirstPixel()
         {
-            return new IntPoint(0, 0);
+            return new PointI(0, 0);
         }
 
-        protected virtual IntPoint GetFrameLastPixel()
+        protected virtual PointI GetFrameLastPixel()
         {
-            return new IntPoint(Width, Height);
+            return new PointI(Width, Height);
         }
 
         protected virtual bool ShouldSkipRow(int y)
@@ -175,36 +124,22 @@ namespace MandelbrotSharp.Rendering
             return false;
         }
 
-        protected virtual bool ShouldSkipPixel(IntPoint p)
+        protected virtual bool ShouldSkipPixel(PointI p)
         {
             return false;
         }
 
-        protected virtual void WritePixelToFrame(IntPoint p, RgbaValue color)
+        protected virtual void WritePixelToFrame(PointI p, RgbaValue color)
         {
             CurrentFrame.SetPixel(p.X, p.Y, color);
-        }
-
-        protected void UpdatePointMapperOutputSpace()
-        {
-            BigDecimal scaleFactor = AspectRatio;
-            BigDecimal zoom = Magnification;
-            // Predefine minimum and maximum values of the plane, 
-            // In order to avoid making unnecisary calculations on each pixel.  
-
-            BigDecimal xMin = -scaleFactor / zoom + Location.Real;
-            BigDecimal xMax = scaleFactor / zoom + Location.Real;
-
-            BigDecimal yMin = 2 / zoom + Location.Imag;
-            BigDecimal yMax = -2 / zoom + Location.Imag;
-
-            PointMapper.SetOutputSpace(xMin, xMax, yMin, yMax);
         }
 
         public Task StartRenderFrame()
         {
             if (RenderStatus == TaskStatus.Running)
                 throw new Exception("The running task has not yet completed.");
+
+            TokenSource = new CancellationTokenSource();
             RenderTask = Task.Factory.StartNew(RenderFrame, TokenSource.Token);
             return RenderTask.ContinueWith(RenderTaskFinished);
         }
@@ -216,41 +151,44 @@ namespace MandelbrotSharp.Rendering
             // Fire frame start event
             OnFrameStarted();
 
-            UpdatePointMapperOutputSpace();
-
+            // Get calculation region
             var firstPoint = GetFrameFirstPixel();
             var lastPoint = GetFrameLastPixel();
 
+            // Wait for algorithm provider to initialize
             AlgorithmInitTask.Wait();
 
             var options = new ParallelOptions
             {
-                MaxDegreeOfParallelism = ThreadCount,
+                MaxDegreeOfParallelism = Settings.ThreadCount,
                 CancellationToken = TokenSource.Token
             };
+
             Parallel.For(firstPoint.Y, lastPoint.Y, options, py =>
             {
                 if (ShouldSkipRow(py))
                     return;
+
                 var y0 = PointMapper.MapPointY(py);
+
                 Parallel.For(firstPoint.X, lastPoint.X, options, px =>
                 {
-                    var p = new IntPoint(px, py);
+                    var p = new PointI(px, py);
                     if (ShouldSkipPixel(p))
                         return;
 
                     var x0 = PointMapper.MapPointX(px);
 
-                    PointData pointData = AlgorithmProvider.Run(x0, y0);
+                    PointData pointData = AlgorithmProvider.Run(new Complex<TNumber>(x0, y0));
 
                     if (pointData.Escaped)
                     {
                         double colorIndex = PointColorer.GetIndexFromPointData(pointData);
-                        WritePixelToFrame(p, OuterColors[colorIndex]);
+                        WritePixelToFrame(p, Settings.OuterColors[colorIndex]);
                     }
                     else
                     {
-                        WritePixelToFrame(p, InnerColor);
+                        WritePixelToFrame(p, Settings.InnerColor);
                     }
                 });
             });
@@ -260,11 +198,12 @@ namespace MandelbrotSharp.Rendering
         {
             if (task != RenderTask)
                 throw new Exception("This is not the task you are looking for...");
+
             RenderTask.Dispose();
+            TokenSource.Dispose();
+
             if (RenderStatus == TaskStatus.Canceled)
             {
-                TokenSource.Dispose();
-                TokenSource = new CancellationTokenSource();
                 OnRenderHalted();
             }
             else

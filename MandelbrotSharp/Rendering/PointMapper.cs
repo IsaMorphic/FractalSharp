@@ -1,80 +1,39 @@
-﻿/*
- *  Copyright 2018-2019 Chosen Few Software
- *  This file is part of MandelbrotSharp.
- *
- *  MandelbrotSharp is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  MandelbrotSharp is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
- */
+﻿using MandelbrotSharp.Data;
 using MandelbrotSharp.Numerics;
 
 namespace MandelbrotSharp.Rendering
 {
-    public interface IPointMapper
+    public class PointMapper<TNumberIn, TNumberOut> where TNumberIn : struct where TNumberOut : struct
     {
-        void SetInputSpace(BigDecimal xMin, BigDecimal xMax, BigDecimal yMin, BigDecimal yMax);
-        void SetOutputSpace(BigDecimal xMin, BigDecimal xMax, BigDecimal yMin, BigDecimal yMax);
-        INumber MapPointX(double x);
-        INumber MapPointY(double y);
-    }
+        private Rectangle<TNumberIn> InputSpace { get; }
+        private Rectangle<TNumberOut> OutputSpace { get; }
 
-    public class PointMapper<T> : IPointMapper where T : struct
-    {
-        private Number<T> inXMin, inXMax, inYMin, inYMax;
-        private Number<T> outXMin, outXMax, outYMin, outYMax;
-
-        void IPointMapper.SetInputSpace(BigDecimal xMin, BigDecimal xMax, BigDecimal yMin, BigDecimal yMax)
+        public PointMapper(Rectangle<TNumberIn> regionIn, Rectangle<TNumberOut> regionOut)
         {
-            inXMin = Number<T>.From(xMin);
-            inXMax = Number<T>.From(xMax);
-            inYMin = Number<T>.From(yMin);
-            inYMax = Number<T>.From(yMax);
-        }
-        void IPointMapper.SetOutputSpace(BigDecimal xMin, BigDecimal xMax, BigDecimal yMin, BigDecimal yMax)
-        {
-            outXMin = Number<T>.From(xMin);
-            outXMax = Number<T>.From(xMax);
-            outYMin = Number<T>.From(yMin);
-            outYMax = Number<T>.From(yMax);
+            InputSpace = regionIn;
+            OutputSpace = regionOut;
         }
 
-        INumber IPointMapper.MapPointX(double x)
+        public Number<TNumberOut> MapPointX(Number<TNumberIn> value)
         {
-            return MapPointX(x);
+            return MapValue(value.As<TNumberOut>(), 
+                InputSpace.XMin.As<TNumberOut>(), InputSpace.XMax.As<TNumberOut>(), 
+                OutputSpace.XMin, OutputSpace.XMax);
         }
 
-        INumber IPointMapper.MapPointY(double y)
+        public Number<TNumberOut> MapPointY(Number<TNumberIn> value)
         {
-            return MapPointY(y);
+            return MapValue(value.As<TNumberOut>(),
+                InputSpace.YMin.As<TNumberOut>(), InputSpace.YMax.As<TNumberOut>(),
+                OutputSpace.YMin, OutputSpace.YMax);
         }
 
-        public static Number<T> MapValue(Number<T> OldValue, Number<T> OldMin, Number<T> OldMax, Number<T> NewMin, Number<T> NewMax)
+        private static Number<TNumber> MapValue<TNumber>(Number<TNumber> OldValue, Number<TNumber> OldMin, Number<TNumber> OldMax, Number<TNumber> NewMin, Number<TNumber> NewMax) where TNumber : struct
         {
-            Number<T> OldRange = OldMax - OldMin;
-            Number<T> NewRange = NewMax - NewMin;
-            Number<T> NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
+            Number<TNumber> OldRange = OldMax - OldMin;
+            Number<TNumber> NewRange = NewMax - NewMin;
+            Number<TNumber> NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
             return NewValue;
-        }
-
-        private Number<T> MapPointX(double x)
-        {
-            Number<T> real = MapValue(x, inXMin, inXMax, outXMin, outXMax);
-            return real;
-        }
-
-        private Number<T> MapPointY(double y)
-        {
-            Number<T> imag = MapValue(y, inYMin, inYMax, outYMin, outYMax);
-            return imag;
         }
     }
 }

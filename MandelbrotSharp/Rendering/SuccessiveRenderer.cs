@@ -16,7 +16,6 @@
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 using MandelbrotSharp.Imaging;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace MandelbrotSharp.Rendering
@@ -43,14 +42,14 @@ namespace MandelbrotSharp.Rendering
             return (py % ChunkSize != 0);
         }
 
-        protected override bool ShouldSkipPixel(IntPoint p)
+        protected override bool ShouldSkipPixel(PointI p)
         {
             var px = p.X;
             var py = p.Y;
             return (px % ChunkSize != 0 || py % ChunkSize != 0) || ((px / ChunkSize) % 2 == 0 && (py / ChunkSize) % 2 == 0 && MaxChunkSize != ChunkSize);
         }
 
-        protected override void WritePixelToFrame(IntPoint p, RgbaValue color)
+        protected override void WritePixelToFrame(PointI p, RgbaValue color)
         {
             for (var i = p.X; i < p.X + ChunkSize; i++)
             {
