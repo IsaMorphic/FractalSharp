@@ -22,15 +22,8 @@ namespace MandelbrotSharp.Algorithms
 {
     public class AlgorithmParams<TNumber> where TNumber : struct
     {
-        private int _maxIterations = 256;
-        private Number<TNumber> _magnification = 1;
-        private Complex<TNumber> _location;
-
-        private Dictionary<string, object> _extraParams = new Dictionary<string, object>();
-
-        public virtual Number<TNumber> Magnification { get => _magnification; set => _magnification = value; }
-        public virtual int MaxIterations { get => _maxIterations; set => _maxIterations = value; }
-        public virtual Dictionary<string, object> ExtraParams { get => _extraParams; set => _extraParams = value; }
-        public virtual Complex<TNumber> Location { get => _location; set => _location = value; }
+        public int MaxIterations { get; set; }
+        public Number<TNumber> Magnification { get; set; }
+        public Complex<TNumber> Location { get; set; }
     }
 }

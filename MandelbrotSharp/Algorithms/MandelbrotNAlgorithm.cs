@@ -19,15 +19,17 @@ using MandelbrotSharp.Numerics;
 
 namespace MandelbrotSharp.Algorithms
 {
-    public class TraditionalAlgorithmProvider<TNumber> : AlgorithmProvider<TNumber> where TNumber : struct
+    public class MandelbrotNParams<TNumber> : AlgorithmParams<TNumber>
+        where TNumber : struct
     {
-        [Parameter(DefaultValue = 4)]
-        public Number<TNumber> EscapeRadius;
+        public Number<TNumber> EscapeRadius { get; set; }
+    }
 
-        public TraditionalAlgorithmProvider(AlgorithmParams<TNumber> @params) : base(@params)
-        {
-        }
-
+    public class MandelbrotNAlgorithm<TNumber> 
+        : AlgorithmProvider<TNumber, MandelbrotNParams<TNumber>>, 
+          IAlgorithmProvider<TNumber> 
+        where TNumber : struct
+    {
         public override PointData Run(Complex<TNumber> z0)
         {
             // Initialize some variables..
@@ -37,7 +39,7 @@ namespace MandelbrotSharp.Algorithms
             int iter = 0;
 
             // Mandelbrot algorithm
-            while (z.MagnitudeSqu < EscapeRadius && iter < Params.MaxIterations)
+            while (z.MagnitudeSqu < Params.EscapeRadius && iter < Params.MaxIterations)
             {
                 z = z * z + z0;
                 iter++;

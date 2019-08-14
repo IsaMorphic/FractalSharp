@@ -16,46 +16,30 @@
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 using MandelbrotSharp.Numerics;
-using MiscUtil;
-using System;
-using System.Reflection;
 using System.Threading;
 
 namespace MandelbrotSharp.Algorithms
 {
-    public abstract class AlgorithmProvider<TNumber> where TNumber : struct
+    public interface IAlgorithmProvider<TNumber> where TNumber : struct
     {
-        protected AlgorithmParams<TNumber> Params { get; }
+        void Initialize(AlgorithmParams<TNumber> @params, CancellationToken token);
+        PointData Run(Complex<TNumber> point);
+    }
+
+    public abstract class AlgorithmProvider<TNumber, TParam> : IAlgorithmProvider<TNumber>
+        where TParam : AlgorithmParams<TNumber> 
+        where TNumber : struct
+    {
+        protected TParam Params { get; private set; }
+
+        public void Initialize(AlgorithmParams<TNumber> @params, CancellationToken token)
+        {
+            Params = @params as TParam;
+            Initialize(token);
+        }
 
         public abstract PointData Run(Complex<TNumber> point);
 
-        public AlgorithmProvider(AlgorithmParams<TNumber> @params)
-        {
-            Params = @params;
-
-            Type t = GetType();
-            Type Operator = typeof(Operator);
-
-            FieldInfo[] fields = t.GetFields();
-            foreach (var field in fields)
-            {
-                var attr = (ParameterAttribute)field.GetCustomAttribute(typeof(ParameterAttribute));
-                if (attr != null)
-                {
-                    object val = GetExtraParamValue(field.Name, attr.DefaultValue);
-                    Type[] targs = new Type[] { val.GetType(), field.FieldType };
-                    MethodInfo converter = Operator.GetMethod("Convert").MakeGenericMethod(targs);
-                    field.SetValue(this, converter.Invoke(null, new object[] { val }));
-                }
-            }
-        }
-
-        private TOutput GetExtraParamValue<TOutput>(string name, TOutput def)
-        {
-            if (Params.ExtraParams.TryGetValue(name, out object val))
-                return Operator.Convert<object, TOutput>(val);
-            else
-                return def;
-        }
+        protected virtual void Initialize(CancellationToken token) { }
     }
 }

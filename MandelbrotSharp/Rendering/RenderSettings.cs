@@ -25,26 +25,11 @@ namespace MandelbrotSharp.Rendering
 {
     public class RenderSettings<TNumber> where TNumber : struct
     {
-        private AlgorithmParams<TNumber> _params = new AlgorithmParams<TNumber>();
+        public int ThreadCount { get; set; }
 
-        private int _threadCount = Environment.ProcessorCount;
+        public Gradient OuterColors { get; set; }
+        public RgbaValue InnerColor { get; set; }
 
-        private Gradient _outerColors;
-        private RgbaValue _innerColor;
-
-        public virtual AlgorithmParams<TNumber> Params { get => _params; set => _params = value; }
-
-        public virtual int ThreadCount { get => _threadCount; set => _threadCount = value; }
-
-        public virtual Gradient OuterColors { get => _outerColors; set => _outerColors = value; }
-        public virtual RgbaValue InnerColor { get => _innerColor; set => _innerColor = value; }
-
-
-        public virtual int MaxIterations { get => _params.MaxIterations; set => _params.MaxIterations = value; }
-
-        public virtual Number<TNumber> Magnification { get => _params.Magnification; set => _params.Magnification = value; }
-        public virtual Complex<TNumber> Location { get => _params.Location; set => _params.Location = value; }
-
-        public virtual Dictionary<string, object> ExtraParams { get => _params.ExtraParams; set => _params.ExtraParams = value; }
+        public AlgorithmParams<TNumber> Params { get; set; }
     }
 }

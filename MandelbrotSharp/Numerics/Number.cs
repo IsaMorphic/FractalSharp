@@ -20,11 +20,9 @@ using System;
 
 namespace MandelbrotSharp.Numerics
 {
-    public struct Number<T> : INumber, IComparable<Number<T>> where T : struct
+    public struct Number<T> : IComparable<Number<T>> where T : struct
     {
         public T Value;
-
-        object INumber.Value { get => Value; set => Value = (T)value; }
 
         public Number(T v)
         {

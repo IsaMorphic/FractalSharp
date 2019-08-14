@@ -22,26 +22,28 @@ using System.Threading;
 
 namespace MandelbrotSharp.Algorithms
 {
-    public class PerturbationAlgorithmProvider<T> : AlgorithmProvider<T> where T : struct
+    public class MandelbrotPParams<TNumber> : AlgorithmParams<TNumber>
+        where TNumber : struct
+    {
+        public int NumProbePoints { get; set; }
+        public bool ShouldUseSeriesApproximation { get; set; }
+
+        public Complex<TNumber> Reference { get; set; }
+    }
+
+    public class MandelbrotPAlgorithm<TNumber> 
+        : AlgorithmProvider<TNumber, MandelbrotPParams<TNumber>>, 
+          IAlgorithmProvider<TNumber>
+        where TNumber : struct
     {
         private Random Random;
 
         private List<Complex<double>> X, TwoX, A, B, C;
         private List<Complex<double>[]>[] ProbePoints;
 
-        private Complex<T> referencePoint;
-
         private int SkippedIterations;
-        private int MostIterations;
-        private int PreviousMaxIterations;
 
-        [Parameter(DefaultValue = true)]
-        public bool ShouldUseSeriesApproximation;
-
-        [Parameter(DefaultValue = 20)]
-        public int NumProbePoints;
-
-        public PerturbationAlgorithmProvider(AlgorithmParams<T> @params) : base(@params)
+        protected override void Initialize(CancellationToken token)
         {
             // Initialize Lists
             A = new List<Complex<double>>();
@@ -51,16 +53,16 @@ namespace MandelbrotSharp.Algorithms
             TwoX = new List<Complex<double>>();
 
             Random = new Random();
-            ProbePoints = new List<Complex<double>[]>[NumProbePoints];
+            ProbePoints = new List<Complex<double>[]>[Params.NumProbePoints];
 
             for (int i = 0; i < ProbePoints.Length; i++)
             {
                 ProbePoints[i] = new List<Complex<double>[]>();
 
-                Number<T> real = (Random.NextDouble() * 4 - 2) / Params.Magnification;
-                Number<T> imag = (Random.NextDouble() * 4 - 2) / Params.Magnification;
+                Number<TNumber> real = (Random.NextDouble() * 4 - 2) / Params.Magnification;
+                Number<TNumber> imag = (Random.NextDouble() * 4 - 2) / Params.Magnification;
 
-                Complex<T> offset = new Complex<T>(real, imag);
+                Complex<TNumber> offset = new Complex<TNumber>(real, imag);
                 Complex<double> point = (offset + Params.Location).As<double>();
 
                 ProbePoints[i].Add(new Complex<double>[3] { point, point * point, point * point * point });
@@ -70,19 +72,15 @@ namespace MandelbrotSharp.Algorithms
             B.Add(new Complex<double>(0.0, 0.0));
             C.Add(new Complex<double>(0.0, 0.0));
 
-            IterateReferencePoint();
+            IterateReferencePoint(token);
 
-            MostIterations = X.Count - 1;
-
-            if (ShouldUseSeriesApproximation)
+            if (Params.ShouldUseSeriesApproximation)
                 ApproximateSeries();
-
-            PreviousMaxIterations = Params.MaxIterations;
         }
 
         public void IterateReferencePoint(CancellationToken token)
         {
-            Complex<T> x0, xn = x0 = referencePoint;
+            Complex<TNumber> x0, xn = x0 = Params.Reference;
 
             for (int i = 0; i < Params.MaxIterations; i++)
             {
@@ -135,11 +133,11 @@ namespace MandelbrotSharp.Algorithms
                 IterateC(n);
                 IterateProbePoints(n);
 
-                BigDecimal error = 0;
+                Number<TNumber> error = 0;
                 foreach (var P in ProbePoints)
                 {
                     Complex<double> approximation = A[n] * P[0][0] + B[n] * P[0][1] + C[n] * P[0][2];
-                    error += (approximation - P[n][0]).MagnitudeSqu.As<BigDecimal>();
+                    error += (approximation - P[n][0]).MagnitudeSqu.As<TNumber>();
                 }
                 error /= ProbePoints.Length;
                 if (error > 1 / Params.Magnification)
@@ -155,7 +153,7 @@ namespace MandelbrotSharp.Algorithms
 
         // Non-Traditional Mandelbrot algorithm, 
         // Iterates a point over its neighbors to approximate an iteration count.
-        protected override PointData Run(Complex<T> point)
+        public override PointData Run(Complex<TNumber> z0)
         {
             // Get max iterations.  
             int maxIterations = X.Count - 1;
@@ -166,7 +164,7 @@ namespace MandelbrotSharp.Algorithms
             // Initialize some variables...
             Complex<double> zn;
 
-            Complex<double> d0 = (point - referencePoint).As<double>();
+            Complex<double> d0 = (z0 - Params.Reference).As<double>();
             Complex<double> dn = A[n] * d0 + B[n] * d0 * d0 + C[n] * d0 * d0 * d0;
 
             // Mandelbrot algorithm
@@ -184,30 +182,9 @@ namespace MandelbrotSharp.Algorithms
 
                 n++;
 
-            } while (zn.MagnitudeSqu < 256 && n < maxIterations);
+            } while (zn.MagnitudeSqu < 4 && n < maxIterations);
 
-            var pointData = new PointData(zn, n, n < maxIterations);
-
-            // Only test a small percentage of points
-            if (Random.NextDouble() > .05)
-                return pointData;
-
-            // Iterate this small percentage a little further to find good references.  
-            Complex<T> y = zn.As<T>();
-            while (y.MagnitudeSqu < 256 && n < Math.Min(MostIterations + 1, maxIterations * 1.2))
-            {
-                y = y * y + point;
-                n++;
-            }
-
-            // May the best point win.
-            if (n > MostIterations)
-            {
-                newReferencePoint = point;
-                MostIterations = n;
-            }
-
-            return pointData;
+            return new PointData(zn, n, n < maxIterations);
         }
     }
 }

@@ -37,7 +37,9 @@ namespace MandelbrotSharp.Rendering
         public RgbaImage Frame { get; }
     }
 
-    public class FractalRenderer<TNumber, TAlgorithm> where TNumber : struct where TAlgorithm : AlgorithmProvider<TNumber>
+    public abstract class FractalRenderer<TNumber, TAlgorithm>
+        where TAlgorithm : IAlgorithmProvider<TNumber>, new()
+        where TNumber : struct 
     {
         public event EventHandler FrameStarted;
         public event EventHandler RenderHalted;
@@ -48,11 +50,12 @@ namespace MandelbrotSharp.Rendering
 
         public TaskStatus? RenderStatus => RenderTask?.Status;
 
-        protected RenderSettings<TNumber> Settings { get; private set; }
+        protected TAlgorithm AlgorithmProvider { get; private set; }
 
-        protected AlgorithmProvider<TNumber> AlgorithmProvider { get; private set; }
         protected PointMapper<int, TNumber> PointMapper { get; private set; }
         protected PointColorer PointColorer { get; private set; }
+
+        protected RenderSettings<TNumber> Settings { get; private set; }
 
         protected RgbaImage CurrentFrame { get; private set; }
 
@@ -89,50 +92,29 @@ namespace MandelbrotSharp.Rendering
         {
             Settings = settings;
 
-            Number<TNumber> aspectRatio = Number<TNumber>.From(Width) / Height;
-
-            Number<TNumber> xMin = -aspectRatio * 2 / Settings.Magnification + Settings.Location.Real;
-            Number<TNumber> xMax = aspectRatio * 2 / Settings.Magnification + Settings.Location.Real;
-
-            Number<TNumber> yMin = 2 / Settings.Magnification + Settings.Location.Imag;
-            Number<TNumber> yMax = -2 / Settings.Magnification + Settings.Location.Imag;
-
-            PointMapper = new PointMapper<int, TNumber>(
-                new Rectangle<int>(0, Width, 0, Height), 
-                new Rectangle<TNumber>(xMin, xMax, yMin, yMax)
-                );
+            AlgorithmProvider = new TAlgorithm();
+            PointColorer = new PointColorer();
+            InitPointMapper();
         }
 
-        protected virtual void Configure(RenderSettings<TNumber> settings) { }
+        private void InitPointMapper()
+        {
+            Number<TNumber> aspectRatio = Number<TNumber>.From(Width) / Height;
 
+            Number<TNumber> xMin = -aspectRatio * 2 / Settings.Params.Magnification + Settings.Params.Location.Real;
+            Number<TNumber> xMax = aspectRatio * 2 / Settings.Params.Magnification + Settings.Params.Location.Real;
+
+            Number<TNumber> yMin = 2 / Settings.Params.Magnification + Settings.Params.Location.Imag;
+            Number<TNumber> yMax = -2 / Settings.Params.Magnification + Settings.Params.Location.Imag;
+
+            PointMapper = new PointMapper<int, TNumber>(
+                new Rectangle<int>(0, Width, 0, Height),
+                new Rectangle<TNumber>(xMin, xMax, yMin, yMax)
+            );
+        }
         #endregion
 
         #region Rendering Methods
-
-        protected virtual PointI GetFrameFirstPixel()
-        {
-            return new PointI(0, 0);
-        }
-
-        protected virtual PointI GetFrameLastPixel()
-        {
-            return new PointI(Width, Height);
-        }
-
-        protected virtual bool ShouldSkipRow(int y)
-        {
-            return false;
-        }
-
-        protected virtual bool ShouldSkipPixel(PointI p)
-        {
-            return false;
-        }
-
-        protected virtual void WritePixelToFrame(PointI p, RgbaValue color)
-        {
-            CurrentFrame.SetPixel(p.X, p.Y, color);
-        }
 
         public Task StartRenderFrame()
         {
@@ -144,6 +126,12 @@ namespace MandelbrotSharp.Rendering
             return RenderTask.ContinueWith(RenderTaskFinished);
         }
 
+        private void InitAlgorithmProvider()
+        {
+            AlgorithmInitTask = Task.Run(() => AlgorithmProvider
+            .Initialize(Settings.Params, TokenSource.Token));
+        }
+
         // Frame rendering method, using generic typing to reduce the amount 
         // of code used and to make the algorithm easily applicable to other number types
         private void RenderFrame()
@@ -151,9 +139,9 @@ namespace MandelbrotSharp.Rendering
             // Fire frame start event
             OnFrameStarted();
 
-            // Get calculation region
-            var firstPoint = GetFrameFirstPixel();
-            var lastPoint = GetFrameLastPixel();
+            // Initialize the algorithm provider if it wasn't initialized already
+            if (AlgorithmInitTask == null)
+                InitAlgorithmProvider();
 
             // Wait for algorithm provider to initialize
             AlgorithmInitTask.Wait();
@@ -164,35 +152,10 @@ namespace MandelbrotSharp.Rendering
                 CancellationToken = TokenSource.Token
             };
 
-            Parallel.For(firstPoint.Y, lastPoint.Y, options, py =>
-            {
-                if (ShouldSkipRow(py))
-                    return;
-
-                var y0 = PointMapper.MapPointY(py);
-
-                Parallel.For(firstPoint.X, lastPoint.X, options, px =>
-                {
-                    var p = new PointI(px, py);
-                    if (ShouldSkipPixel(p))
-                        return;
-
-                    var x0 = PointMapper.MapPointX(px);
-
-                    PointData pointData = AlgorithmProvider.Run(new Complex<TNumber>(x0, y0));
-
-                    if (pointData.Escaped)
-                    {
-                        double colorIndex = PointColorer.GetIndexFromPointData(pointData);
-                        WritePixelToFrame(p, Settings.OuterColors[colorIndex]);
-                    }
-                    else
-                    {
-                        WritePixelToFrame(p, Settings.InnerColor);
-                    }
-                });
-            });
+            RenderFrame(options);
         }
+
+        protected abstract void RenderFrame(ParallelOptions options);
 
         private void RenderTaskFinished(Task task)
         {
