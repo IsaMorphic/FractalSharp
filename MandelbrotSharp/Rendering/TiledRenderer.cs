@@ -15,31 +15,39 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Imaging;
+using MandelbrotSharp.Numerics;
+using System.Threading.Tasks;
 
 namespace MandelbrotSharp.Rendering
 {
-    public class TiledRenderer : FractalRenderer
+    public class TiledRenderer<TNumber, TAlgorithm> : FractalRenderer<TNumber, TAlgorithm>
+        where TAlgorithm : IAlgorithmProvider<TNumber>, new()
+        where TNumber : struct
     {
         public TiledRenderer(int width, int height) : base(width, height)
         {
-            TotalCellsX = 1;
-            TotalCellsY = 1;
         }
-
-        protected int TotalCellsX { get; private set; }
-        protected int TotalCellsY { get; private set; }
 
         protected int CellX { get; private set; }
         protected int CellY { get; private set; }
 
-        protected int CellWidth => Width / TotalCellsX;
-        protected int CellHeight => Height / TotalCellsY;
+        protected int CellWidth => Width / Settings.TilesX;
+        protected int CellHeight => Height / Settings.TilesY;
+
+        protected new TiledRenderSettings<TNumber> Settings { get; private set; }
+
+        public void Setup(TiledRenderSettings<TNumber> settings)
+        {
+            Settings = settings;
+            base.Setup(Settings);
+        }
 
         protected virtual void UpdateCellCoords()
         {
-            if (CellX < TotalCellsX - 1) { CellX++; }
-            else if (CellY < TotalCellsY - 1) { CellX = 0; CellY++; }
+            if (CellX < Settings.TilesX - 1) { CellX++; }
+            else if (CellY < Settings.TilesY - 1) { CellX = 0; CellY++; }
             else { CellX = 0; CellY = 0; }
         }
 
@@ -49,20 +57,29 @@ namespace MandelbrotSharp.Rendering
             base.OnFrameFinished(e);
         }
 
-        protected override PointI GetFrameFirstPixel()
+        protected override void RenderFrame(ParallelOptions options)
         {
-            return new PointI(CellX * CellWidth, CellY * CellHeight);
-        }
+            Parallel.For(CellY * CellHeight, (CellY + 1) * CellHeight, options, py =>
+            {
+                var y0 = PointMapper.MapPointY(py);
 
-        protected override PointI GetFrameLastPixel()
-        {
-            return new PointI((CellX + 1) * CellWidth, (CellY + 1) * CellHeight);
-        }
+                Parallel.For(CellX * CellWidth, (CellX + 1) * CellWidth, options, px =>
+                {
+                    var x0 = PointMapper.MapPointX(px);
 
-        protected override void Configure(RenderSettings settings) {
-            var renderSettings = (TiledRenderSettings)settings;
-            TotalCellsX = renderSettings.TilesX;
-            TotalCellsY = renderSettings.TilesY;
+                    PointData pointData = AlgorithmProvider.Run(new Complex<TNumber>(x0, y0));
+
+                    if (pointData.Escaped)
+                    {
+                        double colorIndex = PointColorer.GetIndexFromPointData(pointData);
+                        CurrentFrame.SetPixel(px, py, Settings.OuterColors[colorIndex]);
+                    }
+                    else
+                    {
+                        CurrentFrame.SetPixel(px, py, Settings.InnerColor);
+                    }
+                });
+            });
         }
     }
 }

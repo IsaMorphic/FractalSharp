@@ -20,7 +20,6 @@ using MandelbrotSharp.Data;
 using MandelbrotSharp.Imaging;
 using MandelbrotSharp.Numerics;
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
