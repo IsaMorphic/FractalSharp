@@ -33,7 +33,7 @@ namespace MandelbrotSharp.Rendering
         private int MaxChunkSize => Settings.MaxChunkSizes[CellX + CellY * Settings.TilesX];
         private int ChunkSize => ChunkSizes[CellX + CellY * Settings.TilesY];
 
-        protected new SuccessiveRenderSettings<TNumber> Settings { get; private set; }
+        protected new SuccessiveRenderSettings Settings { get; private set; }
 
         public bool RenderedToCompletion => ChunkSizes.All(n => n == 1);
 
@@ -41,7 +41,7 @@ namespace MandelbrotSharp.Rendering
         {
         }
 
-        public void Setup(SuccessiveRenderSettings<TNumber> settings)
+        public void Setup(SuccessiveRenderSettings settings)
         {
             Settings = settings;
             ResetChunkSizes();

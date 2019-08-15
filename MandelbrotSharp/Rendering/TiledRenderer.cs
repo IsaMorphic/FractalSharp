@@ -36,9 +36,9 @@ namespace MandelbrotSharp.Rendering
         protected int CellWidth => Width / Settings.TilesX;
         protected int CellHeight => Height / Settings.TilesY;
 
-        protected new TiledRenderSettings<TNumber> Settings { get; private set; }
+        protected new TiledRenderSettings Settings { get; private set; }
 
-        public void Setup(TiledRenderSettings<TNumber> settings)
+        public void Setup(TiledRenderSettings settings)
         {
             Settings = settings;
             base.Setup(Settings);

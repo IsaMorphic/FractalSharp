@@ -18,8 +18,7 @@
 
 namespace MandelbrotSharp.Rendering
 {
-    public class TiledRenderSettings<TNumber> : RenderSettings<TNumber> 
-        where TNumber : struct
+    public class TiledRenderSettings : RenderSettings
     {
         public int TilesY { get; set; }
         public int TilesX { get; set; }

@@ -22,7 +22,7 @@ namespace MandelbrotSharp.Algorithms
 {
     public interface IAlgorithmProvider<TNumber> where TNumber : struct
     {
-        void Initialize(AlgorithmParams<TNumber> @params, CancellationToken token);
+        void Initialize(IAlgorithmParams @params, CancellationToken token);
         PointData Run(Complex<TNumber> point);
     }
 
@@ -32,7 +32,7 @@ namespace MandelbrotSharp.Algorithms
     {
         protected TParam Params { get; private set; }
 
-        public void Initialize(AlgorithmParams<TNumber> @params, CancellationToken token)
+        public void Initialize(IAlgorithmParams @params, CancellationToken token)
         {
             Params = @params as TParam;
             Initialize(token);

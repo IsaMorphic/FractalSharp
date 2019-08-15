@@ -17,19 +17,16 @@
  */
 using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Imaging;
-using MandelbrotSharp.Numerics;
-using System;
-using System.Collections.Generic;
 
 namespace MandelbrotSharp.Rendering
 {
-    public class RenderSettings<TNumber> where TNumber : struct
+    public class RenderSettings
     {
         public int ThreadCount { get; set; }
 
         public Gradient OuterColors { get; set; }
         public RgbaValue InnerColor { get; set; }
 
-        public AlgorithmParams<TNumber> Params { get; set; }
+        public IAlgorithmParams Params { get; set; }
     }
 }

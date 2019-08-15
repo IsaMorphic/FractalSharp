@@ -11,16 +11,18 @@ namespace MandelbrotSharp.SimpleTest
     class Program
     {
         static int Count = 0;
-        static SuccessiveRenderer<double, MandelbrotNAlgorithm<double>> Renderer =
-            new SuccessiveRenderer<double, MandelbrotNAlgorithm<double>>(4096, 4096);
+        static DefaultRenderer<double, MandelbrotNAlgorithm<double>> Renderer =
+            new DefaultRenderer<double, MandelbrotNAlgorithm<double>>(32768, 32768);
         static RgbaValue[] Colors = new RgbaValue[]
         {
+            new RgbaValue(0, 0, 0),
             new RgbaValue(0, 0, 255),
-            new RgbaValue(255, 0, 0)
+            new RgbaValue(0, 255, 0),
+            new RgbaValue(0, 0, 255)
         };
         static void Main(string[] args)
         {
-            Renderer.Setup(new SuccessiveRenderSettings<double>
+            Renderer.Setup(new RenderSettings
             {
                 InnerColor = new RgbaValue(0, 0, 0),
                 OuterColors = new Gradient(Colors, 256),
@@ -31,10 +33,7 @@ namespace MandelbrotSharp.SimpleTest
                     EscapeRadius = 4.0,
                     Magnification = 1.0,
                     Location = new Complex<double>(0.0, 0.0),
-                },
-                MaxChunkSizes = Enumerable.Repeat(16, 4).ToArray(),
-                TilesX = 2,
-                TilesY = 2
+                }
             });
 
             Renderer.FrameFinished += FrameFinished;
@@ -50,16 +49,6 @@ namespace MandelbrotSharp.SimpleTest
             bitmap.SetPixels((IntPtr)bits.AsMemory().Pin().Pointer);
             SKFileWStream stream = new SKFileWStream($"result_{Count}.png");
             SKPixmap.Encode(stream, bitmap, SKEncodedImageFormat.Png, 100);
-
-            if (Renderer.RenderedToCompletion)
-            {
-                Console.WriteLine("Render Completed.");
-            }
-            else
-            {
-                Renderer.StartRenderFrame();
-                Count++;
-            }
         }
     }
 }

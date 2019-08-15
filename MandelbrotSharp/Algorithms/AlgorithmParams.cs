@@ -20,10 +20,23 @@ using System.Collections.Generic;
 
 namespace MandelbrotSharp.Algorithms
 {
-    public class AlgorithmParams<TNumber> where TNumber : struct
+    public interface IAlgorithmParams
+    {
+        int MaxIterations { get; }
+        INumber Magnification { get; }
+        IComplex Location { get; }
+    }
+
+    public class AlgorithmParams<TNumber> : IAlgorithmParams where TNumber : struct
     {
         public int MaxIterations { get; set; }
         public Number<TNumber> Magnification { get; set; }
         public Complex<TNumber> Location { get; set; }
+
+        int IAlgorithmParams.MaxIterations => MaxIterations;
+
+        INumber IAlgorithmParams.Magnification => Magnification;
+
+        IComplex IAlgorithmParams.Location => Location;
     }
 }

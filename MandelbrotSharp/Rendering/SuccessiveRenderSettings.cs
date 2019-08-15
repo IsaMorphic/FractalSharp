@@ -18,8 +18,7 @@
 
 namespace MandelbrotSharp.Rendering
 {
-    public class SuccessiveRenderSettings<TNumber> : TiledRenderSettings<TNumber> 
-        where TNumber : struct
+    public class SuccessiveRenderSettings : TiledRenderSettings
     {
         public int[] MaxChunkSizes { get; set; }
     }

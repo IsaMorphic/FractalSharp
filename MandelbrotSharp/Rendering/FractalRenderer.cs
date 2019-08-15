@@ -49,14 +49,13 @@ namespace MandelbrotSharp.Rendering
 
         public TaskStatus? RenderStatus => RenderTask?.Status;
 
-        protected TAlgorithm AlgorithmProvider { get; private set; }
+        protected RgbaImage CurrentFrame { get; private set; }
 
+        protected TAlgorithm AlgorithmProvider { get; private set; }
         protected PointMapper<int, TNumber> PointMapper { get; private set; }
         protected PointColorer PointColorer { get; private set; }
 
-        protected RenderSettings<TNumber> Settings { get; private set; }
-
-        protected RgbaImage CurrentFrame { get; private set; }
+        protected RenderSettings Settings { get; private set; }
 
         private CancellationTokenSource TokenSource { get; set; }
         private Task AlgorithmInitTask { get; set; }
@@ -87,7 +86,7 @@ namespace MandelbrotSharp.Rendering
             CurrentFrame = new RgbaImage(Width, Height);
         }
 
-        public void Setup(RenderSettings<TNumber> settings)
+        public void Setup(RenderSettings settings)
         {
             Settings = settings;
 
@@ -98,13 +97,18 @@ namespace MandelbrotSharp.Rendering
 
         private void InitPointMapper()
         {
+
             Number<TNumber> aspectRatio = Number<TNumber>.From(Width) / Height;
 
-            Number<TNumber> xMin = -aspectRatio * 2 / Settings.Params.Magnification + Settings.Params.Location.Real;
-            Number<TNumber> xMax = aspectRatio * 2 / Settings.Params.Magnification + Settings.Params.Location.Real;
+            Number<TNumber> xMax = aspectRatio * 2 / 
+                Settings.Params.Magnification.As<TNumber>() + 
+                Settings.Params.Location.Real.As<TNumber>();
+            Number<TNumber> xMin = -xMax;
 
-            Number<TNumber> yMin = 2 / Settings.Params.Magnification + Settings.Params.Location.Imag;
-            Number<TNumber> yMax = -2 / Settings.Params.Magnification + Settings.Params.Location.Imag;
+            Number<TNumber> yMax = 
+                2 / Settings.Params.Magnification.As<TNumber>() + 
+                    Settings.Params.Location.Imag.As<TNumber>();
+            Number<TNumber> yMin = -yMax;
 
             PointMapper = new PointMapper<int, TNumber>(
                 new Rectangle<int>(0, Width, 0, Height),

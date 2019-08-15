@@ -17,14 +17,27 @@
  */
 
 
+using System;
+
 namespace MandelbrotSharp.Numerics
 {
-    public struct Complex<T> where T : struct
+    public interface IComplex
     {
-        public Number<T> Real;
-        public Number<T> Imag;
+        INumber Real { get; }
+        INumber Imag { get; }
+
+        Complex<TOut> As<TOut>() where TOut : struct;
+    }
+    public struct Complex<T> : IComplex, IEquatable<Complex<T>> where T : struct
+    {
+        public Number<T> Real { get; }
+        public Number<T> Imag { get; }
 
         public Number<T> MagnitudeSqu => Real * Real + Imag * Imag;
+
+        INumber IComplex.Real => Real;
+
+        INumber IComplex.Imag => Real;
 
         public Complex(T real, T imag)
         {
@@ -127,9 +140,14 @@ namespace MandelbrotSharp.Numerics
             return new Complex<TOut>(Real.As<TOut>(), Imag.As<TOut>());
         }
 
+        public bool Equals(Complex<T> other)
+        {
+            return this == other;
+        }
+
         public override bool Equals(object obj)
         {
-            return this == (Complex<T>)obj;
+            return Equals((Complex<T>)obj);
         }
 
         public override int GetHashCode()

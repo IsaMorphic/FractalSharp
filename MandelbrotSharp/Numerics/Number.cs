@@ -20,7 +20,12 @@ using System;
 
 namespace MandelbrotSharp.Numerics
 {
-    public struct Number<T> : IComparable<Number<T>> where T : struct
+    public interface INumber
+    {
+        Number<TOut> As<TOut>() where TOut : struct;
+    }
+
+    public struct Number<T> : INumber, IComparable<Number<T>>, IEquatable<Number<T>> where T : struct
     {
         public T Value;
 
@@ -139,19 +144,24 @@ namespace MandelbrotSharp.Numerics
             return this < other ? -1 : (this > other ? 1 : 0);
         }
 
-        public override string ToString()
+        public bool Equals(Number<T> other)
         {
-            return Value.ToString();
+            return this == other;
         }
 
         public override bool Equals(object obj)
         {
-            return this == (Number<T>)obj;
+            return Equals((Number<T>)obj);
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return 102981974 * Value.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return Value.ToString();
         }
     }
 }
