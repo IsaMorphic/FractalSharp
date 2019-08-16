@@ -37,7 +37,7 @@ namespace MandelbrotSharp.Numerics
 
         INumber IComplex.Real => Real;
 
-        INumber IComplex.Imag => Real;
+        INumber IComplex.Imag => Imag;
 
         public Complex(T real, T imag)
         {

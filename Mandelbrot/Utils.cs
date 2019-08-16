@@ -78,7 +78,7 @@ namespace Mandelbrot
         public void SetPixel(int x, int y, RgbaValue colour)
         {
             int index = x + (y * Width);
-            int col = (255 << 24) | (colour.red << 16) | (colour.green << 8) | (colour.blue);
+            int col = (255 << 24) | (colour.Red << 16) | (colour.Green << 8) | (colour.Blue);
 
             Bits[index] = col;
         }

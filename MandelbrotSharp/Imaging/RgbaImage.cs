@@ -1,4 +1,4 @@
-﻿/*
+/*
  *  Copyright 2018-2019 Chosen Few Software
  *  This file is part of MandelbrotSharp.
  *
@@ -21,7 +21,7 @@ namespace MandelbrotSharp.Imaging
 {
     public class RgbaImage
     {
-        public RgbaValue[] data;
+        public RgbaValue[] Data;
 
         public int Width { get; private set; }
         public int Height { get; private set; }
@@ -30,29 +30,29 @@ namespace MandelbrotSharp.Imaging
         {
             this.Width = Width;
             this.Height = Height;
-            data = new RgbaValue[Width*Height];
+            Data = new RgbaValue[Width*Height];
         }
 
         public RgbaImage(RgbaImage image) {
             Width = image.Width;
             Height = image.Height;
-            data = new RgbaValue[Width * Height];
-            Array.Copy(image.data, data, image.data.Length);
+            Data = new RgbaValue[Width * Height];
+            Array.Copy(image.Data, Data, Data.Length);
         }
 
         public void SetPixel(int x, int y, RgbaValue argb)
         {
-            data[x + y * Width] = argb;
+            Data[x + y * Width] = argb;
         }
 
         public RgbaValue GetPixel(int x, int y)
         {
-            return data[x + Width * y];
+            return Data[x + Width * y];
         }
 
         public int[] CopyDataAsBits()
         {
-            return Array.ConvertAll(data, argb => (int)argb);
+            return Array.ConvertAll(Data, argb => (int)argb);
         }
     }
 }

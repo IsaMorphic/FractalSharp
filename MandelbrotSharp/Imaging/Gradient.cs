@@ -16,6 +16,8 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+using System;
+
 namespace MandelbrotSharp.Imaging
 {
     public struct Gradient
@@ -35,10 +37,12 @@ namespace MandelbrotSharp.Imaging
             }
         }
 
-        public Gradient(RgbaValue[] KeyPoints, int Length)
+        public Gradient(RgbaValue[] keyPoints, int length)
         {
-            this.KeyPoints = (RgbaValue[])KeyPoints.Clone();
-            this.Length = Length;
+            Length = length;
+
+            KeyPoints = new RgbaValue[keyPoints.Length];
+            Array.Copy(keyPoints, KeyPoints, KeyPoints.Length);
         }
     }
 }

@@ -100,15 +100,15 @@ namespace MandelbrotSharp.Rendering
 
             Number<TNumber> aspectRatio = Number<TNumber>.From(Width) / Height;
 
-            Number<TNumber> xMax = aspectRatio * 2 / 
-                Settings.Params.Magnification.As<TNumber>() + 
-                Settings.Params.Location.Real.As<TNumber>();
-            Number<TNumber> xMin = -xMax;
+            Number<TNumber> xScale = aspectRatio * 2 / Settings.Params.Magnification.As<TNumber>();
 
-            Number<TNumber> yMax = 
-                2 / Settings.Params.Magnification.As<TNumber>() + 
-                    Settings.Params.Location.Imag.As<TNumber>();
-            Number<TNumber> yMin = -yMax;
+            Number<TNumber> xMin = -xScale + Settings.Params.Location.Real.As<TNumber>();
+            Number<TNumber> xMax = xScale + Settings.Params.Location.Real.As<TNumber>();
+
+            Number<TNumber> yScale = 2 / Settings.Params.Magnification.As<TNumber>();
+
+            Number<TNumber> yMin = yScale + Settings.Params.Location.Imag.As<TNumber>();
+            Number<TNumber> yMax = -yScale + Settings.Params.Location.Imag.As<TNumber>();
 
             PointMapper = new PointMapper<int, TNumber>(
                 new Rectangle<int>(0, Width, 0, Height),

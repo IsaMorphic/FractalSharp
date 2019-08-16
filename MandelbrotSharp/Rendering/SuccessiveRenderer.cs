@@ -50,7 +50,8 @@ namespace MandelbrotSharp.Rendering
 
         protected void ResetChunkSizes()
         {
-            ChunkSizes = (int[])Settings.MaxChunkSizes?.Clone();
+            ChunkSizes = new int[Settings.MaxChunkSizes.Length];
+            Array.Copy(Settings.MaxChunkSizes, ChunkSizes, ChunkSizes.Length);
         }
 
         protected override void RenderFrame(ParallelOptions options)

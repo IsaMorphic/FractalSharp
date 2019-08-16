@@ -1,16 +1,14 @@
-﻿using System;
+using System;
 using SkiaSharp;
 using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Imaging;
 using MandelbrotSharp.Numerics;
 using MandelbrotSharp.Rendering;
-using System.Linq;
 
 namespace MandelbrotSharp.SimpleTest
 {
     class Program
     {
-        static int Count = 0;
         static DefaultRenderer<double, MandelbrotNAlgorithm<double>> Renderer =
             new DefaultRenderer<double, MandelbrotNAlgorithm<double>>(32768, 32768);
         static RgbaValue[] Colors = new RgbaValue[]
@@ -20,6 +18,7 @@ namespace MandelbrotSharp.SimpleTest
             new RgbaValue(0, 255, 0),
             new RgbaValue(0, 0, 255)
         };
+
         static void Main(string[] args)
         {
             Renderer.Setup(new RenderSettings
@@ -37,18 +36,18 @@ namespace MandelbrotSharp.SimpleTest
             });
 
             Renderer.FrameFinished += FrameFinished;
-            Renderer.StartRenderFrame();
-            Console.WriteLine("Press any key to terminate...");
-            Console.ReadKey();
+            Console.WriteLine("Rendering image, please wait...");
+            Renderer.StartRenderFrame().Wait();
+            Console.WriteLine("Image rendered successfully!");
         }
 
         private static unsafe void FrameFinished(object sender, FrameEventArgs e)
         {
             SKBitmap bitmap = new SKBitmap(e.Frame.Width, e.Frame.Height, SKColorType.Bgra8888, SKAlphaType.Unpremul);
-            int[] bits = e.Frame.CopyDataAsBits();
-            bitmap.SetPixels((IntPtr)bits.AsMemory().Pin().Pointer);
-            SKFileWStream stream = new SKFileWStream($"result_{Count}.png");
+            bitmap.SetPixels((IntPtr)e.Frame.CopyDataAsBits().AsMemory().Pin().Pointer);
+            SKFileWStream stream = new SKFileWStream("result.png");
             SKPixmap.Encode(stream, bitmap, SKEncodedImageFormat.Png, 100);
+            stream.Dispose();
         }
     }
 }
