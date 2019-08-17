@@ -15,6 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+using MandelbrotSharp.Data;
 using MandelbrotSharp.Numerics;
 using System.Threading;
 
@@ -22,7 +23,9 @@ namespace MandelbrotSharp.Algorithms
 {
     public interface IAlgorithmProvider<TNumber> where TNumber : struct
     {
+        bool Initialized { get; }
         void Initialize(IAlgorithmParams @params, CancellationToken token);
+        Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio);
         PointData Run(Complex<TNumber> point);
     }
 
@@ -30,13 +33,18 @@ namespace MandelbrotSharp.Algorithms
         where TParam : AlgorithmParams<TNumber> 
         where TNumber : struct
     {
+        public bool Initialized { get; private set; }
+
         protected TParam Params { get; private set; }
 
         public void Initialize(IAlgorithmParams @params, CancellationToken token)
         {
             Params = @params as TParam;
             Initialize(token);
+            Initialized = true;
         }
+
+        public abstract Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio);
 
         public abstract PointData Run(Complex<TNumber> point);
 

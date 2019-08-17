@@ -36,9 +36,37 @@ namespace MandelbrotSharp.Rendering
         public RgbaImage Frame { get; }
     }
 
+    public class PointMapper<TNumberIn, TNumberOut> where TNumberIn : struct where TNumberOut : struct
+    {
+        public Rectangle<TNumberIn> InputSpace { get; set; }
+        public Rectangle<TNumberOut> OutputSpace { get; set; }
+
+        public Number<TNumberOut> MapPointX(Number<TNumberIn> value)
+        {
+            return MapValue(value.As<TNumberOut>(),
+                InputSpace.XMin.As<TNumberOut>(), InputSpace.XMax.As<TNumberOut>(),
+                OutputSpace.XMin, OutputSpace.XMax);
+        }
+
+        public Number<TNumberOut> MapPointY(Number<TNumberIn> value)
+        {
+            return MapValue(value.As<TNumberOut>(),
+                InputSpace.YMin.As<TNumberOut>(), InputSpace.YMax.As<TNumberOut>(),
+                OutputSpace.YMin, OutputSpace.YMax);
+        }
+
+        private static Number<TNumber> MapValue<TNumber>(Number<TNumber> OldValue, Number<TNumber> OldMin, Number<TNumber> OldMax, Number<TNumber> NewMin, Number<TNumber> NewMax) where TNumber : struct
+        {
+            Number<TNumber> OldRange = OldMax - OldMin;
+            Number<TNumber> NewRange = NewMax - NewMin;
+            Number<TNumber> NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
+            return NewValue;
+        }
+    }
+
     public abstract class FractalRenderer<TNumber, TAlgorithm>
-        where TAlgorithm : IAlgorithmProvider<TNumber>, new()
-        where TNumber : struct 
+            where TAlgorithm : IAlgorithmProvider<TNumber>, new()
+            where TNumber : struct
     {
         public event EventHandler FrameStarted;
         public event EventHandler RenderHalted;
@@ -51,14 +79,14 @@ namespace MandelbrotSharp.Rendering
 
         protected RgbaImage CurrentFrame { get; private set; }
 
-        protected TAlgorithm AlgorithmProvider { get; private set; }
         protected PointMapper<int, TNumber> PointMapper { get; private set; }
+
+        protected TAlgorithm AlgorithmProvider { get; private set; }
         protected PointColorer PointColorer { get; private set; }
 
         protected RenderSettings Settings { get; private set; }
 
         private CancellationTokenSource TokenSource { get; set; }
-        private Task AlgorithmInitTask { get; set; }
         private Task RenderTask { get; set; }
 
         protected virtual void OnRenderHalted()
@@ -84,6 +112,9 @@ namespace MandelbrotSharp.Rendering
             Height = height;
 
             CurrentFrame = new RgbaImage(Width, Height);
+
+            PointMapper = new PointMapper<int, TNumber>();
+            PointMapper.InputSpace = new Rectangle<int>(0, Width, 0, Height);
         }
 
         public void Setup(RenderSettings settings)
@@ -92,28 +123,6 @@ namespace MandelbrotSharp.Rendering
 
             AlgorithmProvider = new TAlgorithm();
             PointColorer = new PointColorer();
-            InitPointMapper();
-        }
-
-        private void InitPointMapper()
-        {
-
-            Number<TNumber> aspectRatio = Number<TNumber>.From(Width) / Height;
-
-            Number<TNumber> xScale = aspectRatio * 2 / Settings.Params.Magnification.As<TNumber>();
-
-            Number<TNumber> xMin = -xScale + Settings.Params.Location.Real.As<TNumber>();
-            Number<TNumber> xMax = xScale + Settings.Params.Location.Real.As<TNumber>();
-
-            Number<TNumber> yScale = 2 / Settings.Params.Magnification.As<TNumber>();
-
-            Number<TNumber> yMin = yScale + Settings.Params.Location.Imag.As<TNumber>();
-            Number<TNumber> yMax = -yScale + Settings.Params.Location.Imag.As<TNumber>();
-
-            PointMapper = new PointMapper<int, TNumber>(
-                new Rectangle<int>(0, Width, 0, Height),
-                new Rectangle<TNumber>(xMin, xMax, yMin, yMax)
-            );
         }
         #endregion
 
@@ -129,12 +138,6 @@ namespace MandelbrotSharp.Rendering
             return RenderTask.ContinueWith(RenderTaskFinished);
         }
 
-        private void InitAlgorithmProvider()
-        {
-            AlgorithmInitTask = Task.Run(() => AlgorithmProvider
-            .Initialize(Settings.Params, TokenSource.Token));
-        }
-
         // Frame rendering method, using generic typing to reduce the amount 
         // of code used and to make the algorithm easily applicable to other number types
         private void RenderFrame()
@@ -142,12 +145,13 @@ namespace MandelbrotSharp.Rendering
             // Fire frame start event
             OnFrameStarted();
 
-            // Initialize the algorithm provider if it wasn't initialized already
-            if (AlgorithmInitTask == null)
-                InitAlgorithmProvider();
+            if (!AlgorithmProvider.Initialized)
+            {
+                AlgorithmProvider.Initialize(Settings.Params, TokenSource.Token);
 
-            // Wait for algorithm provider to initialize
-            AlgorithmInitTask.Wait();
+                Number<TNumber> aspectRatio = Number<TNumber>.From(Width) / Height;
+                PointMapper.OutputSpace = AlgorithmProvider.GetOutputBounds(aspectRatio);
+            }
 
             var options = new ParallelOptions
             {

@@ -15,21 +15,37 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+using MandelbrotSharp.Data;
 using MandelbrotSharp.Numerics;
 
 namespace MandelbrotSharp.Algorithms
 {
-    public class MandelbrotNParams<TNumber> : AlgorithmParams<TNumber>
+    public class MandelbrotParams<TNumber> : AlgorithmParams<TNumber>
         where TNumber : struct
     {
         public Number<TNumber> EscapeRadius { get; set; }
     }
 
-    public class MandelbrotNAlgorithm<TNumber> 
-        : AlgorithmProvider<TNumber, MandelbrotNParams<TNumber>>, 
-          IAlgorithmProvider<TNumber> 
+    public class MandelbrotAlgorithm<TNumber>
+        : AlgorithmProvider<TNumber, MandelbrotParams<TNumber>>,
+          IAlgorithmProvider<TNumber>
         where TNumber : struct
     {
+        public override Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio)
+        {
+            Number<TNumber> xScale = aspectRatio * 2 / Params.Magnification;
+
+            Number<TNumber> xMin = -xScale + Params.Location.Real;
+            Number<TNumber> xMax = xScale + Params.Location.Real;
+
+            Number<TNumber> yScale = 2 / Params.Magnification;
+
+            Number<TNumber> yMin = yScale + Params.Location.Imag;
+            Number<TNumber> yMax = -yScale + Params.Location.Imag;
+
+            return new Rectangle<TNumber>(xMin, xMax, yMin, yMax);
+        }
+
         public override PointData Run(Complex<TNumber> z0)
         {
             // Initialize some variables..

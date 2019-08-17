@@ -15,6 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+using MandelbrotSharp.Data;
 using MandelbrotSharp.Numerics;
 using System;
 using System.Collections.Generic;
@@ -42,6 +43,51 @@ namespace MandelbrotSharp.Algorithms
         private List<Complex<double>[]>[] ProbePoints;
 
         private int SkippedIterations;
+
+        public override Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio)
+        {
+            Number<TNumber> xScale = aspectRatio * 2 / Params.Magnification;
+
+            Number<TNumber> xMin = -xScale + Params.Location.Real - Params.Reference.Real;
+            Number<TNumber> xMax = xScale + Params.Location.Real - Params.Reference.Real;
+
+            Number<TNumber> yScale = 2 / Params.Magnification;
+
+            Number<TNumber> yMin = yScale + Params.Location.Imag - Params.Reference.Imag;
+            Number<TNumber> yMax = -yScale + Params.Location.Imag - Params.Reference.Imag;
+
+            return new Rectangle<TNumber>(xMin, xMax, yMin, yMax);
+        }
+
+        // Non-Traditional Mandelbrot algorithm, 
+        // Iterates a point over its neighbors to approximate an iteration count.
+        public override PointData Run(Complex<TNumber> point)
+        {
+            // Get max iterations.  
+            int maxIterations = X.Count - 1;
+
+            // Initialize our iteration count.
+            int n = SkippedIterations;
+
+            // Initialize some variables...
+            Complex<double> zn;
+            Complex<double> d0 = point.As<double>();
+            Complex<double> dn = A[n] * d0 + B[n] * d0 * d0 + C[n] * d0 * d0 * d0;
+
+            // Mandelbrot algorithm
+            do
+            {
+
+                dn *= TwoX[n] + dn;
+                dn += d0;
+
+                zn = X[n] + dn;
+                n++;
+
+            } while (zn.MagnitudeSqu < 4 && n < maxIterations);
+
+            return new PointData(zn, n, n < maxIterations);
+        }
 
         protected override void Initialize(CancellationToken token)
         {
@@ -78,7 +124,7 @@ namespace MandelbrotSharp.Algorithms
                 ApproximateSeries();
         }
 
-        public void IterateReferencePoint(CancellationToken token)
+        private void IterateReferencePoint(CancellationToken token)
         {
             Complex<TNumber> x0, xn = x0 = Params.Reference;
 
@@ -149,42 +195,6 @@ namespace MandelbrotSharp.Algorithms
 
             SkippedIterations = X.Count - 1;
             return;
-        }
-
-        // Non-Traditional Mandelbrot algorithm, 
-        // Iterates a point over its neighbors to approximate an iteration count.
-        public override PointData Run(Complex<TNumber> z0)
-        {
-            // Get max iterations.  
-            int maxIterations = X.Count - 1;
-
-            // Initialize our iteration count.
-            int n = SkippedIterations;
-
-            // Initialize some variables...
-            Complex<double> zn;
-
-            Complex<double> d0 = (z0 - Params.Reference).As<double>();
-            Complex<double> dn = A[n] * d0 + B[n] * d0 * d0 + C[n] * d0 * d0 * d0;
-
-            // Mandelbrot algorithm
-            do
-            {
-
-                // dn *= 2*Xn + dn
-                dn *= TwoX[n] + dn;
-
-                // dn += d0
-                dn += d0;
-
-                // zn = x[iter] * 0.5 + dn
-                zn = X[n] + dn;
-
-                n++;
-
-            } while (zn.MagnitudeSqu < 4 && n < maxIterations);
-
-            return new PointData(zn, n, n < maxIterations);
         }
     }
 }

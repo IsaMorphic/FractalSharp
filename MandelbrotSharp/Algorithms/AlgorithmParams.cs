@@ -22,9 +22,9 @@ namespace MandelbrotSharp.Algorithms
 {
     public interface IAlgorithmParams
     {
-        int MaxIterations { get; }
-        INumber Magnification { get; }
-        IComplex Location { get; }
+        int MaxIterations { get; set; }
+        INumber Magnification { get; set; }
+        IComplex Location { get; set; }
     }
 
     public class AlgorithmParams<TNumber> : IAlgorithmParams where TNumber : struct
@@ -33,10 +33,10 @@ namespace MandelbrotSharp.Algorithms
         public Number<TNumber> Magnification { get; set; }
         public Complex<TNumber> Location { get; set; }
 
-        int IAlgorithmParams.MaxIterations => MaxIterations;
+        int IAlgorithmParams.MaxIterations { get => MaxIterations; set => MaxIterations = value; }
 
-        INumber IAlgorithmParams.Magnification => Magnification;
+        INumber IAlgorithmParams.Magnification { get => Magnification; set => Magnification = value.As<TNumber>(); }
 
-        IComplex IAlgorithmParams.Location => Location;
+        IComplex IAlgorithmParams.Location { get => Location; set => Location = value.As<TNumber>(); }
     }
 }
