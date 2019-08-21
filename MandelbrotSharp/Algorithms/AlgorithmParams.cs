@@ -25,9 +25,11 @@ namespace MandelbrotSharp.Algorithms
         int MaxIterations { get; set; }
         INumber Magnification { get; set; }
         IComplex Location { get; set; }
+
+        IAlgorithmParams Copy();
     }
 
-    public class AlgorithmParams<TNumber> : IAlgorithmParams where TNumber : struct
+    public abstract class AlgorithmParams<TNumber> : IAlgorithmParams where TNumber : struct
     {
         public int MaxIterations { get; set; }
         public Number<TNumber> Magnification { get; set; }
@@ -38,5 +40,7 @@ namespace MandelbrotSharp.Algorithms
         INumber IAlgorithmParams.Magnification { get => Magnification; set => Magnification = value.As<TNumber>(); }
 
         IComplex IAlgorithmParams.Location { get => Location; set => Location = value.As<TNumber>(); }
+
+        public abstract IAlgorithmParams Copy();
     }
 }

@@ -147,7 +147,7 @@ namespace MandelbrotSharp.Rendering
 
             if (!AlgorithmProvider.Initialized)
             {
-                AlgorithmProvider.Initialize(Settings.Params, TokenSource.Token);
+                AlgorithmProvider.Initialize(Settings.Params.Copy(), TokenSource.Token);
 
                 Number<TNumber> aspectRatio = Number<TNumber>.From(Width) / Height;
                 PointMapper.OutputSpace = AlgorithmProvider.GetOutputBounds(aspectRatio);

@@ -30,6 +30,20 @@ namespace MandelbrotSharp.Algorithms
         public bool ShouldUseSeriesApproximation { get; set; }
 
         public Complex<TNumber> Reference { get; set; }
+
+        public override IAlgorithmParams Copy()
+        {
+            return new MandelbrotPParams<TNumber>
+            {
+                MaxIterations = MaxIterations,
+                Magnification = Magnification,
+                Location = Location,
+
+                NumProbePoints = NumProbePoints,
+                ShouldUseSeriesApproximation = ShouldUseSeriesApproximation,
+                Reference = Reference
+            };
+        }
     }
 
     public class MandelbrotPAlgorithm<TNumber> 

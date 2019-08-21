@@ -24,6 +24,18 @@ namespace MandelbrotSharp.Algorithms
         where TNumber : struct
     {
         public Number<TNumber> EscapeRadius { get; set; }
+
+        public override IAlgorithmParams Copy()
+        {
+            return new MandelbrotParams<TNumber>
+            {
+                MaxIterations = MaxIterations,
+                Magnification = Magnification, 
+                Location = Location,
+
+                EscapeRadius = EscapeRadius
+            };
+        }
     }
 
     public class MandelbrotAlgorithm<TNumber>
