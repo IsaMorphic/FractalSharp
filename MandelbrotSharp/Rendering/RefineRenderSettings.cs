@@ -18,9 +18,8 @@
 
 namespace MandelbrotSharp.Rendering
 {
-    public class TiledRenderSettings : RenderSettings
+    public class RefineRenderSettings : CellRenderSettings
     {
-        public int TilesY { get; set; }
-        public int TilesX { get; set; }
+        public int[] MaxChunkSizes { get; set; }
     }
 }

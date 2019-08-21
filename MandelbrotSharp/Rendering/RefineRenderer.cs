@@ -24,24 +24,24 @@ using System.Threading.Tasks;
 
 namespace MandelbrotSharp.Rendering
 {
-    public class SuccessiveRenderer<TNumber, TAlgorithm> : TiledRenderer<TNumber, TAlgorithm>
+    public class RefineRenderer<TNumber, TAlgorithm> : CellRenderer<TNumber, TAlgorithm>
         where TAlgorithm : IAlgorithmProvider<TNumber>, new()
         where TNumber : struct
     {
-        private int[] ChunkSizes { get; set; }
+        private int[] ChunkSizes;
 
-        private int MaxChunkSize => Settings.MaxChunkSizes[CellX + CellY * Settings.TilesX];
-        private int ChunkSize => ChunkSizes[CellX + CellY * Settings.TilesY];
+        private int MaxChunkSize => Settings.MaxChunkSizes[CellX + CellY * Settings.CellsX];
+        private int ChunkSize => ChunkSizes[CellX + CellY * Settings.CellsX];
 
-        protected new SuccessiveRenderSettings Settings { get; private set; }
+        protected new RefineRenderSettings Settings { get; private set; }
 
-        public bool RenderedToCompletion => ChunkSizes.All(n => n == 1);
+        public bool RenderedToCompletion => ChunkSizes.All(n => n == 1) && RenderStatus == TaskStatus.RanToCompletion;
 
-        public SuccessiveRenderer(int width, int height) : base(width, height)
+        public RefineRenderer(int width, int height) : base(width, height)
         {
         }
 
-        public void Setup(SuccessiveRenderSettings settings)
+        public void Setup(RefineRenderSettings settings)
         {
             Settings = settings;
             ResetChunkSizes();
@@ -88,8 +88,7 @@ namespace MandelbrotSharp.Rendering
         protected override void OnFrameFinished(FrameEventArgs e)
         {
             if (!RenderedToCompletion)
-                ChunkSizes[CellX + CellY * Settings.TilesX] /= 2;
-
+                ChunkSizes[CellX + CellY * Settings.CellsX] /= 2;
             base.OnFrameFinished(e);
         }
 

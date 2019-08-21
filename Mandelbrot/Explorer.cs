@@ -34,7 +34,7 @@ namespace Mandelbrot
     {
         private const int RenderWidth = 1280;
         private const int RenderHeight = 720;
-        private List<SuccessiveRenderSettings> UndoBuffer = new List<SuccessiveRenderSettings>();
+        private List<RefineRenderSettings> UndoBuffer = new List<RefineRenderSettings>();
 
         private int UndoIndex = 0;
 
@@ -56,7 +56,7 @@ namespace Mandelbrot
         private float DeltaX;
         private float DeltaY;
 
-        private SuccessiveRenderSettings ExplorationSettings = new SuccessiveRenderSettings();
+        private RefineRenderSettings ExplorationSettings = new RefineRenderSettings();
         private ExplorationRenderer ExplorationRenderer = new ExplorationRenderer(RenderWidth, RenderHeight);
 
         private DirectBitmap CurrentFrame;
@@ -94,7 +94,7 @@ namespace Mandelbrot
                     ExplorationSettings = UndoBuffer[UndoIndex];
                     break;
                 case Keys.Down:
-                    UndoBuffer.Add(new SuccessiveRenderSettings
+                    UndoBuffer.Add(new RefineRenderSettings
                     {
                         AlgorithmType = ExplorationSettings.AlgorithmType,
                         ArithmeticType = ExplorationSettings.ArithmeticType,
@@ -162,8 +162,8 @@ namespace Mandelbrot
             DeltaX = Bounds.Width / (float)RenderWidth;
             DeltaY = Bounds.Height / (float)RenderHeight;
 
-            ExplorationSettings.TilesX = 4;
-            ExplorationSettings.TilesY = 3;
+            ExplorationSettings.CellsX = 4;
+            ExplorationSettings.CellsY = 3;
 
             ExplorationSettings.MaxChunkSizes = Enumerable.Repeat(8, 12).ToArray();
 
@@ -269,7 +269,7 @@ namespace Mandelbrot
 
         private void Explorer_MouseUp(object sender, MouseEventArgs e)
         {
-            UndoBuffer.Add(new SuccessiveRenderSettings
+            UndoBuffer.Add(new RefineRenderSettings
             {
                 AlgorithmType = ExplorationSettings.AlgorithmType,
                 ArithmeticType = ExplorationSettings.ArithmeticType,
@@ -339,7 +339,7 @@ namespace Mandelbrot
                 previousImage.Dispose();
         }
     }
-    class ExplorationRenderer : SuccessiveRenderer
+    class ExplorationRenderer : RefineRenderer
     {
         public ExplorationRenderer(int width, int height) : base(width, height)
         {

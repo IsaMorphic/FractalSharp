@@ -22,23 +22,23 @@ using System.Threading.Tasks;
 
 namespace MandelbrotSharp.Rendering
 {
-    public class TiledRenderer<TNumber, TAlgorithm> : FractalRenderer<TNumber, TAlgorithm>
+    public class CellRenderer<TNumber, TAlgorithm> : FractalRenderer<TNumber, TAlgorithm>
         where TAlgorithm : IAlgorithmProvider<TNumber>, new()
         where TNumber : struct
     {
-        public TiledRenderer(int width, int height) : base(width, height)
+        public CellRenderer(int width, int height) : base(width, height)
         {
         }
 
         protected int CellX { get; private set; }
         protected int CellY { get; private set; }
 
-        protected int CellWidth => Width / Settings.TilesX;
-        protected int CellHeight => Height / Settings.TilesY;
+        protected int CellWidth => Width / Settings.CellsX;
+        protected int CellHeight => Height / Settings.CellsY;
 
-        protected new TiledRenderSettings Settings { get; private set; }
+        protected new CellRenderSettings Settings { get; private set; }
 
-        public void Setup(TiledRenderSettings settings)
+        public void Setup(CellRenderSettings settings)
         {
             Settings = settings;
             base.Setup(Settings);
@@ -46,8 +46,8 @@ namespace MandelbrotSharp.Rendering
 
         protected virtual void UpdateCellCoords()
         {
-            if (CellX < Settings.TilesX - 1) { CellX++; }
-            else if (CellY < Settings.TilesY - 1) { CellX = 0; CellY++; }
+            if (CellX < Settings.CellsX - 1) { CellX++; }
+            else if (CellY < Settings.CellsY - 1) { CellX = 0; CellY++; }
             else { CellX = 0; CellY = 0; }
         }
 
