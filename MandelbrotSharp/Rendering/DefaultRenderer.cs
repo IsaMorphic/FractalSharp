@@ -30,11 +30,11 @@ namespace MandelbrotSharp.Rendering
                     if (pointData.Escaped)
                     {
                         double colorIndex = PointColorer.GetIndexFromPointData(pointData);
-                        CurrentFrame.SetPixel(px, py, OuterColors[colorIndex]);
+                        CurrentFrame.SetPixel(px, py, Settings.OuterColors[colorIndex]);
                     }
                     else
                     {
-                        CurrentFrame.SetPixel(px, py, InnerColor);
+                        CurrentFrame.SetPixel(px, py, Settings.InnerColor);
                     }
                 });
             });
