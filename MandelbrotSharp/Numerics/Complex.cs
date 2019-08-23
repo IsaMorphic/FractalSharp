@@ -147,12 +147,16 @@ namespace MandelbrotSharp.Numerics
 
         public override bool Equals(object obj)
         {
-            return Equals((Complex<T>)obj);
+            if (ReferenceEquals(obj, null))
+            {
+                return false;
+            }
+            return obj is Complex<T> && Equals((Complex<T>)obj);
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return 10280812 * (Real.GetHashCode() - Imag.GetHashCode());
         }
     }
 }

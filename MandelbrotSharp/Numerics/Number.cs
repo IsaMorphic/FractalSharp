@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright 2018-2019 Chosen Few Software
  *  This file is part of MandelbrotSharp.
  *
@@ -151,7 +151,11 @@ namespace MandelbrotSharp.Numerics
 
         public override bool Equals(object obj)
         {
-            return Equals((Number<T>)obj);
+            if (ReferenceEquals(obj, null))
+            {
+                return false;
+            }
+            return obj is Number<T> && Equals((Number<T>)obj);
         }
 
         public override int GetHashCode()
