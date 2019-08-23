@@ -6,7 +6,7 @@ using MandelbrotSharp.Numerics;
 using MandelbrotSharp.Rendering;
 using System.Buffers;
 
-namespace MandelbrotSharp.SimpleTest
+namespace MandelbrotSharp.ConsoleTest
 {
     class Program
     {
