@@ -98,7 +98,7 @@ namespace MandelbrotSharp.Algorithms
                 zn = X[n] + dn;
                 n++;
 
-            } while (zn.MagnitudeSqu < 4 && n < maxIterations);
+            } while (zn.MagnitudeSqu < 256 && n < maxIterations);
 
             return new PointData(zn, n, n < maxIterations);
         }
@@ -149,7 +149,7 @@ namespace MandelbrotSharp.Algorithms
                 X.Add(xn.As<double>());
                 TwoX.Add(xn.As<double>() * 2);
 
-                if (xn.MagnitudeSqu > 4)
+                if (xn.MagnitudeSqu > 256)
                     break;
 
                 xn = xn * xn + x0;
