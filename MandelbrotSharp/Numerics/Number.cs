@@ -1,4 +1,4 @@
-﻿/*
+/*
  *  Copyright 2018-2019 Chosen Few Software
  *  This file is part of MandelbrotSharp.
  *
@@ -27,7 +27,7 @@ namespace MandelbrotSharp.Numerics
 
     public struct Number<T> : INumber, IComparable<Number<T>>, IEquatable<Number<T>> where T : struct
     {
-        public T Value;
+        public T Value { get; }
 
         public Number(T v)
         {

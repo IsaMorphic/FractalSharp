@@ -22,8 +22,8 @@ namespace MandelbrotSharp.Imaging
 {
     public struct Gradient
     {
-        public RgbaValue[] KeyPoints;
-        public int Length;
+        public RgbaValue[] KeyPoints { get; }
+        public int Length { get; }
 
         public RgbaValue this[double index]
         {

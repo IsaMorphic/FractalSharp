@@ -19,10 +19,10 @@ namespace MandelbrotSharp.Imaging
 {
     public struct RgbaValue
     {
-        public byte Red;
-        public byte Green;
-        public byte Blue;
-        public byte Alpha;
+        public byte Red { get; }
+        public byte Green { get; }
+        public byte Blue { get; }
+        public byte Alpha { get; }
 
         public RgbaValue(byte r, byte g, byte b, byte a = 255)
         {
@@ -41,20 +41,17 @@ namespace MandelbrotSharp.Imaging
             return (rgba.Alpha << 24) | (rgba.Red << 16) | (rgba.Green << 8) | (rgba.Blue);
         }
 
-        public static RgbaValue LerpColors(RgbaValue a, RgbaValue b, double alpha) {
-            // Initialize final color
-            RgbaValue c = new RgbaValue();
-
+        public static RgbaValue LerpColors(RgbaValue a, RgbaValue b, double v) {
             // Linear interpolate red, green, and blue values.
-            c.Red = (byte)lerp(a.Red, b.Red, alpha);
+            byte red = (byte)lerp(a.Red, b.Red, v);
 
-            c.Green = (byte)lerp(a.Green, b.Green, alpha);
+            byte green = (byte)lerp(a.Green, b.Green, v);
 
-            c.Blue = (byte)lerp(a.Blue, b.Blue, alpha);
+            byte blue = (byte)lerp(a.Blue, b.Blue, v);
 
-            c.Alpha = (byte)lerp(a.Alpha, b.Alpha, alpha);
+            byte alpha = (byte)lerp(a.Alpha, b.Alpha, v);
 
-            return c;
+            return new RgbaValue(red, green, blue, alpha);
         }
     }
 }

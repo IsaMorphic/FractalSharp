@@ -23,8 +23,8 @@ namespace MandelbrotSharp.Imaging
     {
         public RgbaValue[] Data;
 
-        public int Width { get; private set; }
-        public int Height { get; private set; }
+        public int Width { get; }
+        public int Height { get; }
 
         public RgbaImage(int Width, int Height)
         {
