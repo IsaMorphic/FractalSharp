@@ -77,14 +77,19 @@ namespace MandelbrotSharp.Rendering
 
         public TaskStatus? RenderStatus => RenderTask?.Status;
 
+        protected int ThreadCount { get; private set; }
+
+        protected Gradient OuterColors { get; private set; }
+        protected RgbaValue InnerColor { get; private set; }
+
+        protected IAlgorithmParams Params { get; private set; }
+
         protected RgbaImage CurrentFrame { get; private set; }
 
         protected PointMapper<int, TNumber> PointMapper { get; private set; }
 
         protected TAlgorithm AlgorithmProvider { get; private set; }
         protected PointColorer PointColorer { get; private set; }
-
-        protected RenderSettings Settings { get; private set; }
 
         private CancellationTokenSource TokenSource { get; set; }
         private Task RenderTask { get; set; }
@@ -119,7 +124,12 @@ namespace MandelbrotSharp.Rendering
 
         public void Setup(RenderSettings settings)
         {
-            Settings = settings;
+            ThreadCount = settings.ThreadCount;
+
+            OuterColors = settings.OuterColors;
+            InnerColor = settings.InnerColor;
+
+            Params = settings.Params.Copy();
 
             AlgorithmProvider = new TAlgorithm();
             PointColorer = new PointColorer();
@@ -147,7 +157,7 @@ namespace MandelbrotSharp.Rendering
 
             if (!AlgorithmProvider.Initialized)
             {
-                AlgorithmProvider.Initialize(Settings.Params.Copy(), TokenSource.Token);
+                AlgorithmProvider.Initialize(Params.Copy(), TokenSource.Token);
 
                 Number<TNumber> aspectRatio = Number<TNumber>.From(Width) / Height;
                 PointMapper.OutputSpace = AlgorithmProvider.GetOutputBounds(aspectRatio);
@@ -155,7 +165,7 @@ namespace MandelbrotSharp.Rendering
 
             var options = new ParallelOptions
             {
-                MaxDegreeOfParallelism = Settings.ThreadCount,
+                MaxDegreeOfParallelism = ThreadCount,
                 CancellationToken = TokenSource.Token
             };
 
