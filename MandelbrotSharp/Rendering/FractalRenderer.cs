@@ -159,7 +159,7 @@ namespace MandelbrotSharp.Rendering
             {
                 AlgorithmProvider.Initialize(Params.Copy(), TokenSource.Token);
 
-                Number<TNumber> aspectRatio = Number<TNumber>.From(Width) / Height;
+                Number<TNumber> aspectRatio = Number<TNumber>.From(Width) / Number<TNumber>.From(Height);
                 PointMapper.OutputSpace = AlgorithmProvider.GetOutputBounds(aspectRatio);
             }
 

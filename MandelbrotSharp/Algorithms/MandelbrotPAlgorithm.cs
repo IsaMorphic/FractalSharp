@@ -51,6 +51,12 @@ namespace MandelbrotSharp.Algorithms
           IAlgorithmProvider<TNumber>
         where TNumber : struct
     {
+        private static readonly Number<TNumber> One = Number<TNumber>.From(1);
+        private static readonly Number<TNumber> Two = Number<TNumber>.From(2);
+
+        private static readonly Number<double> dOne = Number<double>.From(1);
+        private static readonly Number<double> dTwo = Number<double>.From(2);
+
         private Random Random;
 
         private List<Complex<double>> X, TwoX, A, B, C;
@@ -60,12 +66,12 @@ namespace MandelbrotSharp.Algorithms
 
         public override Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio)
         {
-            Number<TNumber> xScale = aspectRatio * 2 / Params.Magnification;
+            Number<TNumber> xScale = aspectRatio * Two / Params.Magnification;
 
             Number<TNumber> xMin = -xScale + Params.Location.Real - Params.Reference.Real;
             Number<TNumber> xMax = xScale + Params.Location.Real - Params.Reference.Real;
 
-            Number<TNumber> yScale = 2 / Params.Magnification;
+            Number<TNumber> yScale = Two / Params.Magnification;
 
             Number<TNumber> yMin = yScale + Params.Location.Imag - Params.Reference.Imag;
             Number<TNumber> yMax = -yScale + Params.Location.Imag - Params.Reference.Imag;
@@ -119,8 +125,8 @@ namespace MandelbrotSharp.Algorithms
             {
                 ProbePoints[i] = new List<Complex<double>[]>();
 
-                Number<TNumber> real = (Random.NextDouble() * 4 - 2) / Params.Magnification;
-                Number<TNumber> imag = (Random.NextDouble() * 4 - 2) / Params.Magnification;
+                Number<TNumber> real = Number<TNumber>.From(Random.NextDouble() * 4 - 2) / Params.Magnification;
+                Number<TNumber> imag = Number<TNumber>.From(Random.NextDouble() * 4 - 2) / Params.Magnification;
 
                 Complex<TNumber> offset = new Complex<TNumber>(real, imag);
                 Complex<double> point = (offset + Params.Location).As<double>();
@@ -146,10 +152,12 @@ namespace MandelbrotSharp.Algorithms
             {
                 token.ThrowIfCancellationRequested();
 
-                X.Add(xn.As<double>());
-                TwoX.Add(xn.As<double>() * 2);
+                Complex<double> smallXn = xn.As<double>();
 
-                if (xn.MagnitudeSqu > 256)
+                X.Add(smallXn);
+                TwoX.Add(smallXn + smallXn);
+
+                if (smallXn.MagnitudeSqu > 256)
                     break;
 
                 xn = xn * xn + x0;
@@ -171,17 +179,17 @@ namespace MandelbrotSharp.Algorithms
 
         private void IterateA(int n)
         {
-            A.Add(2 * X[n - 1] * A[n - 1] + 1);
+            A.Add(dTwo * X[n - 1] * A[n - 1] + dOne);
         }
 
         private void IterateB(int n)
         {
-            B.Add(2 * X[n - 1] * B[n - 1] + A[n - 1] * A[n - 1]);
+            B.Add(dTwo * X[n - 1] * B[n - 1] + A[n - 1] * A[n - 1]);
         }
 
         private void IterateC(int n)
         {
-            C.Add(2 * X[n - 1] * C[n - 1] + 2 * A[n - 1] * B[n - 1]);
+            C.Add(dTwo * X[n - 1] * C[n - 1] + dTwo * A[n - 1] * B[n - 1]);
         }
 
         private void ApproximateSeries()
@@ -193,14 +201,14 @@ namespace MandelbrotSharp.Algorithms
                 IterateC(n);
                 IterateProbePoints(n);
 
-                Number<TNumber> error = 0;
+                Number<TNumber> error = Number<TNumber>.Zero;
                 foreach (var P in ProbePoints)
                 {
                     Complex<double> approximation = A[n] * P[0][0] + B[n] * P[0][1] + C[n] * P[0][2];
                     error += (approximation - P[n][0]).MagnitudeSqu.As<TNumber>();
                 }
-                error /= ProbePoints.Length;
-                if (error > 1 / Params.Magnification)
+                error /= Number<TNumber>.From(ProbePoints.Length);
+                if (error > One / Params.Magnification)
                 {
                     SkippedIterations = Math.Max(n - 3, 0);
                     return;

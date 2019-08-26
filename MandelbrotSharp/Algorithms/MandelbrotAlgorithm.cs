@@ -43,14 +43,16 @@ namespace MandelbrotSharp.Algorithms
           IAlgorithmProvider<TNumber>
         where TNumber : struct
     {
+        private static readonly Number<TNumber> Two = Number<TNumber>.From(2);
+
         public override Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio)
         {
-            Number<TNumber> xScale = aspectRatio * 2 / Params.Magnification;
+            Number<TNumber> xScale = aspectRatio * Two / Params.Magnification;
 
             Number<TNumber> xMin = -xScale + Params.Location.Real;
             Number<TNumber> xMax = xScale + Params.Location.Real;
 
-            Number<TNumber> yScale = 2 / Params.Magnification;
+            Number<TNumber> yScale = Two / Params.Magnification;
 
             Number<TNumber> yMin = yScale + Params.Location.Imag;
             Number<TNumber> yMax = -yScale + Params.Location.Imag;
@@ -61,7 +63,7 @@ namespace MandelbrotSharp.Algorithms
         public override PointData Run(Complex<TNumber> z0)
         {
             // Initialize some variables..
-            Complex<TNumber> z = 0;
+            Complex<TNumber> z = Complex<TNumber>.Zero;
 
             // Initialize our iteration count.
             int iter = 0;

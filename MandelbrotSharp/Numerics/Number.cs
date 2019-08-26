@@ -27,6 +27,8 @@ namespace MandelbrotSharp.Numerics
 
     public struct Number<T> : INumber, IComparable<Number<T>>, IEquatable<Number<T>> where T : struct
     {
+        public static Number<T> Zero => default(Number<T>);
+
         public T Value { get; }
 
         public Number(T v)
@@ -34,29 +36,9 @@ namespace MandelbrotSharp.Numerics
             Value = v;
         }
 
-        public static implicit operator Number<T>(int n)
+        public static implicit operator Number<T>(T n)
         {
-            return From(n);
-        }
-
-        public static implicit operator Number<T>(double n)
-        {
-            return From(n);
-        }
-
-        public static implicit operator Number<T>(float n)
-        {
-            return From(n);
-        }
-
-        public static implicit operator Number<T>(decimal n)
-        {
-            return From(n);
-        }
-
-        public static implicit operator T(Number<T> n)
-        {
-            return n.Value;
+            return new Number<T>(n);
         }
 
         public static Number<T> operator +(Number<T> value)
@@ -66,17 +48,7 @@ namespace MandelbrotSharp.Numerics
 
         public static Number<T> operator -(Number<T> value)
         {
-            return value * -1;
-        }
-
-        public static Number<T> operator ++(Number<T> value)
-        {
-            return value + 1;
-        }
-
-        public static Number<T> operator --(Number<T> value)
-        {
-            return value - 1;
+            return new Number<T>(Operator.Negate(value.Value));
         }
 
         public static Number<T> operator +(Number<T> left, Number<T> right)
@@ -160,7 +132,7 @@ namespace MandelbrotSharp.Numerics
 
         public override int GetHashCode()
         {
-            return 102981974 * Value.GetHashCode();
+            return 102981974 + Value.GetHashCode();
         }
 
         public override string ToString()
