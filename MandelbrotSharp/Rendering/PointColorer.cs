@@ -18,7 +18,7 @@
 using MandelbrotSharp.Algorithms;
 using System;
 
-namespace MandelbrotSharp.Imaging
+namespace MandelbrotSharp.Rendering
 {
     public class PointColorer
     {

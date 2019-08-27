@@ -37,34 +37,6 @@ namespace MandelbrotSharp.Rendering
         public RgbaImage Frame { get; }
     }
 
-    public class PointMapper<TNumberIn, TNumberOut> where TNumberIn : struct where TNumberOut : struct
-    {
-        public Rectangle<TNumberIn> InputSpace { get; set; }
-        public Rectangle<TNumberOut> OutputSpace { get; set; }
-
-        public Number<TNumberOut> MapPointX(Number<TNumberIn> value)
-        {
-            return MapValue(value.As<TNumberOut>(),
-                InputSpace.XMin.As<TNumberOut>(), InputSpace.XMax.As<TNumberOut>(),
-                OutputSpace.XMin, OutputSpace.XMax);
-        }
-
-        public Number<TNumberOut> MapPointY(Number<TNumberIn> value)
-        {
-            return MapValue(value.As<TNumberOut>(),
-                InputSpace.YMin.As<TNumberOut>(), InputSpace.YMax.As<TNumberOut>(),
-                OutputSpace.YMin, OutputSpace.YMax);
-        }
-
-        private static Number<TNumber> MapValue<TNumber>(Number<TNumber> OldValue, Number<TNumber> OldMin, Number<TNumber> OldMax, Number<TNumber> NewMin, Number<TNumber> NewMax) where TNumber : struct
-        {
-            Number<TNumber> OldRange = OldMax - OldMin;
-            Number<TNumber> NewRange = NewMax - NewMin;
-            Number<TNumber> NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
-            return NewValue;
-        }
-    }
-
     public abstract class FractalRenderer<TNumber, TAlgorithm>
             where TAlgorithm : IAlgorithmProvider<TNumber>, new()
             where TNumber : struct
