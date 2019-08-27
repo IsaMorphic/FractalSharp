@@ -28,5 +28,16 @@ namespace MandelbrotSharp.Rendering
         public RgbaValue InnerColor { get; set; }
 
         public IAlgorithmParams Params { get; set; }
+
+        public virtual RenderSettings Copy()
+        {
+            return new RenderSettings
+            {
+                ThreadCount = ThreadCount,
+                OuterColors = OuterColors,
+                InnerColor = InnerColor,
+                Params = Params.Copy()
+            };
+        }
     }
 }

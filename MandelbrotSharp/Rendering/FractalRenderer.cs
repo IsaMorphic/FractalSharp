@@ -119,7 +119,7 @@ namespace MandelbrotSharp.Rendering
 
         public void Setup(RenderSettings settings)
         {
-            Settings = settings;
+            Settings = settings.Copy();
 
             AlgorithmProvider = new TAlgorithm();
             PointColorer = new PointColorer();
