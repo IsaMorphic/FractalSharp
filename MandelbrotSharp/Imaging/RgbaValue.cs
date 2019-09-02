@@ -1,4 +1,4 @@
-﻿/*
+/*
  *  Copyright 2018-2019 Chosen Few Software
  *  This file is part of MandelbrotSharp.
  *
@@ -19,17 +19,17 @@ namespace MandelbrotSharp.Imaging
 {
     public struct RgbaValue
     {
-        public byte red;
-        public byte green;
-        public byte blue;
-        public byte alpha;
+        public byte Red { get; }
+        public byte Green { get; }
+        public byte Blue { get; }
+        public byte Alpha { get; }
 
         public RgbaValue(byte r, byte g, byte b, byte a = 255)
         {
-            red = r;
-            green = g;
-            blue = b;
-            alpha = a;
+            Red = r;
+            Green = g;
+            Blue = b;
+            Alpha = a;
         }
 
         private static double lerp(double v0, double v1, double t)
@@ -38,23 +38,20 @@ namespace MandelbrotSharp.Imaging
         }
 
         public static explicit operator int(RgbaValue rgba) {
-            return (rgba.alpha << 24) | (rgba.red << 16) | (rgba.green << 8) | (rgba.blue);
+            return (rgba.Alpha << 24) | (rgba.Red << 16) | (rgba.Green << 8) | (rgba.Blue);
         }
 
-        public static RgbaValue LerpColors(RgbaValue a, RgbaValue b, double alpha) {
-            // Initialize final color
-            RgbaValue c = new RgbaValue();
-
+        public static RgbaValue LerpColors(RgbaValue a, RgbaValue b, double v) {
             // Linear interpolate red, green, and blue values.
-            c.red = (byte)lerp(a.red, b.red, alpha);
+            byte red = (byte)lerp(a.Red, b.Red, v);
 
-            c.green = (byte)lerp(a.green, b.green, alpha);
+            byte green = (byte)lerp(a.Green, b.Green, v);
 
-            c.blue = (byte)lerp(a.blue, b.blue, alpha);
+            byte blue = (byte)lerp(a.Blue, b.Blue, v);
 
-            c.alpha = (byte)lerp(a.alpha, b.alpha, alpha);
+            byte alpha = (byte)lerp(a.Alpha, b.Alpha, v);
 
-            return c;
+            return new RgbaValue(red, green, blue, alpha);
         }
     }
 }

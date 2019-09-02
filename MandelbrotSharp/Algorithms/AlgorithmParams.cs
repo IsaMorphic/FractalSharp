@@ -20,17 +20,27 @@ using System.Collections.Generic;
 
 namespace MandelbrotSharp.Algorithms
 {
-    public class AlgorithmParams
+    public interface IAlgorithmParams
     {
-        private int _maxIterations = 100;
-        private BigDecimal _magnification = 1;
-        private Complex<BigDecimal> _location;
+        int MaxIterations { get; set; }
+        INumber Magnification { get; set; }
+        IComplex Location { get; set; }
 
-        private Dictionary<string, object> _extraParams = new Dictionary<string, object>();
+        IAlgorithmParams Copy();
+    }
 
-        public virtual BigDecimal Magnification { get => _magnification; set => _magnification = value; }
-        public virtual int MaxIterations { get => _maxIterations; set => _maxIterations = value; }
-        public virtual Dictionary<string, object> ExtraParams { get => _extraParams; set => _extraParams = value; }
-        public virtual Complex<BigDecimal> Location { get => _location; set => _location = value; }
+    public abstract class AlgorithmParams<TNumber> : IAlgorithmParams where TNumber : struct
+    {
+        public int MaxIterations { get; set; }
+        public Number<TNumber> Magnification { get; set; }
+        public Complex<TNumber> Location { get; set; }
+
+        int IAlgorithmParams.MaxIterations { get => MaxIterations; set => MaxIterations = value; }
+
+        INumber IAlgorithmParams.Magnification { get => Magnification; set => Magnification = value.As<TNumber>(); }
+
+        IComplex IAlgorithmParams.Location { get => Location; set => Location = value.As<TNumber>(); }
+
+        public abstract IAlgorithmParams Copy();
     }
 }

@@ -22,44 +22,23 @@ namespace MandelbrotSharp.Numerics
 {
     public interface INumber
     {
-        object Value { get; set; }
-        Number<T> As<T>() where T : struct;
+        Number<TOut> As<TOut>() where TOut : struct;
     }
 
-    public struct Number<T> : INumber, IComparable<Number<T>> where T : struct
+    public struct Number<T> : INumber, IComparable<Number<T>>, IEquatable<Number<T>> where T : struct
     {
-        public T Value;
+        public static Number<T> Zero => default(Number<T>);
 
-        object INumber.Value { get => Value; set => Value = (T)value; }
+        public T Value { get; }
 
         public Number(T v)
         {
             Value = v;
         }
 
-        public static implicit operator Number<T>(int n)
+        public static implicit operator Number<T>(T n)
         {
-            return From(n);
-        }
-
-        public static implicit operator Number<T>(double n)
-        {
-            return From(n);
-        }
-
-        public static implicit operator Number<T>(float n)
-        {
-            return From(n);
-        }
-
-        public static implicit operator Number<T>(decimal n)
-        {
-            return From(n);
-        }
-
-        public static implicit operator T(Number<T> n)
-        {
-            return n.Value;
+            return new Number<T>(n);
         }
 
         public static Number<T> operator +(Number<T> value)
@@ -69,17 +48,7 @@ namespace MandelbrotSharp.Numerics
 
         public static Number<T> operator -(Number<T> value)
         {
-            return value * -1;
-        }
-
-        public static Number<T> operator ++(Number<T> value)
-        {
-            return value + 1;
-        }
-
-        public static Number<T> operator --(Number<T> value)
-        {
-            return value - 1;
+            return new Number<T>(Operator.Negate(value.Value));
         }
 
         public static Number<T> operator +(Number<T> left, Number<T> right)
@@ -147,19 +116,28 @@ namespace MandelbrotSharp.Numerics
             return this < other ? -1 : (this > other ? 1 : 0);
         }
 
-        public override string ToString()
+        public bool Equals(Number<T> other)
         {
-            return Value.ToString();
+            return this == other;
         }
 
         public override bool Equals(object obj)
         {
-            return this == (Number<T>)obj;
+            if (ReferenceEquals(obj, null))
+            {
+                return false;
+            }
+            return obj is Number<T> && Equals((Number<T>)obj);
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return 102981974 + Value.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return Value.ToString();
         }
     }
 }

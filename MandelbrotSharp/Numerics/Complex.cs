@@ -17,20 +17,29 @@
  */
 
 
+using System;
+
 namespace MandelbrotSharp.Numerics
 {
-    public struct Complex<T> where T : struct
+    public interface IComplex
     {
-        public Number<T> Real;
-        public Number<T> Imag;
+        INumber Real { get; }
+        INumber Imag { get; }
+
+        Complex<TOut> As<TOut>() where TOut : struct;
+    }
+    public struct Complex<T> : IComplex, IEquatable<Complex<T>> where T : struct
+    {
+        public static Complex<T> Zero => default(Complex<T>);
+
+        public Number<T> Real { get; }
+        public Number<T> Imag { get; }
 
         public Number<T> MagnitudeSqu => Real * Real + Imag * Imag;
 
-        public Complex(T real, T imag)
-        {
-            Real = new Number<T>(real);
-            Imag = new Number<T>(imag);
-        }
+        INumber IComplex.Real => Real;
+
+        INumber IComplex.Imag => Imag;
 
         public Complex(Number<T> real, Number<T> imag)
         {
@@ -40,27 +49,7 @@ namespace MandelbrotSharp.Numerics
 
         public static implicit operator Complex<T>(Number<T> n)
         {
-            return new Complex<T>(n, 0);
-        }
-
-        public static implicit operator Complex<T>(int n)
-        {
-            return new Complex<T>(n, 0);
-        }
-
-        public static implicit operator Complex<T>(double n)
-        {
-            return new Complex<T>(n, 0);
-        }
-
-        public static implicit operator Complex<T>(float n)
-        {
-            return new Complex<T>(n, 0);
-        }
-
-        public static implicit operator Complex<T>(decimal n)
-        {
-            return new Complex<T>(n, 0);
+            return new Complex<T>(n, default(Number<T>));
         }
 
         public static Complex<T> operator +(Complex<T> value)
@@ -70,17 +59,7 @@ namespace MandelbrotSharp.Numerics
 
         public static Complex<T> operator -(Complex<T> value)
         {
-            return value * -1;
-        }
-
-        public static Complex<T> operator ++(Complex<T> value)
-        {
-            return value + 1;
-        }
-
-        public static Complex<T> operator --(Complex<T> value)
-        {
-            return value - 1;
+            return new Complex<T>(-value.Real, -value.Imag);
         }
 
         public static Complex<T> operator +(Complex<T> left, Complex<T> right)
@@ -117,24 +96,28 @@ namespace MandelbrotSharp.Numerics
             return left.Real != right.Real || left.Imag != right.Imag;
         }
 
-        public static Complex<T> From<TOut>(Complex<TOut> n) where TOut : struct
-        {
-            return new Complex<T>(n.Real.As<T>(), n.Imag.As<T>());
-        }
-
         public Complex<TOut> As<TOut>() where TOut : struct
         {
             return new Complex<TOut>(Real.As<TOut>(), Imag.As<TOut>());
         }
 
+        public bool Equals(Complex<T> other)
+        {
+            return this == other;
+        }
+
         public override bool Equals(object obj)
         {
-            return this == (Complex<T>)obj;
+            if (ReferenceEquals(obj, null))
+            {
+                return false;
+            }
+            return obj is Complex<T> && Equals((Complex<T>)obj);
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return 10280812 + (Real.GetHashCode() - Imag.GetHashCode());
         }
     }
 }

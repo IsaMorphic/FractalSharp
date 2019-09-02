@@ -17,37 +17,27 @@
  */
 using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Imaging;
-using MandelbrotSharp.Numerics;
-using System;
-using System.Collections.Generic;
 
 namespace MandelbrotSharp.Rendering
 {
     public class RenderSettings
     {
-        private Type _algorithmType = typeof(TraditionalAlgorithmProvider<>);
-        private Type _arithmeticType = typeof(double);
-        private Type _pointColorerType = typeof(PointColorer);
+        public int ThreadCount { get; set; }
 
-        private AlgorithmParams _algorithmParams = new AlgorithmParams();
+        public Gradient OuterColors { get; set; }
+        public RgbaValue InnerColor { get; set; }
 
-        private int _threadCount = Environment.ProcessorCount;
+        public IAlgorithmParams Params { get; set; }
 
-        private Gradient _outerColors;
-        private RgbaValue _innerColor;
-
-        public virtual AlgorithmParams AlgorithmParams { get => _algorithmParams; set => _algorithmParams = value; }
-        public virtual Type AlgorithmType { get => _algorithmType; set => _algorithmType = value; }
-        public virtual Type ArithmeticType { get => _arithmeticType; set => _arithmeticType = value; }
-        public virtual Type PointColorerType { get => _pointColorerType; set => _pointColorerType = value; }
-        public virtual int ThreadCount { get => _threadCount; set => _threadCount = value; }
-
-        public virtual Gradient OuterColors { get => _outerColors; set => _outerColors = value; }
-        public virtual RgbaValue InnerColor { get => _innerColor; set => _innerColor = value; }
-
-        public virtual BigDecimal Magnification { get => _algorithmParams.Magnification; set => _algorithmParams.Magnification = value; }
-        public virtual Complex<BigDecimal> Location { get => _algorithmParams.Location; set => _algorithmParams.Location = value; }
-        public virtual int MaxIterations { get => _algorithmParams.MaxIterations; set => _algorithmParams.MaxIterations = value; }
-        public virtual Dictionary<string, object> ExtraParams { get => _algorithmParams.ExtraParams; set => _algorithmParams.ExtraParams = value; }
+        public virtual RenderSettings Copy()
+        {
+            return new RenderSettings
+            {
+                ThreadCount = ThreadCount,
+                OuterColors = OuterColors,
+                InnerColor = InnerColor,
+                Params = Params.Copy()
+            };
+        }
     }
 }

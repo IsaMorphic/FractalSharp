@@ -15,66 +15,39 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+using MandelbrotSharp.Data;
 using MandelbrotSharp.Numerics;
-using MiscUtil;
-using System;
-using System.Reflection;
 using System.Threading;
 
 namespace MandelbrotSharp.Algorithms
 {
-    public interface IAlgorithmProvider
+    public interface IAlgorithmProvider<TNumber> where TNumber : struct
     {
-        void UpdateParams(AlgorithmParams Params);
-        void Initialize(object state);
-        PointData Run(INumber px, INumber py);
+        bool Initialized { get; }
+        void Initialize(IAlgorithmParams @params, CancellationToken token);
+        Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio);
+        PointData Run(Complex<TNumber> point);
     }
-    public abstract class AlgorithmProvider<T> : IAlgorithmProvider where T : struct
+
+    public abstract class AlgorithmProvider<TNumber, TParam> : IAlgorithmProvider<TNumber>
+        where TParam : AlgorithmParams<TNumber> 
+        where TNumber : struct
     {
-        protected AlgorithmParams Params { get; private set; }
+        public bool Initialized { get; private set; }
 
-        void IAlgorithmProvider.UpdateParams(AlgorithmParams Params)
+        protected TParam Params { get; private set; }
+
+        public void Initialize(IAlgorithmParams @params, CancellationToken token)
         {
-            this.Params = Params;
-            Type t = GetType();
-            FieldInfo[] fields = t.GetFields();
-            foreach (var field in fields)
-            {
-                var attr = (ParameterAttribute)field.GetCustomAttribute(typeof(ParameterAttribute));
-                if (attr != null)
-                {
-                    object val = GetExtraParamValue(field.Name, attr.DefaultValue);
-                    Type Operator = typeof(Operator);
-                    Type[] targs = new Type[] { val.GetType(), field.FieldType };
-                    MethodInfo converter = Operator.GetMethod("Convert").MakeGenericMethod(targs);
-                    field.SetValue(this, converter.Invoke(null, new object[] { val }));
-                }
-            }
-            OnParamsUpdated();
+            Params = @params as TParam;
+            Initialize(token);
+            Initialized = true;
         }
 
-        PointData IAlgorithmProvider.Run(INumber px, INumber py)
-        {
-            return Run(new Complex<T>(px.As<T>(), py.As<T>()));
-        }
+        public abstract Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio);
 
-        void IAlgorithmProvider.Initialize(object state)
-        {
-            Initialize((CancellationToken)state);
-        }
-
-        protected abstract PointData Run(Complex<T> point);
+        public abstract PointData Run(Complex<TNumber> point);
 
         protected virtual void Initialize(CancellationToken token) { }
-
-        protected virtual void OnParamsUpdated() { }
-
-        private TOutput GetExtraParamValue<TOutput>(string name, TOutput def)
-        {
-            if (Params.ExtraParams.TryGetValue(name, out object val))
-                return Operator.Convert<object, TOutput>(val);
-            else
-                return def;
-        }
     }
 }
