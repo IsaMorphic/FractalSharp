@@ -36,6 +36,7 @@ namespace MandelbrotSharp.Numerics
         public Number<T> Imag { get; }
 
         public Number<T> MagnitudeSqu => Real * Real + Imag * Imag;
+        public Number<double> Phase => Math.Atan2(Imag.To<double>(), Real.To<double>());
 
         INumber IComplex.Real => Real;
 
@@ -47,9 +48,14 @@ namespace MandelbrotSharp.Numerics
             Imag = imag;
         }
 
+        public static implicit operator Complex<T>(T n)
+        {
+            return new Complex<T>(n, Number<T>.Zero);
+        }
+
         public static implicit operator Complex<T>(Number<T> n)
         {
-            return new Complex<T>(n, default(Number<T>));
+            return new Complex<T>(n, Number<T>.Zero);
         }
 
         public static Complex<T> operator +(Complex<T> value)

@@ -1,4 +1,4 @@
-﻿/*
+/*
  *  Copyright 2018-2019 Chosen Few Software
  *  This file is part of MandelbrotSharp.
  *
@@ -101,14 +101,19 @@ namespace MandelbrotSharp.Numerics
             return Operator.LessThanOrEqual(left.Value, right.Value);
         }
 
+        public Number<TOut> As<TOut>() where TOut : struct
+        {
+            return new Number<TOut>(Operator.Convert<T, TOut>(Value));
+        }
+
         public static Number<T> From<TOut>(TOut n) where TOut : struct
         {
             return new Number<TOut>(n).As<T>();
         }
 
-        public Number<TOut> As<TOut>() where TOut : struct
+        public TOut To<TOut>() where TOut : struct
         {
-            return new Number<TOut>(Operator.Convert<T, TOut>(Value));
+            return As<TOut>().Value;
         }
 
         public int CompareTo(Number<T> other)
