@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MandelbrotSharp.Algorithms\MandelbrotSharp.Algorithms.csproj" />
     <ProjectReference Include="..\MandelbrotSharp\MandelbrotSharp.csproj" />
   </ItemGroup>
 

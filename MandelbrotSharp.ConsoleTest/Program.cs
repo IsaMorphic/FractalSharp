@@ -10,8 +10,8 @@ namespace MandelbrotSharp.ConsoleTest
 {
     class Program
     {
-        private static DefaultRenderer<double, MandelbrotAlgorithm<double>> Renderer =
-            new DefaultRenderer<double, MandelbrotAlgorithm<double>>(32768, 32768);
+        private static DefaultRenderer<double, SquareMandelbrotAlgorithm<double>> Renderer =
+            new DefaultRenderer<double, SquareMandelbrotAlgorithm<double>>(1024, 1024);
         private static Gradient Colors = new Gradient(new RgbaValue[]
         {
             new RgbaValue(9, 1, 47),
@@ -41,12 +41,12 @@ namespace MandelbrotSharp.ConsoleTest
 
                 ThreadCount = Environment.ProcessorCount,
 
-                Params = new MandelbrotParams<double>
+                Params = new SquareMandelbrotParams<double>
                 {
                     MaxIterations = 256,
-                    EscapeRadius = 4.0,
                     Magnification = 1.0,
-                    Location = new Complex<double>(0.0, 0.0),
+                    Location = Complex<double>.Zero,
+                    EscapeRadius = 4.0,
                 }
             });
 

@@ -23,7 +23,7 @@ using System.Threading;
 
 namespace MandelbrotSharp.Algorithms
 {
-    public class MandelbrotPParams<TNumber> : AlgorithmParams<TNumber>
+    public class SquareMandelbrotPParams<TNumber> : AlgorithmParams<TNumber>
         where TNumber : struct
     {
         public int NumProbePoints { get; set; }
@@ -33,7 +33,7 @@ namespace MandelbrotSharp.Algorithms
 
         public override IAlgorithmParams Copy()
         {
-            return new MandelbrotPParams<TNumber>
+            return new SquareMandelbrotPParams<TNumber>
             {
                 MaxIterations = MaxIterations,
                 Magnification = Magnification,
@@ -46,8 +46,8 @@ namespace MandelbrotSharp.Algorithms
         }
     }
 
-    public class MandelbrotPAlgorithm<TNumber> 
-        : AlgorithmProvider<TNumber, MandelbrotPParams<TNumber>>, 
+    public class SquareMandelbrotPAlgorithm<TNumber> 
+        : AlgorithmProvider<TNumber, SquareMandelbrotPParams<TNumber>>, 
           IAlgorithmProvider<TNumber>
         where TNumber : struct
     {

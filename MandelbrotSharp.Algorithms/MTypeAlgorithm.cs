@@ -20,39 +20,27 @@ using MandelbrotSharp.Numerics;
 
 namespace MandelbrotSharp.Algorithms
 {
-    public class MandelbrotParams<TNumber> : AlgorithmParams<TNumber>
+    public abstract class MTypeParams<TNumber> 
+        : AlgorithmParams<TNumber>
         where TNumber : struct
     {
         public Number<TNumber> EscapeRadius { get; set; }
-
-        public override IAlgorithmParams Copy()
-        {
-            return new MandelbrotParams<TNumber>
-            {
-                MaxIterations = MaxIterations,
-                Magnification = Magnification, 
-                Location = Location,
-
-                EscapeRadius = EscapeRadius
-            };
-        }
     }
 
-    public class MandelbrotAlgorithm<TNumber>
-        : AlgorithmProvider<TNumber, MandelbrotParams<TNumber>>,
+    public abstract class MTypeAlgorithm<TNumber, TParam>
+        : AlgorithmProvider<TNumber, TParam>,
           IAlgorithmProvider<TNumber>
+        where TParam : MTypeParams<TNumber>
         where TNumber : struct
     {
-        private static readonly Number<TNumber> Two = Number<TNumber>.From(2);
-
         public override Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio)
         {
-            Number<TNumber> xScale = aspectRatio * Two / Params.Magnification;
+            Number<TNumber> xScale = aspectRatio * Number<TNumber>.From(2.0) / Params.Magnification;
 
             Number<TNumber> xMin = -xScale + Params.Location.Real;
             Number<TNumber> xMax = xScale + Params.Location.Real;
 
-            Number<TNumber> yScale = Two / Params.Magnification;
+            Number<TNumber> yScale = Number<TNumber>.From(2.0) / Params.Magnification;
 
             Number<TNumber> yMin = yScale + Params.Location.Imag;
             Number<TNumber> yMax = -yScale + Params.Location.Imag;
@@ -60,7 +48,7 @@ namespace MandelbrotSharp.Algorithms
             return new Rectangle<TNumber>(xMin, xMax, yMin, yMax);
         }
 
-        public override PointData Run(Complex<TNumber> z0)
+        public override PointData Run(Complex<TNumber> c)
         {
             // Initialize some variables..
             Complex<TNumber> z = Complex<TNumber>.Zero;
@@ -71,11 +59,13 @@ namespace MandelbrotSharp.Algorithms
             // Mandelbrot algorithm
             while (z.MagnitudeSqu < Params.EscapeRadius && iter < Params.MaxIterations)
             {
-                z = z * z + z0;
+                z = DoIteration(z, c);
                 iter++;
             }
 
             return new PointData(z.As<double>(), iter, iter < Params.MaxIterations);
         }
+
+        protected abstract Complex<TNumber> DoIteration(Complex<TNumber> z, Complex<TNumber> c);
     }
 }
