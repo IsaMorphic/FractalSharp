@@ -34,7 +34,6 @@ namespace MandelbrotSharp.Numerics
         public Number<T> Imag { get; }
 
         public Number<T> MagnitudeSqu => Real * Real + Imag * Imag;
-        public Number<double> Phase => Math.Atan2(Imag.To<double>(), Real.To<double>());
 
         INumber IComplex.Real => Real;
 

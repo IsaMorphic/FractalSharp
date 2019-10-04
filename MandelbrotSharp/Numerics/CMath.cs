@@ -21,6 +21,11 @@ namespace MandelbrotSharp.Numerics
 {
     public class CMath
     {
+        public static Number<double> Phase(Complex<double> z)
+        {
+            return Math.Atan2(z.Imag.Value, z.Real.Value);
+        }
+
         public static Complex<double> Exp(Complex<double> z)
         {
             Complex<double> r = Math.Exp(z.Real.Value);
@@ -31,7 +36,7 @@ namespace MandelbrotSharp.Numerics
         public static Complex<double> Log(Complex<double> z)
         {
             Number<double> log_r = Math.Log(z.MagnitudeSqu.Value) / 2.0;
-            return new Complex<double>(log_r, z.Phase);
+            return new Complex<double>(log_r, Phase(z));
         }
 
         public static Complex<double> Pow(Complex<double> z, Complex<double> n)
