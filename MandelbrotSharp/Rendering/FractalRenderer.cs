@@ -37,7 +37,22 @@ namespace MandelbrotSharp.Rendering
         public RgbaImage Frame { get; }
     }
 
-    public abstract class FractalRenderer<TNumber, TAlgorithm>
+    public interface IFractalRenderer
+    {
+        int Width { get; }
+        int Height { get; }
+        TaskStatus? RenderStatus { get; }
+
+        event EventHandler FrameStarted;
+        event EventHandler RenderHalted;
+        event EventHandler<FrameEventArgs> FrameFinished;
+
+        void Setup(RenderSettings settings);
+        Task StartRenderFrame();
+        void StopRenderFrame();
+    }
+
+    public abstract class FractalRenderer<TNumber, TAlgorithm> : IFractalRenderer
             where TAlgorithm : IAlgorithmProvider<TNumber>, new()
             where TNumber : struct
     {
