@@ -1,4 +1,4 @@
-﻿/*
+/*
  *  Copyright 2018-2019 Chosen Few Software
  *  This file is part of MandelbrotSharp.
  *
@@ -15,8 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-using MandelbrotSharp.Data;
+using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Numerics;
 
 namespace MandelbrotSharp.Rendering
