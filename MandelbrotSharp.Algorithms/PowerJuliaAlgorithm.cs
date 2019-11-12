@@ -19,29 +19,29 @@ using MandelbrotSharp.Numerics;
 
 namespace MandelbrotSharp.Algorithms
 {
-    public class GeneralMandelbrotParams : EscapeTimeParams<double>
+    public class PowerJuliaParams : EscapeTimeParams<double>
     {
-        public Complex<double> Power { get; set; }
+        public Complex<double> Coordinates { get; set; }
 
         public override IAlgorithmParams Copy()
         {
-            return new GeneralMandelbrotParams
+            return new PowerJuliaParams
             {
                 MaxIterations = MaxIterations,
                 Magnification = Magnification,
                 Location = Location,
 
                 EscapeRadius = EscapeRadius,
-                Power = Power
+                Coordinates = Coordinates
             };
         }
     }
-    public class GeneralMandelbrotAlgorithm :
-        EscapeTimeAlgorithm<double, GeneralMandelbrotParams>
+
+    public class PowerJuliaAlgorithm : JuliaAlgorithm<double, PowerJuliaParams>
     {
-        protected override Complex<double> DoIteration(Complex<double> z, Complex<double> c)
+        protected override Complex<double> DoIteration(Complex<double> z)
         {
-            return CMath.Pow(z, Params.Power) + c;
+            return CMath.Pow(Params.Coordinates, z);
         }
     }
 }
