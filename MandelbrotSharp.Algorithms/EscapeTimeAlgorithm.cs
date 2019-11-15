@@ -56,7 +56,7 @@ namespace MandelbrotSharp.Algorithms
             int iter = 0;
 
             // Mandelbrot algorithm
-            while (prevOutput.MagnitudeSqu < Params.EscapeRadius && iter < Params.MaxIterations)
+            while (Complex<TNumber>.AbsSqu(prevOutput) < Params.EscapeRadius && iter < Params.MaxIterations)
             {
                 prevOutput = DoIteration(prevOutput, mappedPoint);
                 iter++;

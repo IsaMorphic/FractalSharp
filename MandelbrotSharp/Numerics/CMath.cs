@@ -1,4 +1,4 @@
-﻿/*
+/*
  *  Copyright 2018-2019 Chosen Few Software
  *  This file is part of MandelbrotSharp.
  *
@@ -19,7 +19,7 @@ using System;
 
 namespace MandelbrotSharp.Numerics
 {
-    public class CMath
+    public static class CMath
     {
         public static Number<double> Phase(Complex<double> z)
         {
@@ -35,7 +35,7 @@ namespace MandelbrotSharp.Numerics
 
         public static Complex<double> Log(Complex<double> z)
         {
-            Number<double> log_r = Math.Log(z.MagnitudeSqu.Value) / 2.0;
+            Number<double> log_r = Math.Log(Complex<double>.AbsSqu(z).Value) / 2.0;
             return new Complex<double>(log_r, Phase(z));
         }
 

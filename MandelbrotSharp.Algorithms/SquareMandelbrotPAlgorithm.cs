@@ -50,12 +50,6 @@ namespace MandelbrotSharp.Algorithms
           IAlgorithmProvider<TNumber>
         where TNumber : struct
     {
-        private static readonly Number<TNumber> One = Number<TNumber>.From(1);
-        private static readonly Number<TNumber> Two = Number<TNumber>.From(2);
-
-        private static readonly Number<double> dOne = Number<double>.From(1);
-        private static readonly Number<double> dTwo = Number<double>.From(2);
-
         private Random Random;
 
         private List<Complex<double>> X, TwoX, A, B, C;
@@ -65,12 +59,12 @@ namespace MandelbrotSharp.Algorithms
 
         public override Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio)
         {
-            Number<TNumber> xScale = aspectRatio * Two / Params.Magnification;
+            Number<TNumber> xScale = aspectRatio * Number<TNumber>.Two / Params.Magnification;
 
             Number<TNumber> xMin = -xScale + Params.Location.Real - Params.Reference.Real;
             Number<TNumber> xMax = xScale + Params.Location.Real - Params.Reference.Real;
 
-            Number<TNumber> yScale = Two / Params.Magnification;
+            Number<TNumber> yScale = Number<TNumber>.Two / Params.Magnification;
 
             Number<TNumber> yMin = yScale + Params.Location.Imag - Params.Reference.Imag;
             Number<TNumber> yMax = -yScale + Params.Location.Imag - Params.Reference.Imag;
@@ -103,7 +97,7 @@ namespace MandelbrotSharp.Algorithms
                 zn = X[n] + dn;
                 n++;
 
-            } while (zn.MagnitudeSqu < 256 && n < maxIterations);
+            } while (Complex<double>.AbsSqu(zn) < 256 && n < maxIterations);
 
             return new PointData(zn, n, n < maxIterations);
         }
@@ -156,7 +150,7 @@ namespace MandelbrotSharp.Algorithms
                 X.Add(smallXn);
                 TwoX.Add(smallXn + smallXn);
 
-                if (smallXn.MagnitudeSqu > 256)
+                if (Complex<double>.AbsSqu(smallXn) > 256)
                     break;
 
                 xn = xn * xn + x0;
@@ -178,17 +172,17 @@ namespace MandelbrotSharp.Algorithms
 
         private void IterateA(int n)
         {
-            A.Add(dTwo * X[n - 1] * A[n - 1] + dOne);
+            A.Add(2.0 * X[n - 1] * A[n - 1] + 1.0);
         }
 
         private void IterateB(int n)
         {
-            B.Add(dTwo * X[n - 1] * B[n - 1] + A[n - 1] * A[n - 1]);
+            B.Add(2.0 * X[n - 1] * B[n - 1] + A[n - 1] * A[n - 1]);
         }
 
         private void IterateC(int n)
         {
-            C.Add(dTwo * X[n - 1] * C[n - 1] + dTwo * A[n - 1] * B[n - 1]);
+            C.Add(2.0 * X[n - 1] * C[n - 1] + 2.0 * A[n - 1] * B[n - 1]);
         }
 
         private void ApproximateSeries()
@@ -204,10 +198,10 @@ namespace MandelbrotSharp.Algorithms
                 foreach (var P in ProbePoints)
                 {
                     Complex<double> approximation = A[n] * P[0][0] + B[n] * P[0][1] + C[n] * P[0][2];
-                    error += (approximation - P[n][0]).MagnitudeSqu.As<TNumber>();
+                    error += Complex<double>.AbsSqu(approximation - P[n][0]).As<TNumber>();
                 }
                 error /= Number<TNumber>.From(ProbePoints.Length);
-                if (error > One / Params.Magnification)
+                if (error > Number<TNumber>.One / Params.Magnification)
                 {
                     SkippedIterations = Math.Max(n - 3, 0);
                     return;

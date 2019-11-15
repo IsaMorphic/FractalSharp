@@ -25,7 +25,7 @@ namespace MandelbrotSharp.Algorithms
     {
         protected override Complex<TNumber> DoIteration(Complex<TNumber> z, Complex<TNumber> c)
         {
-            var real = z.Real < Number<TNumber>.Zero ? -z.Real : z.Real;
+            var real = Number<TNumber>.Abs(z.Real);
             var imag = new Complex<TNumber>(Number<TNumber>.Zero, z.Imag);
             var y = real - imag;
             return y * y + c;

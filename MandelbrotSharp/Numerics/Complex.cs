@@ -28,15 +28,14 @@ namespace MandelbrotSharp.Numerics
     }
     public struct Complex<T> : IComplex, IEquatable<Complex<T>> where T : struct
     {
-        public static Complex<T> Zero => default(Complex<T>);
+        public static readonly Complex<T> Zero         = new Complex<T>(Number<T>.Zero, Number<T>.Zero);
+        public static readonly Complex<T> One          = new Complex<T>(Number<T>.One,  Number<T>.Zero);
+        public static readonly Complex<T> ImaginaryOne = new Complex<T>(Number<T>.Zero, Number<T>.One);
 
         public Number<T> Real { get; }
         public Number<T> Imag { get; }
 
-        public Number<T> MagnitudeSqu => Real * Real + Imag * Imag;
-
         INumber IComplex.Real => Real;
-
         INumber IComplex.Imag => Imag;
 
         public Complex(Number<T> real, Number<T> imag)
@@ -97,6 +96,11 @@ namespace MandelbrotSharp.Numerics
         public static bool operator !=(Complex<T> left, Complex<T> right)
         {
             return left.Real != right.Real || left.Imag != right.Imag;
+        }
+
+        public static Number<T> AbsSqu(Complex<T> value)
+        {
+            return value.Real * value.Real + value.Imag * value.Imag;
         }
 
         public Complex<TOut> As<TOut>() where TOut : struct

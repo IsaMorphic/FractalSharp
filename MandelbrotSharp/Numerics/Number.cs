@@ -27,7 +27,9 @@ namespace MandelbrotSharp.Numerics
 
     public struct Number<T> : INumber, IComparable<Number<T>>, IEquatable<Number<T>> where T : struct
     {
-        public static Number<T> Zero => default(Number<T>);
+        public static readonly Number<T> Zero = From(0.0);
+        public static readonly Number<T> One  = From(1.0);
+        public static readonly Number<T> Two  = From(2.0);
 
         public T Value { get; }
 
@@ -99,6 +101,11 @@ namespace MandelbrotSharp.Numerics
         public static bool operator <=(Number<T> left, Number<T> right)
         {
             return Operator.LessThanOrEqual(left.Value, right.Value);
+        }
+
+        public static Number<T> Abs(Number<T> value)
+        {
+            return (value > Zero) ? value : -value;
         }
 
         public Number<TOut> As<TOut>() where TOut : struct

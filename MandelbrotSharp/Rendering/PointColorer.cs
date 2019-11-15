@@ -16,6 +16,7 @@
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 using MandelbrotSharp.Algorithms;
+using MandelbrotSharp.Numerics;
 using System;
 
 namespace MandelbrotSharp.Rendering
@@ -25,7 +26,7 @@ namespace MandelbrotSharp.Rendering
         public virtual double GetIndexFromPointData(PointData data)
         {
             // sqrt of inner term removed using log simplification rules.
-            double log_zn = Math.Log(data.ZValue.MagnitudeSqu.Value);
+            double log_zn = Math.Log(Complex<double>.AbsSqu(data.ZValue).Value);
             double nu = Math.Log(log_zn / Math.Log(2)) / Math.Log(2);
             // Rearranging the potential function.
             // Dividing log_zn by log(2) instead of log(N = 1<<8)
