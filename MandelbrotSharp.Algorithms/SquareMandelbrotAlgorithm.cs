@@ -23,7 +23,7 @@ namespace MandelbrotSharp.Algorithms
         : EscapeTimeParams<TNumber>
         where TNumber : struct
     {
-        public override IAlgorithmParams Copy()
+        public override IFractalParams Copy()
         {
             return new SquareMandelbrotParams<TNumber>
             {

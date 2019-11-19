@@ -23,7 +23,7 @@ using System.Threading.Tasks;
 namespace MandelbrotSharp.Processing
 {
     public class DefaultProcessor<TNumber, TAlgorithm> : FractalProcessor<TNumber, TAlgorithm>
-        where TAlgorithm : IAlgorithmProvider<TNumber>, new()
+        where TAlgorithm : IFractalProvider<TNumber>, new()
         where TNumber : struct
     {
         public DefaultProcessor(int width, int height) : base(width, height)

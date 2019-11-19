@@ -22,7 +22,7 @@ using System.Threading;
 
 namespace MandelbrotSharp.Algorithms
 {
-    public class SquareMandelbrotPParams<TNumber> : AlgorithmParams<TNumber>
+    public class SquareMandelbrotPParams<TNumber> : FractalParams<TNumber>
         where TNumber : struct
     {
         public int NumProbePoints { get; set; }
@@ -30,7 +30,7 @@ namespace MandelbrotSharp.Algorithms
 
         public Complex<TNumber> Reference { get; set; }
 
-        public override IAlgorithmParams Copy()
+        public override IFractalParams Copy()
         {
             return new SquareMandelbrotPParams<TNumber>
             {
@@ -46,8 +46,8 @@ namespace MandelbrotSharp.Algorithms
     }
 
     public class SquareMandelbrotPAlgorithm<TNumber> 
-        : AlgorithmProvider<TNumber, SquareMandelbrotPParams<TNumber>>, 
-          IAlgorithmProvider<TNumber>
+        : FractalProvider<TNumber, SquareMandelbrotPParams<TNumber>>, 
+          IFractalProvider<TNumber>
         where TNumber : struct
     {
         private Random Random;

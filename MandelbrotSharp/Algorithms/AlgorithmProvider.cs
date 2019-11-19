@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright 2018-2019 Chosen Few Software
  *  This file is part of MandelbrotSharp.
  *
@@ -15,40 +15,33 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-using MandelbrotSharp.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MandelbrotSharp.Algorithms
 {
-    public interface IAlgorithmProvider<TNumber> where TNumber : struct
+    public interface IAlgorithmProvider<TInput, TOutput>
     {
         bool Initialized { get; }
-        Task Initialize(IAlgorithmParams @params, CancellationToken token);
-        Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio);
-        PointData Run(Complex<TNumber> point);
+        Task Initialize(IFractalParams @params, CancellationToken token);
+        TOutput Run(TInput data);
     }
 
-    public abstract class AlgorithmProvider<TNumber, TParam> : IAlgorithmProvider<TNumber>
-        where TParam : AlgorithmParams<TNumber>
-        where TNumber : struct
+    public abstract class AlgorithmProvider<TInput, TOutput, TParam> : IAlgorithmProvider<TInput, TOutput>
+        where TParam : class, IAlgorithmParams
     {
         public bool Initialized { get; private set; }
 
         protected TParam Params { get; private set; }
 
-        public async Task Initialize(IAlgorithmParams @params, CancellationToken cancellationToken)
+        public async Task Initialize(IFractalParams @params, CancellationToken cancellationToken)
         {
             Params = @params as TParam;
             Initialized = await Task.Run(
                 () => Initialize(cancellationToken)
                 );
         }
-
-        public abstract Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio);
-
-        public abstract PointData Run(Complex<TNumber> point);
-
+        public abstract TOutput Run(TInput data);
         protected abstract bool Initialize(CancellationToken cancellationToken);
     }
 }

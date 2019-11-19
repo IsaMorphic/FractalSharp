@@ -1,4 +1,4 @@
-﻿/*
+/*
  *  Copyright 2018-2019 Chosen Few Software
  *  This file is part of MandelbrotSharp.
  *
@@ -15,10 +15,22 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+using MandelbrotSharp.Numerics;
+
 namespace MandelbrotSharp.Algorithms
 {
-    public interface IAlgorithmParams
+    public interface IFractalProvider<TNumber> : IAlgorithmProvider<Complex<TNumber>, PointData>
+        where TNumber : struct
     {
-        IAlgorithmParams Copy();
+        Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio);
+    }
+
+    public abstract class FractalProvider<TNumber, TParam> : 
+        AlgorithmProvider<Complex<TNumber>, PointData, TParam>, 
+        IFractalProvider<TNumber>
+        where TParam : FractalParams<TNumber>
+        where TNumber : struct
+    {
+        public abstract Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio);
     }
 }

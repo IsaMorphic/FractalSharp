@@ -23,7 +23,7 @@ namespace MandelbrotSharp.Algorithms
     {
         public Complex<TNumber> Coordinates { get; set; }
 
-        public override IAlgorithmParams Copy()
+        public override IFractalParams Copy()
         {
             return new SquareMandelbrotJuliaParams<TNumber>
             {

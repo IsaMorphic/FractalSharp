@@ -32,7 +32,7 @@ namespace MandelbrotSharp.Processing
     }
 
     public abstract class FractalProcessor<TNumber, TAlgorithm> : IFractalProcessor
-            where TAlgorithm : IAlgorithmProvider<TNumber>, new()
+            where TAlgorithm : IFractalProvider<TNumber>, new()
             where TNumber : struct
     {
 

@@ -21,15 +21,15 @@ using MandelbrotSharp.Numerics;
 namespace MandelbrotSharp.Algorithms
 {
     public abstract class EscapeTimeParams<TNumber> 
-        : AlgorithmParams<TNumber>
+        : FractalParams<TNumber>
         where TNumber : struct
     {
         public Number<TNumber> EscapeRadius { get; set; }
     }
 
     public abstract class EscapeTimeAlgorithm<TNumber, TParam>
-        : AlgorithmProvider<TNumber, TParam>,
-          IAlgorithmProvider<TNumber>
+        : FractalProvider<TNumber, TParam>,
+          IFractalProvider<TNumber>
         where TParam : EscapeTimeParams<TNumber>
         where TNumber : struct
     {

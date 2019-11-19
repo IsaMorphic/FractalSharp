@@ -23,7 +23,7 @@ namespace MandelbrotSharp.Algorithms
     {
         public Complex<double> Power { get; set; }
 
-        public override IAlgorithmParams Copy()
+        public override IFractalParams Copy()
         {
             return new GeneralMandelbrotParams
             {

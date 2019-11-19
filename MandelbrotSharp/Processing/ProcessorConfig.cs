@@ -27,7 +27,7 @@ namespace MandelbrotSharp.Processing
         public Gradient OuterColors { get; set; }
         public RgbaValue InnerColor { get; set; }
 
-        public IAlgorithmParams Params { get; set; }
+        public IFractalParams Params { get; set; }
 
         public virtual ProcessorConfig Copy()
         {
