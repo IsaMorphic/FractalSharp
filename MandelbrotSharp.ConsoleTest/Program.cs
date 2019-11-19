@@ -15,20 +15,39 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-using System;
-using SkiaSharp;
 using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Imaging;
 using MandelbrotSharp.Numerics;
-using MandelbrotSharp.Rendering;
-using System.Buffers;
+using MandelbrotSharp.Processing;
+using SkiaSharp;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MandelbrotSharp.ConsoleTest
 {
+    class SkiaImager : FractalImager
+    {
+        public SKBitmap Bitmap { get; private set; }
+
+        public override void InitializeImage(int width, int height)
+        {
+            Bitmap = new SKBitmap(new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Unpremul));
+        }
+
+        public override void WritePixel(int x, int y, RgbaValue color)
+        {
+            Bitmap.SetPixel(x, y, new SKColor(color.Red, color.Green, color.Blue, color.Alpha));
+        }
+    }
+
     class Program
     {
-        private static DefaultRenderer<double, SquareMandelbrotAlgorithm<double>> Renderer =
-            new DefaultRenderer<double, SquareMandelbrotAlgorithm<double>>(1024, 1024);
+        private static readonly DefaultProcessor<double, SquareMandelbrotAlgorithm<double>> Processor =
+            new DefaultProcessor<double, SquareMandelbrotAlgorithm<double>>(3840, 2160);
+
+        private static readonly SkiaImager Imager = new SkiaImager();
+
         private static Gradient Colors = new Gradient(new RgbaValue[]
         {
             new RgbaValue(9, 1, 47),
@@ -49,13 +68,10 @@ namespace MandelbrotSharp.ConsoleTest
             new RgbaValue(25, 7, 26),
         }, 256);
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            Renderer.Setup(new RenderSettings
+            Processor.Setup(new ProcessorConfig
             {
-                OuterColors = Colors,
-                InnerColor = new RgbaValue(0, 0, 0),
-
                 ThreadCount = Environment.ProcessorCount,
 
                 Params = new SquareMandelbrotParams<double>
@@ -67,22 +83,12 @@ namespace MandelbrotSharp.ConsoleTest
                 }
             });
 
-            Renderer.FrameFinished += FrameFinished;
             Console.WriteLine("Rendering image, please wait...");
-            Renderer.StartRenderFrame().Wait();
+            PointData[,] data = await Processor.RenderFrameAsync(CancellationToken.None);
+            Imager.CreateImage(data, new PointColorer(), Colors, new RgbaValue(0, 0, 0));
+            SKPixmap.Encode(new SKFileWStream("output.png"), Imager.Bitmap, SKEncodedImageFormat.Png, 100);
             Console.WriteLine("Image rendered successfully!");
-        }
-
-        private static unsafe void FrameFinished(object sender, FrameEventArgs e)
-        {
-            SKBitmap bitmap = new SKBitmap(e.Frame.Width, e.Frame.Height, SKColorType.Bgra8888, SKAlphaType.Unpremul);
-            MemoryHandle pixels = e.Frame.CopyDataAsBits().AsMemory().Pin();
-            bitmap.SetPixels((IntPtr)pixels.Pointer);
-            SKFileWStream stream = new SKFileWStream("output.png");
-            SKPixmap.Encode(stream, bitmap, SKEncodedImageFormat.Png, 100);
-            stream.Dispose();
-            bitmap.Dispose();
-            pixels.Dispose();
+            Imager.Bitmap.Dispose();
         }
     }
 }

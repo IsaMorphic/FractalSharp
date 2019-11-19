@@ -102,7 +102,7 @@ namespace MandelbrotSharp.Algorithms
             return new PointData(zn, n, n < maxIterations);
         }
 
-        protected override void Initialize(CancellationToken token)
+        protected override bool Initialize(CancellationToken token)
         {
             // Initialize Lists
             A = new List<Complex<double>>();
@@ -135,6 +135,8 @@ namespace MandelbrotSharp.Algorithms
 
             if (Params.ShouldUseSeriesApproximation)
                 ApproximateSeries();
+
+            return true;
         }
 
         private void IterateReferencePoint(CancellationToken token)

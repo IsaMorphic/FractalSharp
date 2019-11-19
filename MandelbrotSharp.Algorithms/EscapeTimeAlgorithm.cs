@@ -15,6 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+using System.Threading;
 using MandelbrotSharp.Numerics;
 
 namespace MandelbrotSharp.Algorithms
@@ -32,6 +33,8 @@ namespace MandelbrotSharp.Algorithms
         where TParam : EscapeTimeParams<TNumber>
         where TNumber : struct
     {
+        protected override bool Initialize(CancellationToken cancellationToken) => true;
+
         public override Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio)
         {
             Number<TNumber> xScale = aspectRatio * Number<TNumber>.From(2.0) / Params.Magnification;

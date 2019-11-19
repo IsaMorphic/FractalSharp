@@ -18,9 +18,9 @@
 using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Imaging;
 
-namespace MandelbrotSharp.Rendering
+namespace MandelbrotSharp.Processing
 {
-    public class RenderSettings
+    public class ProcessorConfig
     {
         public int ThreadCount { get; set; }
 
@@ -29,9 +29,9 @@ namespace MandelbrotSharp.Rendering
 
         public IAlgorithmParams Params { get; set; }
 
-        public virtual RenderSettings Copy()
+        public virtual ProcessorConfig Copy()
         {
-            return new RenderSettings
+            return new ProcessorConfig
             {
                 ThreadCount = ThreadCount,
                 OuterColors = OuterColors,

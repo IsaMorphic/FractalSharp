@@ -18,7 +18,7 @@
 using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Numerics;
 
-namespace MandelbrotSharp.Rendering
+namespace MandelbrotSharp.Processing
 {
     public class PointMapper<TNumberIn, TNumberOut> where TNumberIn : struct where TNumberOut : struct
     {

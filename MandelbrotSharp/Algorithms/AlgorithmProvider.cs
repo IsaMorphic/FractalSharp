@@ -17,36 +17,38 @@
  */
 using MandelbrotSharp.Numerics;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MandelbrotSharp.Algorithms
 {
     public interface IAlgorithmProvider<TNumber> where TNumber : struct
     {
         bool Initialized { get; }
-        void Initialize(IAlgorithmParams @params, CancellationToken token);
+        Task Initialize(IAlgorithmParams @params, CancellationToken token);
         Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio);
         PointData Run(Complex<TNumber> point);
     }
 
     public abstract class AlgorithmProvider<TNumber, TParam> : IAlgorithmProvider<TNumber>
-        where TParam : AlgorithmParams<TNumber> 
+        where TParam : AlgorithmParams<TNumber>
         where TNumber : struct
     {
         public bool Initialized { get; private set; }
 
         protected TParam Params { get; private set; }
 
-        public void Initialize(IAlgorithmParams @params, CancellationToken token)
+        public async Task Initialize(IAlgorithmParams @params, CancellationToken cancellationToken)
         {
             Params = @params as TParam;
-            Initialize(token);
-            Initialized = true;
+            Initialized = await Task.Run(
+                () => Initialize(cancellationToken)
+                );
         }
 
         public abstract Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio);
 
         public abstract PointData Run(Complex<TNumber> point);
 
-        protected virtual void Initialize(CancellationToken token) { }
+        protected abstract bool Initialize(CancellationToken cancellationToken);
     }
 }
