@@ -28,7 +28,7 @@ using System.Threading.Tasks;
 
 namespace MandelbrotSharp.ConsoleTest
 {
-    class SkiaImager : ImageProcessor
+    class SkiaImageBuilder : ImageBuilder
     {
         public SKBitmap Bitmap { get; private set; }
 
@@ -45,33 +45,40 @@ namespace MandelbrotSharp.ConsoleTest
 
     class Program
     {
+        private const int WIDTH = 8196;
+        private const int HEIGHT = 8196;
+
         private static readonly FractalProcessor<double, SquareMandelbrotAlgorithm<double>> FractalProcessor =
-            new FractalProcessor<double, SquareMandelbrotAlgorithm<double>>(3840, 2160);
+            new FractalProcessor<double, SquareMandelbrotAlgorithm<double>>(WIDTH, HEIGHT);
 
-        private static readonly ColorProcessor<SmoothColoringAlgorithm> ColorProcessor =
-            new ColorProcessor<SmoothColoringAlgorithm>(3840, 2160);
+        private static readonly ColorProcessor<SmoothColoringAlgorithm> OuterColorProcessor =
+            new ColorProcessor<SmoothColoringAlgorithm>(WIDTH, HEIGHT);
 
-        private static readonly SkiaImager Imager = new SkiaImager();
+        private static readonly ColorProcessor<RadialGradientAlgorithm> InnerColorProcessor =
+            new ColorProcessor<RadialGradientAlgorithm>(WIDTH, HEIGHT);
 
-        private static Gradient Colors = new Gradient(new RgbaValue[]
-        {
-            new RgbaValue(9, 1, 47),
-            new RgbaValue(4, 4, 73),
-            new RgbaValue(0, 7, 100),
-            new RgbaValue(12, 44, 138),
-            new RgbaValue(24, 82, 177),
-            new RgbaValue(57, 125, 209),
-            new RgbaValue(134, 181, 229),
-            new RgbaValue(211, 236, 248),
-            new RgbaValue(241, 233, 191),
-            new RgbaValue(248, 201, 95),
-            new RgbaValue(255, 170, 0),
-            new RgbaValue(204, 128, 0),
-            new RgbaValue(153, 87, 0),
-            new RgbaValue(106, 52, 3),
-            new RgbaValue(66, 30, 15),
-            new RgbaValue(25, 7, 26),
-        }, 256);
+        private static readonly SkiaImageBuilder Imager = new SkiaImageBuilder();
+
+        private static readonly Gradient Colors =
+            new Gradient(new RgbaValue[]
+            {
+                new RgbaValue(9, 1, 47),
+                new RgbaValue(4, 4, 73),
+                new RgbaValue(0, 7, 100),
+                new RgbaValue(12, 44, 138),
+                new RgbaValue(24, 82, 177),
+                new RgbaValue(57, 125, 209),
+                new RgbaValue(134, 181, 229),
+                new RgbaValue(211, 236, 248),
+                new RgbaValue(241, 233, 191),
+                new RgbaValue(248, 201, 95),
+                new RgbaValue(255, 170, 0),
+                new RgbaValue(204, 128, 0),
+                new RgbaValue(153, 87, 0),
+                new RgbaValue(106, 52, 3),
+                new RgbaValue(66, 30, 15),
+                new RgbaValue(25, 7, 26),
+            }, 256);
 
         static async Task Main(string[] args)
         {
@@ -91,15 +98,28 @@ namespace MandelbrotSharp.ConsoleTest
             }, CancellationToken.None);
             PointData[,] inputData = await FractalProcessor.ProcessAsync(CancellationToken.None);
 
-            await ColorProcessor.SetupAsync(new ColorProcessorConfig
+            await InnerColorProcessor.SetupAsync(new ColorProcessorConfig
+            {
+                ThreadCount = Environment.ProcessorCount,
+                Params = new RadialGradientParams
+                {
+                    Scale = 256
+                },
+                PointClass = PointClass.Inner,
+                InputData = inputData
+            }, CancellationToken.None);
+            double[,] innerIndicies = await InnerColorProcessor.ProcessAsync(CancellationToken.None);
+
+            await OuterColorProcessor.SetupAsync(new ColorProcessorConfig
             {
                 ThreadCount = Environment.ProcessorCount,
                 Params = new SmoothColoringParams(),
+                PointClass = PointClass.Outer,
                 InputData = inputData
             }, CancellationToken.None);
-            double[,] indicies = await ColorProcessor.ProcessAsync(CancellationToken.None);
+            double[,] outerIndicies = await OuterColorProcessor.ProcessAsync(CancellationToken.None);
 
-            Imager.CreateImage(indicies, Colors, new RgbaValue(0, 0, 0));
+            Imager.CreateImage(outerIndicies, innerIndicies, Colors, Colors);
             SKPixmap.Encode(new SKFileWStream("output.png"), Imager.Bitmap, SKEncodedImageFormat.Png, 100);
 
             Console.WriteLine("Image rendered successfully!");

@@ -15,7 +15,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-using System.Threading;
 using System.Threading.Tasks;
 using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Processing;
@@ -24,6 +23,7 @@ namespace MandelbrotSharp.Imaging
 {
     public class ColorProcessorConfig : ProcessorConfig
     {
+        public PointClass PointClass { get; set; }
         public PointData[,] InputData { get; set; }
 
         public override ProcessorConfig Copy()
@@ -32,6 +32,7 @@ namespace MandelbrotSharp.Imaging
             {
                 ThreadCount = ThreadCount,
                 Params = Params.Copy(),
+                PointClass = PointClass,
                 InputData = InputData.Clone() as PointData[,]
             };
         }
@@ -50,12 +51,15 @@ namespace MandelbrotSharp.Imaging
         {
             double[,] indicies = new double[Height, Width];
 
-            Parallel.For(0, Height, y => 
+            Parallel.For(0, Height, y =>
             {
                 Parallel.For(0, Width, x =>
                 {
                     PointData pointData = Settings.InputData[y, x];
-                    indicies[y, x] = pointData.Escaped ? AlgorithmProvider.Run(pointData) : double.NaN;
+                    if (pointData.PointClass == Settings.PointClass)
+                        indicies[y, x] = AlgorithmProvider.Run(pointData);
+                    else
+                        indicies[y, x] = double.NaN;
                 });
             });
 

@@ -26,6 +26,12 @@ namespace MandelbrotSharp.Numerics
             return Math.Atan2(z.Imag.Value, z.Real.Value);
         }
 
+        public static Number<double> Abs(Complex<double> z)
+        {
+            Number<double> squ = z.Real * z.Real + z.Imag * z.Imag;
+            return Math.Sqrt(squ.Value);
+        }
+
         public static Complex<double> Exp(Complex<double> z)
         {
             Complex<double> r = Math.Exp(z.Real.Value);

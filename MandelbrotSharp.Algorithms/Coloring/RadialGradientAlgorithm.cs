@@ -16,26 +16,30 @@
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 using MandelbrotSharp.Numerics;
+using System.Threading;
 
-namespace MandelbrotSharp.Algorithms
+namespace MandelbrotSharp.Algorithms.Coloring
 {
-    public enum PointClass
+    public class RadialGradientParams : IAlgorithmParams
     {
-        Inner = 0,
-        Outer = 1
+        public int Scale { get; set; }
+
+        public IAlgorithmParams Copy()
+        {
+            return new RadialGradientParams
+            {
+                Scale = Scale
+            };
+        }
     }
 
-    public struct PointData
+    public class RadialGradientAlgorithm : AlgorithmProvider<PointData, double, RadialGradientParams>
     {
-        public Complex<double> ZValue { get; }
-        public int IterCount { get; }
-        public PointClass PointClass { get; }
+        protected override bool Initialize(CancellationToken cancellationToken) => true;
 
-        public PointData(Complex<double> zValue, int iterCount, PointClass pointClass)
+        public override double Run(PointData data)
         {
-            ZValue = zValue;
-            IterCount = iterCount;
-            PointClass = pointClass;
+            return CMath.Abs(data.ZValue).Value * Params.Scale;
         }
     }
 }

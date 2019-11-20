@@ -99,7 +99,7 @@ namespace MandelbrotSharp.Algorithms.Fractals
 
             } while (Complex<double>.AbsSqu(zn) < 256 && n < maxIterations);
 
-            return new PointData(zn, n, n < maxIterations);
+            return new PointData(zn, n, n < maxIterations ? PointClass.Outer : PointClass.Inner);
         }
 
         protected override bool Initialize(CancellationToken token)

@@ -65,7 +65,7 @@ namespace MandelbrotSharp.Algorithms.Fractals
                 iter++;
             }
 
-            return new PointData(prevOutput.As<double>(), iter, iter < Params.MaxIterations);
+            return new PointData(prevOutput.As<double>(), iter, iter < Params.MaxIterations ? PointClass.Outer : PointClass.Inner);
         }
 
         protected abstract Complex<TNumber> DoIteration(Complex<TNumber> prevOutput, Complex<TNumber> mappedPoint);
