@@ -1,7 +1,6 @@
 ﻿/*
  *  Copyright 2018-2019 Chosen Few Software
- *  This file is part of an example application that demostrates 
- *  the usage of the MandelbrotSharp library.
+ *  This file is part of MandelbrotSharp.
  *
  *  MandelbrotSharp is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
