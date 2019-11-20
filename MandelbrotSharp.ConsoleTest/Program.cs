@@ -82,8 +82,9 @@ namespace MandelbrotSharp.ConsoleTest
 
         static async Task Main(string[] args)
         {
-            Console.WriteLine("Rendering image, please wait...");
+            Console.WriteLine("Process started.");
 
+            Console.WriteLine("Computing raw fractal data...");
             await FractalProcessor.SetupAsync(new ProcessorConfig
             {
                 ThreadCount = Environment.ProcessorCount,
@@ -98,6 +99,7 @@ namespace MandelbrotSharp.ConsoleTest
             }, CancellationToken.None);
             PointData[,] inputData = await FractalProcessor.ProcessAsync(CancellationToken.None);
 
+            Console.WriteLine("Computing colors for inner points...");
             await InnerColorProcessor.SetupAsync(new ColorProcessorConfig
             {
                 ThreadCount = Environment.ProcessorCount,
@@ -110,6 +112,7 @@ namespace MandelbrotSharp.ConsoleTest
             }, CancellationToken.None);
             double[,] innerIndicies = await InnerColorProcessor.ProcessAsync(CancellationToken.None);
 
+            Console.WriteLine("Computing colors for outer points...");
             await OuterColorProcessor.SetupAsync(new ColorProcessorConfig
             {
                 ThreadCount = Environment.ProcessorCount,
@@ -119,7 +122,10 @@ namespace MandelbrotSharp.ConsoleTest
             }, CancellationToken.None);
             double[,] outerIndicies = await OuterColorProcessor.ProcessAsync(CancellationToken.None);
 
+            Console.WriteLine("Building image...");
             Imager.CreateImage(outerIndicies, innerIndicies, Colors, Colors);
+
+            Console.WriteLine("Writing image file to disk...");
             SKPixmap.Encode(new SKFileWStream("output.png"), Imager.Bitmap, SKEncodedImageFormat.Png, 100);
 
             Console.WriteLine("Image rendered successfully!");
