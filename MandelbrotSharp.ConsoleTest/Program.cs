@@ -16,6 +16,8 @@
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 using MandelbrotSharp.Algorithms;
+using MandelbrotSharp.Algorithms.Coloring;
+using MandelbrotSharp.Algorithms.Fractals;
 using MandelbrotSharp.Imaging;
 using MandelbrotSharp.Numerics;
 using MandelbrotSharp.Processing;
@@ -26,7 +28,7 @@ using System.Threading.Tasks;
 
 namespace MandelbrotSharp.ConsoleTest
 {
-    class SkiaImager : FractalImager
+    class SkiaImager : ImageProcessor
     {
         public SKBitmap Bitmap { get; private set; }
 
@@ -43,8 +45,11 @@ namespace MandelbrotSharp.ConsoleTest
 
     class Program
     {
-        private static readonly DefaultProcessor<double, SquareMandelbrotAlgorithm<double>> Processor =
-            new DefaultProcessor<double, SquareMandelbrotAlgorithm<double>>(3840, 2160);
+        private static readonly FractalProcessor<double, SquareMandelbrotAlgorithm<double>> FractalProcessor =
+            new FractalProcessor<double, SquareMandelbrotAlgorithm<double>>(3840, 2160);
+
+        private static readonly ColorProcessor<SmoothColoringAlgorithm> ColorProcessor =
+            new ColorProcessor<SmoothColoringAlgorithm>(3840, 2160);
 
         private static readonly SkiaImager Imager = new SkiaImager();
 
@@ -70,7 +75,9 @@ namespace MandelbrotSharp.ConsoleTest
 
         static async Task Main(string[] args)
         {
-            Processor.Setup(new ProcessorConfig
+            Console.WriteLine("Rendering image, please wait...");
+
+            await FractalProcessor.SetupAsync(new ProcessorConfig
             {
                 ThreadCount = Environment.ProcessorCount,
 
@@ -81,14 +88,21 @@ namespace MandelbrotSharp.ConsoleTest
                     Location = Complex<double>.Zero,
                     EscapeRadius = 4.0,
                 }
-            });
+            }, CancellationToken.None);
+            PointData[,] inputData = await FractalProcessor.ProcessAsync(CancellationToken.None);
 
-            Console.WriteLine("Rendering image, please wait...");
-            PointData[,] data = await Processor.RenderFrameAsync(CancellationToken.None);
-            Imager.CreateImage(data, new PointColorer(), Colors, new RgbaValue(0, 0, 0));
+            await ColorProcessor.SetupAsync(new ColorProcessorConfig
+            {
+                ThreadCount = Environment.ProcessorCount,
+                Params = new SmoothColoringParams(),
+                InputData = inputData
+            }, CancellationToken.None);
+            double[,] indicies = await ColorProcessor.ProcessAsync(CancellationToken.None);
+
+            Imager.CreateImage(indicies, Colors, new RgbaValue(0, 0, 0));
             SKPixmap.Encode(new SKFileWStream("output.png"), Imager.Bitmap, SKEncodedImageFormat.Png, 100);
+
             Console.WriteLine("Image rendered successfully!");
-            Imager.Bitmap.Dispose();
         }
     }
 }

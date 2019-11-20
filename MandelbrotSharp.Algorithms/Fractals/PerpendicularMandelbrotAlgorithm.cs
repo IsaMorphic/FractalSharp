@@ -17,17 +17,18 @@
  */
 using MandelbrotSharp.Numerics;
 
-namespace MandelbrotSharp.Algorithms
+namespace MandelbrotSharp.Algorithms.Fractals
 {
-    public abstract class JuliaAlgorithm<TNumber, TParam> : 
-        EscapeTimeAlgorithm<TNumber, TParam> 
-        where TParam : EscapeTimeParams<TNumber> 
+    public class PerpendicularMandelbrotAlgorithm<TNumber> 
+        : SquareMandelbrotAlgorithm<TNumber>
         where TNumber : struct
     {
-        protected abstract Complex<TNumber> DoIteration(Complex<TNumber> prevOutput);
-
-        protected sealed override Complex<TNumber> DoIteration(Complex<TNumber> prevOutput, Complex<TNumber> mappedPoint) => DoIteration(prevOutput);
-
-        protected sealed override Complex<TNumber> GetInitialValue(Complex<TNumber> mappedPoint) => mappedPoint;
+        protected override Complex<TNumber> DoIteration(Complex<TNumber> z, Complex<TNumber> c)
+        {
+            var real = Number<TNumber>.Abs(z.Real);
+            var imag = new Complex<TNumber>(Number<TNumber>.Zero, z.Imag);
+            var y = real - imag;
+            return y * y + c;
+        }
     }
 }

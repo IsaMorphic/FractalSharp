@@ -15,26 +15,33 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Numerics;
-using System;
 
-namespace MandelbrotSharp.Processing
+namespace MandelbrotSharp.Algorithms.Fractals
 {
-    public class PointColorer
+    public class GeneralMandelbrotParams : EscapeTimeParams<double>
     {
-        public virtual double GetIndexFromPointData(PointData data)
-        {
-            // sqrt of inner term removed using log simplification rules.
-            double log_zn = Math.Log(Complex<double>.AbsSqu(data.ZValue).Value) / 2;
-            double nu = Math.Log(log_zn / Math.Log(2)) / Math.Log(2);
-            // Rearranging the potential function.
-            // Dividing log_zn by log(2) instead of log(N = 1<<8)
-            // because we want the entire palette to range from the
-            // center to radius 2, NOT our bailout radius.
+        public Complex<double> Power { get; set; }
 
-            // Return the result.
-            return data.IterCount + 1 - nu;
+        public override IFractalParams Copy()
+        {
+            return new GeneralMandelbrotParams
+            {
+                MaxIterations = MaxIterations,
+                Magnification = Magnification,
+                Location = Location,
+
+                EscapeRadius = EscapeRadius,
+                Power = Power
+            };
+        }
+    }
+    public class GeneralMandelbrotAlgorithm :
+        EscapeTimeAlgorithm<double, GeneralMandelbrotParams>
+    {
+        protected override Complex<double> DoIteration(Complex<double> z, Complex<double> c)
+        {
+            return CMath.Pow(z, Params.Power) + c;
         }
     }
 }

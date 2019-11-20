@@ -17,32 +17,17 @@
  */
 using MandelbrotSharp.Numerics;
 
-namespace MandelbrotSharp.Algorithms
+namespace MandelbrotSharp.Algorithms.Fractals
 {
-    public class SquareMandelbrotParams<TNumber>
-        : EscapeTimeParams<TNumber>
+    public abstract class JuliaAlgorithm<TNumber, TParam> : 
+        EscapeTimeAlgorithm<TNumber, TParam> 
+        where TParam : EscapeTimeParams<TNumber> 
         where TNumber : struct
     {
-        public override IFractalParams Copy()
-        {
-            return new SquareMandelbrotParams<TNumber>
-            {
-                MaxIterations = MaxIterations,
-                Magnification = Magnification,
-                Location = Location,
+        protected abstract Complex<TNumber> DoIteration(Complex<TNumber> prevOutput);
 
-                EscapeRadius = EscapeRadius
-            };
-        }
-    }
+        protected sealed override Complex<TNumber> DoIteration(Complex<TNumber> prevOutput, Complex<TNumber> mappedPoint) => DoIteration(prevOutput);
 
-    public class SquareMandelbrotAlgorithm<TNumber> 
-        : EscapeTimeAlgorithm<TNumber, SquareMandelbrotParams<TNumber>>
-        where TNumber : struct
-    {
-        protected override Complex<TNumber> DoIteration(Complex<TNumber> z, Complex<TNumber> c)
-        {
-            return z * z + c;
-        }
+        protected sealed override Complex<TNumber> GetInitialValue(Complex<TNumber> mappedPoint) => mappedPoint;
     }
 }

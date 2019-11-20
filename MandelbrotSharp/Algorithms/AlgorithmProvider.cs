@@ -23,7 +23,7 @@ namespace MandelbrotSharp.Algorithms
     public interface IAlgorithmProvider<TInput, TOutput>
     {
         bool Initialized { get; }
-        Task Initialize(IFractalParams @params, CancellationToken token);
+        Task Initialize(IAlgorithmParams @params, CancellationToken token);
         TOutput Run(TInput data);
     }
 
@@ -34,7 +34,7 @@ namespace MandelbrotSharp.Algorithms
 
         protected TParam Params { get; private set; }
 
-        public async Task Initialize(IFractalParams @params, CancellationToken cancellationToken)
+        public async Task Initialize(IAlgorithmParams @params, CancellationToken cancellationToken)
         {
             Params = @params as TParam;
             Initialized = await Task.Run(

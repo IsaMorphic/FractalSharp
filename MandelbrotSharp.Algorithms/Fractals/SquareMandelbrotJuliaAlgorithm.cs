@@ -17,31 +17,33 @@
  */
 using MandelbrotSharp.Numerics;
 
-namespace MandelbrotSharp.Algorithms
+namespace MandelbrotSharp.Algorithms.Fractals
 {
-    public class PowerJuliaParams : EscapeTimeParams<double>
+    public class SquareMandelbrotJuliaParams<TNumber> : EscapeTimeParams<TNumber> where TNumber : struct
     {
-        public Complex<double> Coordinates { get; set; }
+        public Complex<TNumber> Coordinates { get; set; }
 
         public override IFractalParams Copy()
         {
-            return new PowerJuliaParams
+            return new SquareMandelbrotJuliaParams<TNumber>
             {
                 MaxIterations = MaxIterations,
                 Magnification = Magnification,
                 Location = Location,
-
                 EscapeRadius = EscapeRadius,
+
                 Coordinates = Coordinates
             };
         }
     }
 
-    public class PowerJuliaAlgorithm : JuliaAlgorithm<double, PowerJuliaParams>
+    public class SquareMandelbrotJuliaAlgorithm<TNumber> :
+        JuliaAlgorithm<TNumber, SquareMandelbrotJuliaParams<TNumber>>
+        where TNumber : struct
     {
-        protected override Complex<double> DoIteration(Complex<double> z)
+        protected override Complex<TNumber> DoIteration(Complex<TNumber> z)
         {
-            return CMath.Pow(Params.Coordinates, z);
+            return z * z + Params.Coordinates;
         }
     }
 }

@@ -23,19 +23,13 @@ namespace MandelbrotSharp.Processing
     public class ProcessorConfig
     {
         public int ThreadCount { get; set; }
-
-        public Gradient OuterColors { get; set; }
-        public RgbaValue InnerColor { get; set; }
-
-        public IFractalParams Params { get; set; }
+        public IAlgorithmParams Params { get; set; }
 
         public virtual ProcessorConfig Copy()
         {
             return new ProcessorConfig
             {
                 ThreadCount = ThreadCount,
-                OuterColors = OuterColors,
-                InnerColor = InnerColor,
                 Params = Params.Copy()
             };
         }

@@ -22,77 +22,41 @@ using System.Threading.Tasks;
 
 namespace MandelbrotSharp.Processing
 {
-    public interface IFractalProcessor
+    public class FractalProcessor<TNumber, TAlgorithm>
+        : BaseProcessor<Complex<TNumber>, PointData, TAlgorithm>
+        where TAlgorithm : IFractalProvider<TNumber>, new()
+        where TNumber : struct
     {
-        int Width { get; }
-        int Height { get; }
-
-        void Setup(ProcessorConfig settings);
-        Task<PointData[,]> RenderFrameAsync(CancellationToken cancellationToken);
-    }
-
-    public abstract class FractalProcessor<TNumber, TAlgorithm> : IFractalProcessor
-            where TAlgorithm : IFractalProvider<TNumber>, new()
-            where TNumber : struct
-    {
-
-        public int Width { get; private set; }
-        public int Height { get; private set; }
-
         protected PointMapper<int, TNumber> PointMapper { get; private set; }
 
-        protected TAlgorithm AlgorithmProvider { get; private set; }
-
-        protected ProcessorConfig Settings { get; private set; }
-
-        #region Initialization and Configuration Methods
-
-        public FractalProcessor(int width, int height)
+        public FractalProcessor(int width, int height) : base(width, height)
         {
-            Width = width;
-            Height = height;
-
             PointMapper = new PointMapper<int, TNumber>();
             PointMapper.InputSpace = new Rectangle<int>(0, Width, 0, Height);
         }
 
-        public void Setup(ProcessorConfig settings)
+        public override async Task SetupAsync(ProcessorConfig settings, CancellationToken cancellationToken)
         {
-            Settings = settings.Copy();
-            AlgorithmProvider = new TAlgorithm();
-        }
-        #endregion
-
-        #region Rendering Methods
-
-        public Task<PointData[,]> RenderFrameAsync(CancellationToken cancellationToken)
-        {
-            return RenderFrame(cancellationToken);
+            await base.SetupAsync(settings, cancellationToken);
+            Number<TNumber> aspectRatio = Number<TNumber>.From(Width) / Number<TNumber>.From(Height);
+            PointMapper.OutputSpace = AlgorithmProvider.GetOutputBounds(aspectRatio);
         }
 
-        // Frame rendering method, using generic typing to reduce the amount 
-        // of code used and to make the algorithm easily applicable to other number types
-        private async Task<PointData[,]> RenderFrame(CancellationToken cancellationToken)
+        protected override PointData[,] Process(ParallelOptions options)
         {
-            if (!AlgorithmProvider.Initialized)
+            PointData[,] data = new PointData[Height, Width];
+
+            Parallel.For(0, Height, options, y =>
             {
-                await AlgorithmProvider.Initialize(Settings.Params.Copy(), cancellationToken);
+                var py = PointMapper.MapPointY(y);
+                Parallel.For(0, Width, options, x =>
+                {
+                    var px = PointMapper.MapPointX(x);
+                    data[y, x] = AlgorithmProvider.Run(new Complex<TNumber>(px, py));
+                });
+            });
 
-                Number<TNumber> aspectRatio = Number<TNumber>.From(Width) / Number<TNumber>.From(Height);
-                PointMapper.OutputSpace = AlgorithmProvider.GetOutputBounds(aspectRatio);
-            }
-
-            var options = new ParallelOptions
-            {
-                MaxDegreeOfParallelism = Settings.ThreadCount,
-                CancellationToken = cancellationToken
-            };
-
-            return RenderFrame(options);
+            return data;
         }
-
-        protected abstract PointData[,] RenderFrame(ParallelOptions options);
-
-        #endregion
     }
 }

@@ -18,7 +18,7 @@
 using System.Threading;
 using MandelbrotSharp.Numerics;
 
-namespace MandelbrotSharp.Algorithms
+namespace MandelbrotSharp.Algorithms.Fractals
 {
     public abstract class EscapeTimeParams<TNumber> 
         : FractalParams<TNumber>

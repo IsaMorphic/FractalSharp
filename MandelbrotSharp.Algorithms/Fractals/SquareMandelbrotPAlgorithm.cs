@@ -20,7 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace MandelbrotSharp.Algorithms
+namespace MandelbrotSharp.Algorithms.Fractals
 {
     public class SquareMandelbrotPParams<TNumber> : FractalParams<TNumber>
         where TNumber : struct

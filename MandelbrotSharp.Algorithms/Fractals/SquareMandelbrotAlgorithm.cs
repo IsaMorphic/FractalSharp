@@ -15,36 +15,34 @@
  *  You should have received a copy of the GNU General Public License
  *  along with MandelbrotSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-using MandelbrotSharp.Algorithms;
 using MandelbrotSharp.Numerics;
-using System.Threading.Tasks;
 
-namespace MandelbrotSharp.Processing
+namespace MandelbrotSharp.Algorithms.Fractals
 {
-    public class DefaultProcessor<TNumber, TAlgorithm> : FractalProcessor<TNumber, TAlgorithm>
-        where TAlgorithm : IFractalProvider<TNumber>, new()
+    public class SquareMandelbrotParams<TNumber>
+        : EscapeTimeParams<TNumber>
         where TNumber : struct
     {
-        public DefaultProcessor(int width, int height) : base(width, height)
+        public override IFractalParams Copy()
         {
-        }
-
-        protected override PointData[,] RenderFrame(ParallelOptions options)
-        {
-            PointData[,] data = new PointData[Height, Width];
-
-            Parallel.For(0, Height, options, y =>
+            return new SquareMandelbrotParams<TNumber>
             {
-                var py = PointMapper.MapPointY(y);
-                Parallel.For(0, Width, options, x =>
-                {
-                    var px = PointMapper.MapPointX(x);
-                    data[y, x] = AlgorithmProvider.Run(new Complex<TNumber>(px, py));
-                });
-            });
+                MaxIterations = MaxIterations,
+                Magnification = Magnification,
+                Location = Location,
 
-            return data;
+                EscapeRadius = EscapeRadius
+            };
+        }
+    }
+
+    public class SquareMandelbrotAlgorithm<TNumber> 
+        : EscapeTimeAlgorithm<TNumber, SquareMandelbrotParams<TNumber>>
+        where TNumber : struct
+    {
+        protected override Complex<TNumber> DoIteration(Complex<TNumber> z, Complex<TNumber> c)
+        {
+            return z * z + c;
         }
     }
 }
