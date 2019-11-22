@@ -45,7 +45,7 @@ namespace MandelbrotSharp.ConsoleTest
 
     class Program
     {
-        private const int WIDTH = 8196;
+        private const int WIDTH  = 8196;
         private const int HEIGHT = 8196;
 
         private static readonly FractalProcessor<double, SquareMandelbrotAlgorithm<double>> FractalProcessor =
@@ -89,7 +89,7 @@ namespace MandelbrotSharp.ConsoleTest
             {
                 ThreadCount = Environment.ProcessorCount,
 
-                Params = new SquareMandelbrotParams<double>
+                Params = new EscapeTimeParams<double>
                 {
                     MaxIterations = 256,
                     Magnification = 1.0,
@@ -116,7 +116,7 @@ namespace MandelbrotSharp.ConsoleTest
             await OuterColorProcessor.SetupAsync(new ColorProcessorConfig
             {
                 ThreadCount = Environment.ProcessorCount,
-                Params = new SmoothColoringParams(),
+                Params = new EmptyColoringParams(),
                 PointClass = PointClass.Outer,
                 InputData = inputData
             }, CancellationToken.None);

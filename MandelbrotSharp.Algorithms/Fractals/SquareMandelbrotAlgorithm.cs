@@ -19,25 +19,8 @@ using MandelbrotSharp.Numerics;
 
 namespace MandelbrotSharp.Algorithms.Fractals
 {
-    public class SquareMandelbrotParams<TNumber>
-        : EscapeTimeParams<TNumber>
-        where TNumber : struct
-    {
-        public override IFractalParams Copy()
-        {
-            return new SquareMandelbrotParams<TNumber>
-            {
-                MaxIterations = MaxIterations,
-                Magnification = Magnification,
-                Location = Location,
-
-                EscapeRadius = EscapeRadius
-            };
-        }
-    }
-
     public class SquareMandelbrotAlgorithm<TNumber> 
-        : EscapeTimeAlgorithm<TNumber, SquareMandelbrotParams<TNumber>>
+        : EscapeTimeAlgorithm<TNumber, EscapeTimeParams<TNumber>>
         where TNumber : struct
     {
         protected override Complex<TNumber> DoIteration(Complex<TNumber> z, Complex<TNumber> c)

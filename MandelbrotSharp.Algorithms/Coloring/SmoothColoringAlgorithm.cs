@@ -21,15 +21,7 @@ using System.Threading;
 
 namespace MandelbrotSharp.Algorithms.Coloring
 {
-    public class SmoothColoringParams : IAlgorithmParams
-    {
-        public IAlgorithmParams Copy()
-        {
-            return new SmoothColoringParams();
-        }
-    }
-
-    public class SmoothColoringAlgorithm : AlgorithmProvider<PointData, double, SmoothColoringParams>
+    public class SmoothColoringAlgorithm : AlgorithmProvider<PointData, double, EmptyColoringParams>
     {
         protected override bool Initialize(CancellationToken cancellationToken) => true;
 

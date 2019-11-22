@@ -20,11 +20,23 @@ using MandelbrotSharp.Numerics;
 
 namespace MandelbrotSharp.Algorithms.Fractals
 {
-    public abstract class EscapeTimeParams<TNumber> 
+    public class EscapeTimeParams<TNumber> 
         : FractalParams<TNumber>
         where TNumber : struct
     {
         public Number<TNumber> EscapeRadius { get; set; }
+
+        public override IFractalParams Copy()
+        {
+            return new EscapeTimeParams<TNumber>
+            {
+                Location = Location,
+                Magnification = Magnification,
+                MaxIterations = MaxIterations,
+
+                EscapeRadius = EscapeRadius
+            };
+        }
     }
 
     public abstract class EscapeTimeAlgorithm<TNumber, TParam>
