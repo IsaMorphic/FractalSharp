@@ -1,0 +1,1 @@
+This software is dedicated to anyone in search of truth, in need of strength, in love with knowledge, to the infinitely curious, to those who believe with a burning passion, and to anyone who has looked at the stars in undying wonder.  
