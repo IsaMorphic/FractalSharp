@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.16
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FractalSharp", "FractalSharp\FractalSharp.csproj", "{65E96C28-141A-4DC1-9757-A5C4A841E333}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FractalSharp.Algorithms", "FractalSharp.Algorithms\FractalSharp.Algorithms.csproj", "{EF7176AB-2E94-44AD-9104-BF73EBA0C8D8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FractalSharp.ConsoleTest", "FractalSharp.ConsoleTest\FractalSharp.ConsoleTest.csproj", "{5B564201-D625-40D7-815D-E26F86E97519}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{65E96C28-141A-4DC1-9757-A5C4A841E333}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65E96C28-141A-4DC1-9757-A5C4A841E333}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65E96C28-141A-4DC1-9757-A5C4A841E333}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65E96C28-141A-4DC1-9757-A5C4A841E333}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF7176AB-2E94-44AD-9104-BF73EBA0C8D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF7176AB-2E94-44AD-9104-BF73EBA0C8D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF7176AB-2E94-44AD-9104-BF73EBA0C8D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF7176AB-2E94-44AD-9104-BF73EBA0C8D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B564201-D625-40D7-815D-E26F86E97519}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B564201-D625-40D7-815D-E26F86E97519}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B564201-D625-40D7-815D-E26F86E97519}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B564201-D625-40D7-815D-E26F86E97519}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E94468F9-5416-49F1-8240-77CC1B8B9869}
+	EndGlobalSection
+EndGlobal
