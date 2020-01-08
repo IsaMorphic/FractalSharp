@@ -26,7 +26,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace FractalSharp.ConsoleTest
+namespace FractalSharp.ExampleApp
 {
     class SkiaImageBuilder : ImageBuilder
     {
