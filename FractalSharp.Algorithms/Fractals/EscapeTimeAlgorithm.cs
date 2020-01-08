@@ -40,8 +40,7 @@ namespace FractalSharp.Algorithms.Fractals
     }
 
     public abstract class EscapeTimeAlgorithm<TNumber, TParam>
-        : FractalProvider<TNumber, TParam>,
-          IFractalProvider<TNumber>
+        : FractalProvider<TNumber, TParam>
         where TParam : EscapeTimeParams<TNumber>
         where TNumber : struct
     {
