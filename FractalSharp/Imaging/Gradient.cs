@@ -19,10 +19,10 @@ using System;
 
 namespace FractalSharp.Imaging
 {
-    public struct Gradient
+    public class Gradient
     {
-        public RgbaValue[] KeyPoints { get; }
         public int Length { get; }
+        public RgbaValue[] KeyPoints { get; }
 
         public RgbaValue this[double index]
         {
@@ -36,12 +36,10 @@ namespace FractalSharp.Imaging
             }
         }
 
-        public Gradient(RgbaValue[] keyPoints, int length)
+        public Gradient(int length, RgbaValue[] keyPoints)
         {
             Length = length;
-
-            KeyPoints = new RgbaValue[keyPoints.Length];
-            Array.Copy(keyPoints, KeyPoints, KeyPoints.Length);
+            KeyPoints = keyPoints;
         }
     }
 }

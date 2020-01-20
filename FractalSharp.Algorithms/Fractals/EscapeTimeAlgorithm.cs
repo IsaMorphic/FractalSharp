@@ -48,12 +48,12 @@ namespace FractalSharp.Algorithms.Fractals
 
         public override Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio)
         {
-            Number<TNumber> xScale = aspectRatio * Number<TNumber>.From(2.0) / Params.Magnification;
+            Number<TNumber> xScale = aspectRatio * Number<TNumber>.Two / Params.Magnification;
 
             Number<TNumber> xMin = -xScale + Params.Location.Real;
             Number<TNumber> xMax = xScale + Params.Location.Real;
 
-            Number<TNumber> yScale = Number<TNumber>.From(2.0) / Params.Magnification;
+            Number<TNumber> yScale = Number<TNumber>.Two / Params.Magnification;
 
             Number<TNumber> yMin = yScale + Params.Location.Imag;
             Number<TNumber> yMax = -yScale + Params.Location.Imag;
