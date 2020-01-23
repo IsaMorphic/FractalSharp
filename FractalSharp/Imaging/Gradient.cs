@@ -16,30 +16,31 @@
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 using System;
+using System.Collections.Generic;
 
 namespace FractalSharp.Imaging
 {
     public class Gradient
     {
-        public int Length { get; }
-        public RgbaValue[] KeyPoints { get; }
+        public int Length { get; set; }
+        public List<GradientKey> Keys { get; set; }
 
         public RgbaValue this[double index]
         {
             get
             {
-                double scaled = index / Length % 1 * (KeyPoints.Length - 1);
+                double scaled = index / Length % 1 * (Keys.Count - 1);
                 int firstIndex = (int)scaled;
                 int secondIndex = firstIndex + 1;
                 double alpha = scaled % 1;
-                return RgbaValue.LerpColors(KeyPoints[firstIndex], KeyPoints[secondIndex], alpha);
+                return RgbaValue.LerpColors(Keys[firstIndex].Color, Keys[secondIndex].Color, alpha);
             }
         }
 
-        public Gradient(int length, RgbaValue[] keyPoints)
+        public Gradient(int length, List<GradientKey> keys)
         {
             Length = length;
-            KeyPoints = keyPoints;
+            Keys = keys;
         }
     }
 }
