@@ -23,6 +23,11 @@ namespace FractalSharp.Algorithms.Fractals
     {
         public Complex<double> Power { get; set; }
 
+        public GeneralMandelbrotParams()
+        {
+            Power = new Complex<double>(2.0, 0.0);
+        }
+
         public override IFractalParams Copy()
         {
             return new GeneralMandelbrotParams

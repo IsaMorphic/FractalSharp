@@ -16,13 +16,19 @@
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 using FractalSharp.Numerics;
+using System;
 using System.Threading;
 
 namespace FractalSharp.Algorithms.Coloring
 {
     public class RadialGradientParams : IAlgorithmParams
     {
-        public int Scale { get; set; }
+        public Number<double> Scale { get; set; }
+
+        public RadialGradientParams()
+        {
+            Scale = 128;
+        }
 
         public IAlgorithmParams Copy()
         {
@@ -39,7 +45,7 @@ namespace FractalSharp.Algorithms.Coloring
 
         public override double Run(PointData data)
         {
-            return CMath.Abs(data.ZValue).Value * Params.Scale;
+            return (Params.Scale * CMath.Abs(data.ZValue)).Value;
         }
     }
 }

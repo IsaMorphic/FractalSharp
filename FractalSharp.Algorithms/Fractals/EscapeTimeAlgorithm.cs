@@ -26,6 +26,15 @@ namespace FractalSharp.Algorithms.Fractals
     {
         public Number<TNumber> EscapeRadius { get; set; }
 
+        public EscapeTimeParams()
+        {
+            Location = Complex<TNumber>.Zero;
+            Magnification = Number<TNumber>.One;
+            MaxIterations = 256;
+
+            EscapeRadius = Number<TNumber>.From(4.0);
+        }
+
         public override IFractalParams Copy()
         {
             return new EscapeTimeParams<TNumber>
