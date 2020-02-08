@@ -23,6 +23,7 @@ using FractalSharp.Numerics;
 using FractalSharp.Processing;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -60,25 +61,25 @@ namespace FractalSharp.ExampleApp
         private static readonly SkiaImageBuilder Imager = new SkiaImageBuilder();
 
         private static readonly Gradient Colors =
-            new Gradient(new RgbaValue[]
+            new Gradient(256, new List<GradientKey>
             {
-                new RgbaValue(9, 1, 47),
-                new RgbaValue(4, 4, 73),
-                new RgbaValue(0, 7, 100),
-                new RgbaValue(12, 44, 138),
-                new RgbaValue(24, 82, 177),
-                new RgbaValue(57, 125, 209),
-                new RgbaValue(134, 181, 229),
-                new RgbaValue(211, 236, 248),
-                new RgbaValue(241, 233, 191),
-                new RgbaValue(248, 201, 95),
-                new RgbaValue(255, 170, 0),
-                new RgbaValue(204, 128, 0),
-                new RgbaValue(153, 87, 0),
-                new RgbaValue(106, 52, 3),
-                new RgbaValue(66, 30, 15),
-                new RgbaValue(25, 7, 26),
-            }, 256);
+                new GradientKey(new RgbaValue(9, 1, 47)),
+                new GradientKey(new RgbaValue(4, 4, 73)),
+                new GradientKey(new RgbaValue(0, 7, 100)),
+                new GradientKey(new RgbaValue(12, 44, 138)),
+                new GradientKey(new RgbaValue(24, 82, 177)),
+                new GradientKey(new RgbaValue(57, 125, 209)),
+                new GradientKey(new RgbaValue(134, 181, 229)),
+                new GradientKey(new RgbaValue(211, 236, 248)),
+                new GradientKey(new RgbaValue(241, 233, 191)),
+                new GradientKey(new RgbaValue(248, 201, 95)),
+                new GradientKey(new RgbaValue(255, 170, 0)),
+                new GradientKey(new RgbaValue(204, 128, 0)),
+                new GradientKey(new RgbaValue(153, 87, 0)),
+                new GradientKey(new RgbaValue(106, 52, 3)),
+                new GradientKey(new RgbaValue(66, 30, 15)),
+                new GradientKey(new RgbaValue(25, 7, 26))
+            });
 
         static async Task Main(string[] args)
         {
@@ -123,7 +124,7 @@ namespace FractalSharp.ExampleApp
             double[,] outerIndicies = await OuterColorProcessor.ProcessAsync(CancellationToken.None);
 
             Console.WriteLine("Building image...");
-            Imager.CreateImage(outerIndicies, innerIndicies, Colors, Colors);
+            Imager.CreateImage(outerIndicies, innerIndicies, Colors, Colors, WIDTH, HEIGHT);
 
             Console.WriteLine("Writing image file to disk...");
             SKPixmap.Encode(new SKFileWStream("output.png"), Imager.Bitmap, SKEncodedImageFormat.Png, 100);
