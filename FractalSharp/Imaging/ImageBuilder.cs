@@ -22,28 +22,24 @@ namespace FractalSharp.Imaging
 {
     public abstract class ImageBuilder
     {
-        public void CreateImage(double[,] outerIndicies, double[,] innerIndicies, Gradient outerColors, Gradient innerColors, int newWidth, int newHeight)
+        public void CreateImage(double[,] outerIndicies, double[,] innerIndicies, Gradient outerColors, Gradient innerColors)
         {
-            int oldWidth = Math.Min(outerIndicies.GetLength(1), innerIndicies.GetLength(1));
-            int oldHeight = Math.Min(outerIndicies.GetLength(0), innerIndicies.GetLength(0));
+            int width = Math.Min(outerIndicies.GetLength(1), innerIndicies.GetLength(1));
+            int height = Math.Min(outerIndicies.GetLength(0), innerIndicies.GetLength(0));
 
-            int scaleX = newWidth / oldWidth;
-            int scaleY = newHeight / oldHeight;
-
-            InitializeImage(newWidth, newHeight);
-            Parallel.For(0, newHeight, y =>
+            InitializeImage(width, height);
+            Parallel.For(0, height, y =>
             {
-                int scaledY = Math.Min(y / scaleY, oldHeight - 1);
-                Parallel.For(0, newWidth, x =>
+                Parallel.For(0, width, x =>
                 {
-                    int scaledX = Math.Min(x / scaleX, oldWidth - 1);
-                    if (double.IsNaN(outerIndicies[scaledY, scaledX]))
-                        WritePixel(x, y, innerColors[innerIndicies[scaledY, scaledX]]);
+                    if (double.IsNaN(outerIndicies[y, x]))
+                        WritePixel(x, y, innerColors[innerIndicies[y, x]]);
                     else
-                        WritePixel(x, y, outerColors[outerIndicies[scaledY, scaledX]]);
+                        WritePixel(x, y, outerColors[outerIndicies[y, x]]);
                 });
             });
         }
+
         public abstract void InitializeImage(int width, int height);
         public abstract void WritePixel(int x, int y, RgbaValue color);
     }

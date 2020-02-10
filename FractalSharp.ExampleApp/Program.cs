@@ -124,7 +124,7 @@ namespace FractalSharp.ExampleApp
             double[,] outerIndicies = await OuterColorProcessor.ProcessAsync(CancellationToken.None);
 
             Console.WriteLine("Building image...");
-            Imager.CreateImage(outerIndicies, innerIndicies, Colors, Colors, WIDTH, HEIGHT);
+            Imager.CreateImage(outerIndicies, innerIndicies, Colors, Colors);
 
             Console.WriteLine("Writing image file to disk...");
             SKPixmap.Encode(new SKFileWStream("output.png"), Imager.Bitmap, SKEncodedImageFormat.Png, 100);
