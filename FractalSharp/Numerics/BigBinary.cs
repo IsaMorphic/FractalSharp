@@ -23,54 +23,28 @@ namespace FractalSharp.Numerics
 {
     /// <summary>
     /// Arbitrary precision binary floating point number type
-    /// Based on the BigDecimal type
+    /// All operations are exact, except for division. Division never determines more digits than the given precision.
+    /// Based on JcBernak's BigDecimal: https://gist.github.com/JcBernack/0b4eef59ca97ee931a2f45542b9ff06d (licensed under public domain)
     /// </summary>
     public struct BigBinary
-    : IComparable
-    , IComparable<BigBinary>
+    : IComparable,
+      IComparable<BigBinary>,
+      IEquatable<BigBinary>
     {
         /// <summary>
-        /// Specifies whether the significant digits should be truncated to the given precision after each operation.
-        /// </summary>
-        public static bool AlwaysTruncate = true;
-
-        /// <summary>
         /// Sets the maximum precision of division operations.
-        /// If AlwaysTruncate is set to true all operations are affected.
         /// </summary>
-        public static int Precision = 512;
+        public static int Precision { get; } = 512;
 
-        public BigInteger Mantissa { get; set; }
-        public int Exponent { get; set; }
+        public BigInteger Mantissa { get; }
+        public int Exponent { get; }
 
         public BigBinary(BigInteger mantissa, int exponent)
-            : this()
         {
-            Mantissa = mantissa;
-            Exponent = exponent;
-            Normalize();
-            if (AlwaysTruncate)
-            {
-                Truncate();
-            }
-        }
+            var val = Normalize(mantissa, exponent);
 
-        /// <summary>
-        /// Removes trailing zeros on the mantissa
-        /// </summary>
-        public void Normalize()
-        {
-            if (Mantissa.IsZero)
-            {
-                Exponent = 0;
-            }
-            else if (Mantissa.IsEven)
-            {
-                BigInteger pow2 = ~(Mantissa - 1) & Mantissa;
-                int exp = NumberOfDigits(pow2);
-                Mantissa >>= exp;
-                Exponent += exp;
-            }
+            Mantissa = val.Mantissa;
+            Exponent = val.Exponent;
         }
 
         /// <summary>
@@ -79,37 +53,42 @@ namespace FractalSharp.Numerics
         /// <returns>The truncated number</returns>
         public BigBinary Truncate(int precision)
         {
-            // copy this instance (remember it's a struct)
-            var shortened = this;
-            // save some time because the number of digits is not needed to remove trailing zeros
-            shortened.Normalize();
+            var mantissa = Mantissa;
+            var exponent = Exponent;
             // remove the least significant digits, as long as the number of digits is higher than the given Precision
-            if (NumberOfDigits(shortened.Mantissa) > precision)
+            if (NumberOfDigits(mantissa) > precision)
             {
-                var diff = NumberOfDigits(shortened.Mantissa) - precision;
-                shortened.Mantissa >>= diff;
-                shortened.Exponent += diff;
+                var diff = NumberOfDigits(mantissa) - precision;
+                mantissa >>= diff;
+                exponent += diff;
             }
-            // normalize again to make sure there are no trailing zeros left
-            shortened.Normalize();
-            return shortened;
-        }
-
-        public void Truncate()
-        {
-            this = Truncate(Precision);
+            return new BigBinary(mantissa, exponent);
         }
 
         public BigBinary Floor()
         {
-            return Truncate(BigBinary.NumberOfDigits(Mantissa) + Exponent);
+            return Truncate(NumberOfDigits(Mantissa) + Exponent);
         }
 
-        public static int NumberOfDigits(BigInteger value)
+        private static (BigInteger Mantissa, int Exponent) Normalize(BigInteger mantissa, int exponent)
         {
-            // do not count the sign
-            //return (value * value.Sign).ToString().Length;
-            // faster version
+            if (mantissa.IsZero)
+            {
+                exponent = 0;
+            }
+            else if (mantissa.IsEven)
+            {
+                BigInteger pow2 = ~(mantissa - 1) & mantissa;
+                int exp = NumberOfDigits(pow2);
+                mantissa >>= exp;
+                exponent += exp;
+            }
+
+            return (mantissa, exponent);
+        }
+
+        private static int NumberOfDigits(BigInteger value)
+        {
             return (int)Math.Ceiling(BigInteger.Log(value * value.Sign, 2));
         }
 
@@ -134,7 +113,7 @@ namespace FractalSharp.Numerics
             return new BigBinary(mantissa, exponent);
         }
 
-        public static implicit operator BigBinary(decimal value)
+        public static explicit operator BigBinary(decimal value)
         {
             var mantissa = (BigInteger)value;
             var exponent = 0;
@@ -161,10 +140,10 @@ namespace FractalSharp.Numerics
             }
         }
 
-        public static explicit operator double(BigBinary value)
+        public static explicit operator int(BigBinary value)
         {
-            var truncated = value.Truncate(64);
-            return (double)truncated.Mantissa * Math.Pow(2, truncated.Exponent);
+            BigBinary truncated = value.Floor();
+            return (int)(truncated.Mantissa << truncated.Exponent);
         }
 
         public static explicit operator float(BigBinary value)
@@ -172,25 +151,16 @@ namespace FractalSharp.Numerics
             return Convert.ToSingle((double)value);
         }
 
+        public static explicit operator double(BigBinary value)
+        {
+            var truncated = value.Truncate(52);
+            return (double)truncated.Mantissa * Math.Pow(2, truncated.Exponent);
+        }
+
         public static explicit operator decimal(BigBinary value)
         {
-            return (decimal)value.Mantissa * (decimal)Math.Pow(2, value.Exponent);
-        }
-
-        public static explicit operator int(BigBinary value)
-        {
-            BigBinary truncated = value.Floor();
-            return (int)(truncated.Mantissa << truncated.Exponent);
-        }
-
-        public static explicit operator BigInteger(BigBinary value)
-        {
-            return value.Floor().Mantissa;
-        }
-
-        public static explicit operator BigBinary(BigInteger value)
-        {
-            return new BigBinary(value, 0);
+            var truncated = value.Truncate(93);
+            return (decimal)truncated.Mantissa * (decimal)Math.Pow(2, truncated.Exponent);
         }
 
         public static explicit operator BigDecimal(BigBinary value)
@@ -217,18 +187,7 @@ namespace FractalSharp.Numerics
 
         public static BigBinary operator -(BigBinary value)
         {
-            value.Mantissa *= -1;
-            return value;
-        }
-
-        public static BigBinary operator ++(BigBinary value)
-        {
-            return value + 1;
-        }
-
-        public static BigBinary operator --(BigBinary value)
-        {
-            return value - 1;
+            return new BigBinary(-value.Mantissa, value.Exponent);
         }
 
         public static BigBinary operator +(BigBinary left, BigBinary right)
@@ -239,13 +198,6 @@ namespace FractalSharp.Numerics
         public static BigBinary operator -(BigBinary left, BigBinary right)
         {
             return Add(left, -right);
-        }
-
-        private static BigBinary Add(BigBinary left, BigBinary right)
-        {
-            return left.Exponent > right.Exponent
-                ? new BigBinary(AlignExponent(left, right) + right.Mantissa, right.Exponent)
-                : new BigBinary(AlignExponent(right, left) + left.Mantissa, left.Exponent);
         }
 
         public static BigBinary operator *(BigBinary left, BigBinary right)
@@ -260,8 +212,8 @@ namespace FractalSharp.Numerics
             {
                 exponentChange = 0;
             }
-            dividend.Mantissa <<= exponentChange;
-            return new BigBinary(dividend.Mantissa / divisor.Mantissa, dividend.Exponent - divisor.Exponent - exponentChange);
+            var adjustedMantisa = dividend.Mantissa << exponentChange;
+            return new BigBinary(adjustedMantisa / divisor.Mantissa, dividend.Exponent - divisor.Exponent - exponentChange);
         }
 
         public static BigBinary operator %(BigBinary left, BigBinary right)
@@ -297,6 +249,16 @@ namespace FractalSharp.Numerics
         public static bool operator >=(BigBinary left, BigBinary right)
         {
             return left.Exponent > right.Exponent ? AlignExponent(left, right) >= right.Mantissa : left.Mantissa >= AlignExponent(right, left);
+        }
+
+        /// <summary>
+        /// Addition algorithm
+        /// </summary>
+        private static BigBinary Add(BigBinary left, BigBinary right)
+        {
+            return left.Exponent > right.Exponent
+                ? new BigBinary(AlignExponent(left, right) + right.Mantissa, right.Exponent)
+                : new BigBinary(AlignExponent(right, left) + left.Mantissa, left.Exponent);
         }
 
         /// <summary>
