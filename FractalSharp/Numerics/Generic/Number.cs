@@ -22,7 +22,7 @@ namespace FractalSharp.Numerics.Generic
 {
     public interface INumber
     {
-        double ToDouble();
+        Number<double> ToDouble();
     }
 
     public struct Number<T> : INumber, IComparable<Number<T>>, IEquatable<Number<T>> where T : struct
@@ -186,9 +186,9 @@ namespace FractalSharp.Numerics.Generic
             return new Number<T>(Math.FromDouble(value.Value));
         }
 
-        public double ToDouble()
+        public Number<double> ToDouble()
         {
-            return Math.ToDouble(Value);
+            return new Number<double>(Math.ToDouble(Value));
         }
 
         public int CompareTo(Number<T> other)
