@@ -15,22 +15,24 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 using System;
 
-namespace FractalSharp.Numerics
+namespace FractalSharp.Numerics.Generic
 {
     public interface IComplex
     {
         INumber Real { get; }
         INumber Imag { get; }
 
-        Complex<TOut> As<TOut>() where TOut : struct;
+        Complex<double> ToDouble();
     }
+
     public struct Complex<T> : IComplex, IEquatable<Complex<T>> where T : struct
     {
-        public static readonly Complex<T> Zero         = new Complex<T>(Number<T>.Zero, Number<T>.Zero);
-        public static readonly Complex<T> One          = new Complex<T>(Number<T>.One,  Number<T>.Zero);
-        public static readonly Complex<T> ImaginaryOne = new Complex<T>(Number<T>.Zero, Number<T>.One);
+        public static Complex<T> Zero         { get; } = new Complex<T>(Number<T>.Zero, Number<T>.Zero);
+        public static Complex<T> One          { get; } = new Complex<T>(Number<T>.One,  Number<T>.Zero);
+        public static Complex<T> ImaginaryOne { get; } = new Complex<T>(Number<T>.Zero, Number<T>.One);
 
         public Number<T> Real { get; }
         public Number<T> Imag { get; }
@@ -76,8 +78,11 @@ namespace FractalSharp.Numerics
 
         public static Complex<T> operator *(Complex<T> left, Complex<T> right)
         {
-            // (a + bi)(c + di) = a(c + di) + bi(c + di) = ac + adi + bci - bd
-            return new Complex<T>(left.Real * right.Real - left.Imag * right.Imag, left.Real * right.Imag + left.Imag * right.Real);
+            // Three multiplication trick
+            var ac = left.Real * right.Real;
+            var bd = left.Imag * right.Imag;
+            var prod = (left.Real + left.Imag) * (right.Real + right.Imag);
+            return new Complex<T>(ac - bd, prod - ac - bd);
         }
 
         public static Complex<T> operator /(Complex<T> left, Complex<T> right)
@@ -103,9 +108,9 @@ namespace FractalSharp.Numerics
             return value.Real * value.Real + value.Imag * value.Imag;
         }
 
-        public Complex<TOut> As<TOut>() where TOut : struct
+        public Complex<double> ToDouble()
         {
-            return new Complex<TOut>(Real.As<TOut>(), Imag.As<TOut>());
+            return new Complex<double>(Real.ToDouble(), Imag.ToDouble());
         }
 
         public bool Equals(Complex<T> other)

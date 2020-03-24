@@ -15,13 +15,15 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+using FractalSharp.Numerics.Generic;
 using System;
 
-namespace FractalSharp.Numerics
+namespace FractalSharp.Numerics.Extras
 {
-    public static class CMath
+    public static class ComplexMath
     {
-        public static Number<double> Phase(Complex<double> z)
+        public static Number<double> Arg(Complex<double> z)
         {
             return Math.Atan2(z.Imag.Value, z.Real.Value);
         }
@@ -42,7 +44,7 @@ namespace FractalSharp.Numerics
         public static Complex<double> Log(Complex<double> z)
         {
             Number<double> log_r = Math.Log(Complex<double>.AbsSqu(z).Value) / 2.0;
-            return new Complex<double>(log_r, Phase(z));
+            return new Complex<double>(log_r, Arg(z));
         }
 
         public static Complex<double> Pow(Complex<double> z, Complex<double> n)

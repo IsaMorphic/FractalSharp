@@ -15,35 +15,38 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 using FractalSharp.Algorithms;
-using FractalSharp.Numerics;
+using FractalSharp.Numerics.Generic;
 
 namespace FractalSharp.Processing
 {
-    public class PointMapper<TNumberIn, TNumberOut> where TNumberIn : struct where TNumberOut : struct
+    public class PointMapper<TNumber> where TNumber : struct
     {
-        public Rectangle<TNumberIn> InputSpace { get; set; }
-        public Rectangle<TNumberOut> OutputSpace { get; set; }
+        public Rectangle<double> InputSpace { get; set; }
+        public Rectangle<TNumber> OutputSpace { get; set; }
 
-        public Number<TNumberOut> MapPointX(Number<TNumberIn> value)
+        public Number<TNumber> MapPointX(Number<double> value)
         {
-            return MapValue(value.As<TNumberOut>(),
-                InputSpace.XMin.As<TNumberOut>(), InputSpace.XMax.As<TNumberOut>(),
+            return MapValue(Number<TNumber>.FromDouble(value),
+                Number<TNumber>.FromDouble(InputSpace.XMin), 
+                Number<TNumber>.FromDouble(InputSpace.XMax),
                 OutputSpace.XMin, OutputSpace.XMax);
         }
 
-        public Number<TNumberOut> MapPointY(Number<TNumberIn> value)
+        public Number<TNumber> MapPointY(Number<double> value)
         {
-            return MapValue(value.As<TNumberOut>(),
-                InputSpace.YMin.As<TNumberOut>(), InputSpace.YMax.As<TNumberOut>(),
+            return MapValue(Number<TNumber>.FromDouble(value),
+                Number<TNumber>.FromDouble(InputSpace.YMin),
+                Number<TNumber>.FromDouble(InputSpace.YMax),
                 OutputSpace.YMin, OutputSpace.YMax);
         }
 
-        private static Number<TNumber> MapValue<TNumber>(Number<TNumber> OldValue, Number<TNumber> OldMin, Number<TNumber> OldMax, Number<TNumber> NewMin, Number<TNumber> NewMax) where TNumber : struct
+        private static Number<T> MapValue<T>(Number<T> OldValue, Number<T> OldMin, Number<T> OldMax, Number<T> NewMin, Number<T> NewMax) where T : struct
         {
-            Number<TNumber> OldRange = OldMax - OldMin;
-            Number<TNumber> NewRange = NewMax - NewMin;
-            Number<TNumber> NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
+            Number<T> OldRange = OldMax - OldMin;
+            Number<T> NewRange = NewMax - NewMin;
+            Number<T> NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
             return NewValue;
         }
     }

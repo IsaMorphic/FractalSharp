@@ -15,21 +15,39 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-using MiscUtil;
+
 using System;
 
-namespace FractalSharp.Numerics
+namespace FractalSharp.Numerics.Generic
 {
     public interface INumber
     {
-        Number<TOut> As<TOut>() where TOut : struct;
+        double ToDouble();
     }
 
     public struct Number<T> : INumber, IComparable<Number<T>>, IEquatable<Number<T>> where T : struct
     {
-        public static readonly Number<T> Zero = From(0.0);
-        public static readonly Number<T> One  = From(1.0);
-        public static readonly Number<T> Two  = From(2.0);
+        #region Static members
+
+        // Math interface
+        private static IMath<T> Math { get; }
+
+        // Constants
+        public static Number<T> Zero { get; }
+        public static Number<T> One { get; }
+        public static Number<T> Two { get; }
+
+        static Number()
+        {
+            Math = (MathFactory.Instance as
+                IMathFactory<T>).Create();
+
+            Zero = Math.FromDouble(0.0);
+            One = Math.FromDouble(1.0);
+            Two = Math.FromDouble(2.0);
+        }
+
+        #endregion
 
         public T Value { get; }
 
@@ -50,57 +68,57 @@ namespace FractalSharp.Numerics
 
         public static Number<T> operator -(Number<T> value)
         {
-            return new Number<T>(Operator.Negate(value.Value));
+            return new Number<T>(Math.Negate(value.Value));
         }
 
         public static Number<T> operator +(Number<T> left, Number<T> right)
         {
-            return new Number<T>(Operator.Add(left.Value, right.Value));
+            return new Number<T>(Math.Add(left.Value, right.Value));
         }
 
         public static Number<T> operator -(Number<T> left, Number<T> right)
         {
-            return new Number<T>(Operator.Subtract(left.Value, right.Value));
+            return new Number<T>(Math.Subtract(left.Value, right.Value));
         }
 
         public static Number<T> operator *(Number<T> left, Number<T> right)
         {
-            return new Number<T>(Operator.Multiply(left.Value, right.Value));
+            return new Number<T>(Math.Multiply(left.Value, right.Value));
         }
 
         public static Number<T> operator /(Number<T> left, Number<T> right)
         {
-            return new Number<T>(Operator.Divide(left.Value, right.Value));
+            return new Number<T>(Math.Divide(left.Value, right.Value));
         }
 
         public static bool operator ==(Number<T> left, Number<T> right)
         {
-            return Operator.Equal(left.Value, right.Value);
+            return Math.Equal(left.Value, right.Value);
         }
 
         public static bool operator !=(Number<T> left, Number<T> right)
         {
-            return Operator.NotEqual(left.Value, right.Value);
+            return Math.NotEqual(left.Value, right.Value);
         }
 
         public static bool operator >(Number<T> left, Number<T> right)
         {
-            return Operator.GreaterThan(left.Value, right.Value);
+            return Math.GreaterThan(left.Value, right.Value);
         }
 
         public static bool operator <(Number<T> left, Number<T> right)
         {
-            return Operator.LessThan(left.Value, right.Value);
+            return Math.LessThan(left.Value, right.Value);
         }
 
         public static bool operator >=(Number<T> left, Number<T> right)
         {
-            return Operator.GreaterThanOrEqual(left.Value, right.Value);
+            return Math.GreaterThanOrEqual(left.Value, right.Value);
         }
 
         public static bool operator <=(Number<T> left, Number<T> right)
         {
-            return Operator.LessThanOrEqual(left.Value, right.Value);
+            return Math.LessThanOrEqual(left.Value, right.Value);
         }
 
         public static Number<T> Abs(Number<T> value)
@@ -108,19 +126,14 @@ namespace FractalSharp.Numerics
             return (value > Zero) ? value : -value;
         }
 
-        public Number<TOut> As<TOut>() where TOut : struct
+        public double ToDouble()
         {
-            return new Number<TOut>(Operator.Convert<T, TOut>(Value));
+            return Math.ToDouble(Value);
         }
 
-        public static Number<T> From<TOut>(TOut n) where TOut : struct
+        public static Number<T> FromDouble(Number<double> value)
         {
-            return new Number<TOut>(n).As<T>();
-        }
-
-        public TOut To<TOut>() where TOut : struct
-        {
-            return As<TOut>().Value;
+            return new Number<T>(Math.FromDouble(value.Value));
         }
 
         public int CompareTo(Number<T> other)

@@ -15,7 +15,8 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-using FractalSharp.Numerics;
+
+using FractalSharp.Numerics.Generic;
 
 namespace FractalSharp.Algorithms
 {
@@ -35,8 +36,8 @@ namespace FractalSharp.Algorithms
         public Complex<TNumber> Location { get; set; }
 
         int IFractalParams.MaxIterations { get => MaxIterations; set => MaxIterations = value; }
-        INumber IFractalParams.Magnification { get => Magnification; set => Magnification = value.As<TNumber>(); }
-        IComplex IFractalParams.Location { get => Location; set => Location = value.As<TNumber>(); }
+        INumber IFractalParams.Magnification { get => Magnification; set => Magnification = (Number<TNumber>)value; }
+        IComplex IFractalParams.Location { get => Location; set => Location = (Complex<TNumber>)value; }
 
         IAlgorithmParams IAlgorithmParams.Copy() => Copy();
 

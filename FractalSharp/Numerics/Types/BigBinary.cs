@@ -19,7 +19,7 @@
 using System;
 using System.Numerics;
 
-namespace FractalSharp.Numerics
+namespace FractalSharp.Numerics.Types
 {
     /// <summary>
     /// Arbitrary precision binary floating point number type

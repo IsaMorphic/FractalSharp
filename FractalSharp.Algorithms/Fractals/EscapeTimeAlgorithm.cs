@@ -15,8 +15,9 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+using FractalSharp.Numerics.Generic;
 using System.Threading;
-using FractalSharp.Numerics;
 
 namespace FractalSharp.Algorithms.Fractals
 {
@@ -32,7 +33,7 @@ namespace FractalSharp.Algorithms.Fractals
             Magnification = Number<TNumber>.One;
             MaxIterations = 256;
 
-            EscapeRadius = Number<TNumber>.From(4.0);
+            EscapeRadius = Number<TNumber>.FromDouble(4.0);
         }
 
         public override IFractalParams Copy()
@@ -85,7 +86,7 @@ namespace FractalSharp.Algorithms.Fractals
                 iter++;
             }
 
-            return new PointData(prevOutput.As<double>(), iter, iter < Params.MaxIterations ? PointClass.Outer : PointClass.Inner);
+            return new PointData(prevOutput.ToDouble(), iter, iter < Params.MaxIterations ? PointClass.Outer : PointClass.Inner);
         }
 
         protected abstract Complex<TNumber> DoIteration(Complex<TNumber> prevOutput, Complex<TNumber> mappedPoint);

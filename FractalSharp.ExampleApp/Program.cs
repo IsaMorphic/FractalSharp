@@ -15,11 +15,12 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 using FractalSharp.Algorithms;
 using FractalSharp.Algorithms.Coloring;
 using FractalSharp.Algorithms.Fractals;
 using FractalSharp.Imaging;
-using FractalSharp.Numerics;
+using FractalSharp.Numerics.Generic;
 using FractalSharp.Processing;
 using SkiaSharp;
 using System;

@@ -15,7 +15,8 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-using FractalSharp.Numerics;
+
+using FractalSharp.Numerics.Generic;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -84,7 +85,7 @@ namespace FractalSharp.Algorithms.Fractals
 
             // Initialize some variables...
             Complex<double> zn;
-            Complex<double> d0 = point.As<double>();
+            Complex<double> d0 = point.ToDouble();
             Complex<double> dn = A[n] * d0 + B[n] * d0 * d0 + C[n] * d0 * d0 * d0;
 
             // Mandelbrot algorithm
@@ -118,11 +119,11 @@ namespace FractalSharp.Algorithms.Fractals
             {
                 ProbePoints[i] = new List<Complex<double>[]>();
 
-                Number<TNumber> real = Number<TNumber>.From(Random.NextDouble() * 4 - 2) / Params.Magnification;
-                Number<TNumber> imag = Number<TNumber>.From(Random.NextDouble() * 4 - 2) / Params.Magnification;
+                Number<TNumber> real = Number<TNumber>.FromDouble(Random.NextDouble() * 4 - 2) / Params.Magnification;
+                Number<TNumber> imag = Number<TNumber>.FromDouble(Random.NextDouble() * 4 - 2) / Params.Magnification;
 
                 Complex<TNumber> offset = new Complex<TNumber>(real, imag);
-                Complex<double> point = (offset + Params.Location).As<double>();
+                Complex<double> point = (offset + Params.Location).ToDouble();
 
                 ProbePoints[i].Add(new Complex<double>[3] { point, point * point, point * point * point });
             }
@@ -147,7 +148,7 @@ namespace FractalSharp.Algorithms.Fractals
             {
                 token.ThrowIfCancellationRequested();
 
-                Complex<double> smallXn = xn.As<double>();
+                Complex<double> smallXn = xn.ToDouble();
 
                 X.Add(smallXn);
                 TwoX.Add(smallXn + smallXn);
@@ -200,9 +201,9 @@ namespace FractalSharp.Algorithms.Fractals
                 foreach (var P in ProbePoints)
                 {
                     Complex<double> approximation = A[n] * P[0][0] + B[n] * P[0][1] + C[n] * P[0][2];
-                    error += Complex<double>.AbsSqu(approximation - P[n][0]).As<TNumber>();
+                    error += Number<TNumber>.FromDouble(Complex<double>.AbsSqu(approximation - P[n][0]));
                 }
-                error /= Number<TNumber>.From(ProbePoints.Length);
+                error /= Number<TNumber>.FromDouble(ProbePoints.Length);
                 if (error > Number<TNumber>.One / Params.Magnification)
                 {
                     SkippedIterations = Math.Max(n - 3, 0);

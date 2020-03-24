@@ -15,7 +15,9 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-using FractalSharp.Numerics;
+
+using FractalSharp.Numerics.Extras;
+using FractalSharp.Numerics.Generic;
 
 namespace FractalSharp.Algorithms.Fractals
 {
@@ -46,7 +48,7 @@ namespace FractalSharp.Algorithms.Fractals
     {
         protected override Complex<double> DoIteration(Complex<double> z, Complex<double> c)
         {
-            return CMath.Pow(z, Params.Power) + c;
+            return ComplexMath.Pow(z, Params.Power) + c;
         }
     }
 }

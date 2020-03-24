@@ -16,21 +16,32 @@
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using FractalSharp.Numerics.Generic;
-
-namespace FractalSharp.Algorithms.Fractals
+namespace FractalSharp.Numerics.Generic
 {
-    public class GlitchMandelbrotAlgorithm<TNumber> :
-        EscapeTimeAlgorithm<TNumber, EscapeTimeParams<TNumber>>
-        where TNumber : struct
+    public interface IMath<T>
     {
-        protected override Complex<TNumber> DoIteration(Complex<TNumber> z, Complex<TNumber> c)
-        {
-            Number<TNumber> real = z.Real;
-            Number<TNumber> imag = z.Imag;
-            real = real * real - imag * imag + c.Real;
-            imag = Number<TNumber>.Two * real * imag + c.Imag;
-            return new Complex<TNumber>(real, imag);
-        }
+        // Arithmetic
+        T Add(T left, T right);
+        T Subtract(T left, T right);
+        T Multiply(T left, T right);
+        T Divide(T left, T right);
+
+        T Negate(T value);
+
+        // Comparisons
+        bool Equal(T left, T right);
+        bool NotEqual(T left, T right);
+
+        bool LessThan(T left, T right);
+        bool GreaterThan(T left, T right);
+
+        bool LessThanOrEqual(T left, T right);
+        bool GreaterThanOrEqual(T left, T right);
+
+        // Casts
+        double ToDouble(T value);
+        T FromDouble(double value);
     }
+
+
 }

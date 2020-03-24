@@ -16,21 +16,33 @@
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using FractalSharp.Numerics.Generic;
+using FractalSharp.Numerics.Generic.Implementation;
+using System;
 
-namespace FractalSharp.Algorithms.Fractals
+namespace FractalSharp.Numerics.Generic
 {
-    public class GlitchMandelbrotAlgorithm<TNumber> :
-        EscapeTimeAlgorithm<TNumber, EscapeTimeParams<TNumber>>
-        where TNumber : struct
+    public interface IMathFactory<T>
     {
-        protected override Complex<TNumber> DoIteration(Complex<TNumber> z, Complex<TNumber> c)
+        IMath<T> Create();
+    }
+
+    public partial class MathFactory : IMathFactory<float>, IMathFactory<double>, IMathFactory<decimal>
+    {
+        public static MathFactory Instance { get; } = new MathFactory();
+
+        IMath<float> IMathFactory<float>.Create()
         {
-            Number<TNumber> real = z.Real;
-            Number<TNumber> imag = z.Imag;
-            real = real * real - imag * imag + c.Real;
-            imag = Number<TNumber>.Two * real * imag + c.Imag;
-            return new Complex<TNumber>(real, imag);
+            return new SingleMath();
+        }
+
+        IMath<double> IMathFactory<double>.Create()
+        {
+            return new DoubleMath();
+        }
+
+        IMath<decimal> IMathFactory<decimal>.Create()
+        {
+            throw new NotImplementedException();
         }
     }
 }

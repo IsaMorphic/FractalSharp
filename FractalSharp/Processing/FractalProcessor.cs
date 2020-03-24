@@ -15,8 +15,9 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 using FractalSharp.Algorithms;
-using FractalSharp.Numerics;
+using FractalSharp.Numerics.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,18 +28,18 @@ namespace FractalSharp.Processing
         where TAlgorithm : IFractalProvider<TNumber>, new()
         where TNumber : struct
     {
-        protected PointMapper<int, TNumber> PointMapper { get; private set; }
+        protected PointMapper<TNumber> PointMapper { get; private set; }
 
         public FractalProcessor(int width, int height) : base(width, height)
         {
-            PointMapper = new PointMapper<int, TNumber>();
-            PointMapper.InputSpace = new Rectangle<int>(0, Width, 0, Height);
+            PointMapper = new PointMapper<TNumber>();
+            PointMapper.InputSpace = new Rectangle<double>(0, Width, 0, Height);
         }
 
         public override async Task SetupAsync(ProcessorConfig settings, CancellationToken cancellationToken)
         {
             await base.SetupAsync(settings, cancellationToken);
-            Number<TNumber> aspectRatio = Number<TNumber>.From(Width) / Number<TNumber>.From(Height);
+            Number<TNumber> aspectRatio = Number<TNumber>.FromDouble(Width) / Number<TNumber>.FromDouble(Height);
             PointMapper.OutputSpace = AlgorithmProvider.GetOutputBounds(aspectRatio);
         }
 
