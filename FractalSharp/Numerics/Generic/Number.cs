@@ -126,14 +126,69 @@ namespace FractalSharp.Numerics.Generic
             return (value > Zero) ? value : -value;
         }
 
-        public double ToDouble()
+        public static Number<T> Ln(Number<T> value)
         {
-            return Math.ToDouble(Value);
+            return Math.Ln(value.Value);
+        }
+
+        public static Number<T> Exp(Number<T> value)
+        {
+            return Math.Exp(value.Value);
+        }
+
+        public static Number<T> Pow(Number<T> x, Number<T> y)
+        {
+            return Math.Pow(x.Value, y.Value);
+        }
+
+        public static Number<T> Sqrt(Number<T> value)
+        {
+            return Math.Sqrt(value.Value);
+        }
+
+        public static Number<T> Sin(Number<T> value)
+        {
+            return Math.Sin(value.Value);
+        }
+
+        public static Number<T> Cos(Number<T> value)
+        {
+            return Math.Cos(value.Value);
+        }
+
+        public static Number<T> Tan(Number<T> value)
+        {
+            return Math.Tan(value.Value);
+        }
+
+        public static Number<T> Asin(Number<T> value)
+        {
+            return Math.Asin(value.Value);
+        }
+
+        public static Number<T> Acos(Number<T> value)
+        {
+            return Math.Acos(value.Value);
+        }
+
+        public static Number<T> Atan(Number<T> value)
+        {
+            return Math.Atan(value.Value);
+        }
+
+        public static Number<T> Atan2(Number<T> y, Number<T> x)
+        {
+            return Math.Atan2(y.Value, x.Value);
         }
 
         public static Number<T> FromDouble(Number<double> value)
         {
             return new Number<T>(Math.FromDouble(value.Value));
+        }
+
+        public double ToDouble()
+        {
+            return Math.ToDouble(Value);
         }
 
         public int CompareTo(Number<T> other)

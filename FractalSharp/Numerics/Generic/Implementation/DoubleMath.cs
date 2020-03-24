@@ -16,6 +16,8 @@
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System;
+
 namespace FractalSharp.Numerics.Generic.Implementation
 {
     public class DoubleMath : IMath<double>
@@ -38,5 +40,22 @@ namespace FractalSharp.Numerics.Generic.Implementation
 
         public double ToDouble(double value) => value;
         public double FromDouble(double value) => value;
+
+        public double Ln(double value) => Math.Log(value);
+        public double Exp(double value) => Math.Exp(value);
+
+        public double Pow(double x, double y) => Math.Pow(x, y);
+
+        public double Sqrt(double value) => Math.Sqrt(value);
+
+        public double Sin(double value) => Math.Sin(value);
+        public double Cos(double value) => Math.Cos(value);
+        public double Tan(double value) => Math.Tan(value);
+
+        public double Asin(double value) => Math.Asin(value);
+        public double Acos(double value) => Math.Acos(value);
+        public double Atan(double value) => Math.Atan(value);
+
+        public double Atan2(double y, double x) => Math.Atan2(y, x);
     }
 }

@@ -16,7 +16,6 @@
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using FractalSharp.Numerics.Extras;
 using FractalSharp.Numerics.Generic;
 using System.Threading;
 
@@ -46,7 +45,7 @@ namespace FractalSharp.Algorithms.Coloring
 
         public override double Run(PointData data)
         {
-            return (Params.Scale * ComplexMath.Abs(data.ZValue)).Value;
+            return (Params.Scale * Complex<double>.Abs(data.ZValue)).Value;
         }
     }
 }

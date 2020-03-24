@@ -38,6 +38,25 @@ namespace FractalSharp.Numerics.Generic
         bool LessThanOrEqual(T left, T right);
         bool GreaterThanOrEqual(T left, T right);
 
+        // Special functions
+        T Ln(T value);
+        T Exp(T value);
+
+        T Pow(T x, T y);
+
+        T Sqrt(T value);
+
+        T Sin(T value);
+        T Cos(T value);
+        T Tan(T value);
+
+        T Asin(T value);
+        T Acos(T value);
+        T Atan(T value);
+
+        T Atan2(T y, T x);
+
+
         // Casts
         double ToDouble(T value);
         T FromDouble(double value);

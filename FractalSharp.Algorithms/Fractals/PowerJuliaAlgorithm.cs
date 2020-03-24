@@ -16,18 +16,19 @@
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using FractalSharp.Numerics.Extras;
 using FractalSharp.Numerics.Generic;
 
 namespace FractalSharp.Algorithms.Fractals
 {
-    public class PowerJuliaParams : EscapeTimeParams<double>
+    public class PowerJuliaParams<TNumber> : 
+        EscapeTimeParams<TNumber> 
+        where TNumber : struct
     {
-        public Complex<double> Coordinates { get; set; }
+        public Complex<TNumber> Coordinates { get; set; }
 
         public override IFractalParams Copy()
         {
-            return new PowerJuliaParams
+            return new PowerJuliaParams<TNumber>
             {
                 MaxIterations = MaxIterations,
                 Magnification = Magnification,
@@ -39,11 +40,13 @@ namespace FractalSharp.Algorithms.Fractals
         }
     }
 
-    public class PowerJuliaAlgorithm : JuliaAlgorithm<double, PowerJuliaParams>
+    public class PowerJuliaAlgorithm<TNumber> : 
+        JuliaAlgorithm<TNumber, PowerJuliaParams<TNumber>>
+        where TNumber : struct
     {
-        protected override Complex<double> DoIteration(Complex<double> z)
+        protected override Complex<TNumber> DoIteration(Complex<TNumber> z)
         {
-            return ComplexMath.Pow(Params.Coordinates, z);
+            return Complex<TNumber>.Pow(Params.Coordinates, z);
         }
     }
 }

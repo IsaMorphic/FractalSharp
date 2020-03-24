@@ -16,23 +16,24 @@
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using FractalSharp.Numerics.Extras;
 using FractalSharp.Numerics.Generic;
 
 namespace FractalSharp.Algorithms.Fractals
 {
-    public class GeneralMandelbrotParams : EscapeTimeParams<double>
+    public class GeneralMandelbrotParams<TNumber> : 
+        EscapeTimeParams<TNumber> 
+        where TNumber : struct
     {
-        public Complex<double> Power { get; set; }
+        public Complex<TNumber> Power { get; set; }
 
         public GeneralMandelbrotParams()
         {
-            Power = new Complex<double>(2.0, 0.0);
+            Power = new Complex<TNumber>(Number<TNumber>.Two, Number<TNumber>.Zero);
         }
 
         public override IFractalParams Copy()
         {
-            return new GeneralMandelbrotParams
+            return new GeneralMandelbrotParams<TNumber>
             {
                 MaxIterations = MaxIterations,
                 Magnification = Magnification,
@@ -43,12 +44,13 @@ namespace FractalSharp.Algorithms.Fractals
             };
         }
     }
-    public class GeneralMandelbrotAlgorithm :
-        EscapeTimeAlgorithm<double, GeneralMandelbrotParams>
+    public class GeneralMandelbrotAlgorithm<TNumber> :
+        EscapeTimeAlgorithm<TNumber, GeneralMandelbrotParams<TNumber>> 
+        where TNumber : struct
     {
-        protected override Complex<double> DoIteration(Complex<double> z, Complex<double> c)
+        protected override Complex<TNumber> DoIteration(Complex<TNumber> z, Complex<TNumber> c)
         {
-            return ComplexMath.Pow(z, Params.Power) + c;
+            return Complex<TNumber>.Pow(z, Params.Power) + c;
         }
     }
 }

@@ -103,9 +103,39 @@ namespace FractalSharp.Numerics.Generic
             return left.Real != right.Real || left.Imag != right.Imag;
         }
 
+        public static Number<T> Abs(Complex<T> z)
+        {
+            Number<T> squ = z.Real * z.Real + z.Imag * z.Imag;
+            return Number<T>.Sqrt(squ);
+        }
+
         public static Number<T> AbsSqu(Complex<T> value)
         {
             return value.Real * value.Real + value.Imag * value.Imag;
+        }
+
+        public static Number<T> Arg(Complex<T> z)
+        {
+            return Number<T>.Atan2(z.Imag, z.Real);
+        }
+
+        public static Complex<T> Exp(Complex<T> z)
+        {
+            Complex<T> r = Number<T>.Exp(z.Real);
+            Complex<T> i = new Complex<T>(Number<T>.Cos(z.Imag), Number<T>.Sin(z.Imag));
+            return r * i;
+        }
+
+        public static Complex<T> Log(Complex<T> z)
+        {
+            Number<T> ln_r = Number<T>.Ln(AbsSqu(z)) / Number<T>.Two;
+            return new Complex<T>(ln_r, Arg(z));
+        }
+
+        public static Complex<T> Pow(Complex<T> z, Complex<T> n)
+        {
+            if (z == Zero) return Zero;
+            return Exp(Log(z) * n);
         }
 
         public Complex<double> ToDouble()

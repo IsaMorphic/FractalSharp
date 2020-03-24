@@ -38,5 +38,22 @@ namespace FractalSharp.Numerics.Generic.Implementation
 
         public double ToDouble(decimal value) => (double)value;
         public decimal FromDouble(double value) => (decimal)value;
+
+        public decimal Ln(decimal value) => throw new System.NotImplementedException();
+        public decimal Exp(decimal value) => throw new System.NotImplementedException();
+
+        public decimal Pow(decimal x, decimal y) => throw new System.NotImplementedException();
+
+        public decimal Sqrt(decimal value) => throw new System.NotImplementedException();
+
+        public decimal Sin(decimal value) => throw new System.NotImplementedException();
+        public decimal Cos(decimal value) => throw new System.NotImplementedException();
+        public decimal Tan(decimal value) => throw new System.NotImplementedException();
+
+        public decimal Asin(decimal value) => throw new System.NotImplementedException();
+        public decimal Acos(decimal value) => throw new System.NotImplementedException();
+        public decimal Atan(decimal value) => throw new System.NotImplementedException();
+
+        public decimal Atan2(decimal y, decimal x) => throw new System.NotImplementedException();
     }
 }
