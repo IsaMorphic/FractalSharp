@@ -17,7 +17,6 @@
  */
 
 using FractalSharp.Numerics.Generic.Implementation;
-using System;
 
 namespace FractalSharp.Numerics.Generic
 {
@@ -26,9 +25,9 @@ namespace FractalSharp.Numerics.Generic
         IMath<T> Create();
     }
 
-    public partial class MathFactory : IMathFactory<float>, IMathFactory<double>, IMathFactory<decimal>
+    public class MathFactory : IMathFactory<float>, IMathFactory<double>, IMathFactory<decimal>
     {
-        public static MathFactory Instance { get; } = new MathFactory();
+        public static MathFactory Instance { get; protected set; } = new MathFactory();
 
         IMath<float> IMathFactory<float>.Create()
         {
@@ -42,7 +41,7 @@ namespace FractalSharp.Numerics.Generic
 
         IMath<decimal> IMathFactory<decimal>.Create()
         {
-            throw new NotImplementedException();
+            return new DecimalMath();
         }
     }
 }
