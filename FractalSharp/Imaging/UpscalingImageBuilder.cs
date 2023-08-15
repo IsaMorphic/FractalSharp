@@ -14,18 +14,18 @@ namespace FractalSharp.Imaging
             int scaleY = newHeight / oldHeight;
 
             InitializeImage(newWidth, newHeight);
-            for(int y = 0; y < newHeight; y++)
+            Parallel.For(0, newHeight, y =>
             {
                 int scaledY = Math.Min(y / scaleY, oldHeight - 1);
-                for(int x = 0; x < newWidth; x++)
+                Parallel.For(0, newWidth, x =>
                 {
                     int scaledX = Math.Min(x / scaleX, oldWidth - 1);
                     if (double.IsNaN(outerIndicies[scaledY, scaledX]))
                         WritePixel(x, y, innerColors[innerIndicies[scaledY, scaledX]]);
                     else
                         WritePixel(x, y, outerColors[outerIndicies[scaledY, scaledX]]);
-                }
-            }
+                });
+            });
         }
     }
 }
