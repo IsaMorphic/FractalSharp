@@ -17,6 +17,7 @@
  */
 
 using FractalSharp.Numerics.Generic.Implementation;
+using QuadrupleLib;
 
 namespace FractalSharp.Numerics.Generic
 {
@@ -25,7 +26,7 @@ namespace FractalSharp.Numerics.Generic
         IMath<T> Create();
     }
 
-    public class MathFactory : IMathFactory<float>, IMathFactory<double>, IMathFactory<decimal>
+    public class MathFactory : IMathFactory<float>, IMathFactory<double>, IMathFactory<decimal>, IMathFactory<Float128>
     {
         public static MathFactory Instance { get; protected set; } = new MathFactory();
 
@@ -42,6 +43,11 @@ namespace FractalSharp.Numerics.Generic
         IMath<decimal> IMathFactory<decimal>.Create()
         {
             return new DecimalMath();
+        }
+
+        IMath<Float128> IMathFactory<Float128>.Create()
+        {
+            return new QuadMath();
         }
     }
 }
