@@ -31,25 +31,32 @@ using System.Threading.Tasks;
 
 namespace FractalSharp.ExampleApp
 {
-    class SkiaImageBuilder : ImageBuilder
+    unsafe class SkiaImageBuilder : UpscalingImageBuilder
     {
         public SKBitmap Bitmap { get; private set; }
 
+        private byte* skPixels;
+
         public override void InitializeImage(int width, int height)
         {
-            Bitmap = new SKBitmap(new SKImageInfo(width, height, SKColorType.Bgra8888, SKAlphaType.Unpremul));
+            Bitmap = new SKBitmap(new SKImageInfo(width, height, SKColorType.Rgba8888, SKAlphaType.Unpremul));
+            skPixels = (byte*)Bitmap.GetPixels().ToPointer();
         }
 
         public override void WritePixel(int x, int y, RgbaValue color)
         {
-            Bitmap.SetPixel(x, y, new SKColor(color.Red, color.Green, color.Blue, color.Alpha));
+            var ptr = skPixels + Bitmap.RowBytes * y + x * 4;
+            *ptr++ = color.Red;
+            *ptr++ = color.Green;
+            *ptr++ = color.Blue;
+            *ptr++ = color.Alpha;
         }
     }
 
     class Program
     {
-        private const int WIDTH  = 8196;
-        private const int HEIGHT = 8196;
+        private const int WIDTH  = 3840;
+        private const int HEIGHT = 2160;
 
         private static readonly FractalProcessor<Float128, SquareMandelbrotAlgorithm<Float128>> FractalProcessor =
             new FractalProcessor<Float128, SquareMandelbrotAlgorithm<Float128>>(WIDTH, HEIGHT);
@@ -57,14 +64,15 @@ namespace FractalSharp.ExampleApp
         private static readonly ColorProcessor<SmoothColoringAlgorithm> OuterColorProcessor =
             new ColorProcessor<SmoothColoringAlgorithm>(WIDTH, HEIGHT);
 
-        private static readonly ColorProcessor<RadialGradientAlgorithm> InnerColorProcessor =
-            new ColorProcessor<RadialGradientAlgorithm>(WIDTH, HEIGHT);
+        private static readonly ColorProcessor<SingleColorAlgorithm> InnerColorProcessor =
+            new ColorProcessor<SingleColorAlgorithm>(WIDTH, HEIGHT);
 
         private static readonly SkiaImageBuilder Imager = new SkiaImageBuilder();
 
         private static readonly Gradient Colors =
             new Gradient(256, new List<GradientKey>
             {
+                new GradientKey(new RgbaValue(0, 0, 0)),
                 new GradientKey(new RgbaValue(9, 1, 47)),
                 new GradientKey(new RgbaValue(4, 4, 73)),
                 new GradientKey(new RgbaValue(0, 7, 100)),
@@ -94,9 +102,9 @@ namespace FractalSharp.ExampleApp
 
                 Params = new EscapeTimeParams<Float128>
                 {
-                    MaxIterations = 256,
-                    Magnification = (Float128)1.0,
-                    Location = Complex<Float128>.Zero,
+                    MaxIterations = 32768 / 2,
+                    Magnification = (Float128)778159963142874.1,
+                    Location = new Complex<Float128>((Float128)0.33963168725947473, (Float128)0.5104585847687574),
                     EscapeRadius = (Float128)4.0,
                 }
             }, CancellationToken.None);
@@ -106,10 +114,7 @@ namespace FractalSharp.ExampleApp
             await InnerColorProcessor.SetupAsync(new ColorProcessorConfig
             {
                 ThreadCount = Environment.ProcessorCount,
-                Params = new RadialGradientParams
-                {
-                    Scale = 256
-                },
+                Params = new EmptyColoringParams(),
                 PointClass = PointClass.Inner,
                 InputData = inputData
             }, CancellationToken.None);
@@ -129,7 +134,7 @@ namespace FractalSharp.ExampleApp
             Imager.CreateImage(outerIndicies, innerIndicies, Colors, Colors);
 
             Console.WriteLine("Writing image file to disk...");
-            SKPixmap.Encode(new SKFileWStream("output.png"), Imager.Bitmap, SKEncodedImageFormat.Png, 100);
+            Imager.Bitmap.Encode(new SKFileWStream("output.png"), SKEncodedImageFormat.Png, 100);
 
             Console.WriteLine("Image rendered successfully!");
         }
