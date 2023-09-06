@@ -16,6 +16,7 @@
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 using FractalSharp.Algorithms;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
