@@ -32,10 +32,12 @@ namespace FractalSharp.Imaging
             {
                 Parallel.For(0, width, x =>
                 {
-                    if (double.IsNaN(outerIndicies[y, x]))
+                    if (double.IsNaN(outerIndicies[y, x]) && !double.IsNaN(innerIndicies[y, x]))
                         WritePixel(x, y, innerColors[innerIndicies[y, x]]);
-                    else
+                    else if (!double.IsNaN(outerIndicies[y, x]))
                         WritePixel(x, y, outerColors[outerIndicies[y, x]]);
+                    else
+                        WritePixel(x, y, new RgbaValue(0, 0, 0));
                 });
             });
         }

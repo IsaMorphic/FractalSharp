@@ -58,8 +58,8 @@ namespace FractalSharp.ExampleApp
         private const int WIDTH  = 3840;
         private const int HEIGHT = 2160;
 
-        private static readonly FractalProcessor<Float128, SquareMandelbrotAlgorithm<Float128>> FractalProcessor =
-            new FractalProcessor<Float128, SquareMandelbrotAlgorithm<Float128>>(WIDTH, HEIGHT);
+        private static readonly FractalProcessor<Float128, SquareMandelbrotPAlgorithm<Float128>> FractalProcessor =
+            new FractalProcessor<Float128, SquareMandelbrotPAlgorithm<Float128>>(WIDTH, HEIGHT);
 
         private static readonly ColorProcessor<SmoothColoringAlgorithm> OuterColorProcessor =
             new ColorProcessor<SmoothColoringAlgorithm>(WIDTH, HEIGHT);
@@ -100,11 +100,12 @@ namespace FractalSharp.ExampleApp
             {
                 ThreadCount = Environment.ProcessorCount,
 
-                Params = new EscapeTimeParams<Float128>
+                Params = new PerturbationParams<Float128>
                 {
-                    MaxIterations = 32768 / 2,
+                    MaxIterations = 8192,
                     Magnification = (Float128)778159963142874.1,
                     Location = new Complex<Float128>((Float128)0.33963168725947473, (Float128)0.5104585847687574),
+                    ReferencePoint = new Complex<Float128>((Float128)0.33963168725947473, (Float128)0.5104585847687574),
                     EscapeRadius = (Float128)4.0,
                 }
             }, CancellationToken.None);
