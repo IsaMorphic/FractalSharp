@@ -95,49 +95,52 @@ namespace FractalSharp.ExampleApp
         {
             Console.WriteLine("Process started.");
 
-            Console.WriteLine("Computing raw fractal data...");
-            await FractalProcessor.SetupAsync(new ProcessorConfig
+            for (int i = 0; i < 10_800; i++) 
             {
-                ThreadCount = Environment.ProcessorCount,
-
-                Params = new PerturbationParams<Float128>
+                Console.WriteLine($"Computing raw fractal data for frame #{i}...");
+                await FractalProcessor.SetupAsync(new ProcessorConfig
                 {
-                    MaxIterations = 8192,
-                    Magnification = (Float128)778159963142874.1,
-                    Location = new Complex<Float128>((Float128)0.33963168725947473, (Float128)0.5104585847687574),
-                    ReferencePoint = new Complex<Float128>((Float128)0.33963168725947473, (Float128)0.5104585847687574),
-                    EscapeRadius = (Float128)4.0,
-                }
-            }, CancellationToken.None);
-            PointData[,] inputData = await FractalProcessor.ProcessAsync(CancellationToken.None);
+                    ThreadCount = Environment.ProcessorCount,
 
-            Console.WriteLine("Computing colors for inner points...");
-            await InnerColorProcessor.SetupAsync(new ColorProcessorConfig
-            {
-                ThreadCount = Environment.ProcessorCount,
-                Params = new EmptyColoringParams(),
-                PointClass = PointClass.Inner,
-                InputData = inputData
-            }, CancellationToken.None);
-            double[,] innerIndicies = await InnerColorProcessor.ProcessAsync(CancellationToken.None);
+                    Params = new PerturbationParams<Float128>
+                    {
+                        MaxIterations = 256 * (int)Math.Pow(2, i / 180),
+                        Magnification = (Float128)Math.Pow(2, i / 60.0),
+                        Location = new Complex<Float128>(Float128.Parse("-0.743643887037158704752191506114774"), Float128.Parse("0.131825904205311970493132056385139")),
+                        ReferencePoint = new Complex<Float128>(Float128.Parse("-0.743643887037158704752191506114774"), Float128.Parse("0.131825904205311970493132056385139")),
+                        EscapeRadius = (Float128)4.0,
+                    }
+                }, CancellationToken.None);
+                PointData[,] inputData = await FractalProcessor.ProcessAsync(CancellationToken.None);
 
-            Console.WriteLine("Computing colors for outer points...");
-            await OuterColorProcessor.SetupAsync(new ColorProcessorConfig
-            {
-                ThreadCount = Environment.ProcessorCount,
-                Params = new EmptyColoringParams(),
-                PointClass = PointClass.Outer,
-                InputData = inputData
-            }, CancellationToken.None);
-            double[,] outerIndicies = await OuterColorProcessor.ProcessAsync(CancellationToken.None);
+                Console.WriteLine("Computing colors for inner points...");
+                await InnerColorProcessor.SetupAsync(new ColorProcessorConfig
+                {
+                    ThreadCount = Environment.ProcessorCount,
+                    Params = new EmptyColoringParams(),
+                    PointClass = PointClass.Inner,
+                    InputData = inputData
+                }, CancellationToken.None);
+                double[,] innerIndicies = await InnerColorProcessor.ProcessAsync(CancellationToken.None);
 
-            Console.WriteLine("Building image...");
-            Imager.CreateImage(outerIndicies, innerIndicies, Colors, Colors);
+                Console.WriteLine("Computing colors for outer points...");
+                await OuterColorProcessor.SetupAsync(new ColorProcessorConfig
+                {
+                    ThreadCount = Environment.ProcessorCount,
+                    Params = new EmptyColoringParams(),
+                    PointClass = PointClass.Outer,
+                    InputData = inputData
+                }, CancellationToken.None);
+                double[,] outerIndicies = await OuterColorProcessor.ProcessAsync(CancellationToken.None);
 
-            Console.WriteLine("Writing image file to disk...");
-            Imager.Bitmap.Encode(new SKFileWStream("output.png"), SKEncodedImageFormat.Png, 100);
+                Console.WriteLine("Building image...");
+                Imager.CreateImage(outerIndicies, innerIndicies, Colors, Colors);
 
-            Console.WriteLine("Image rendered successfully!");
+                Console.WriteLine("Writing image file to disk...");
+                Imager.Bitmap.Encode(new SKFileWStream($"{i:D4}.png"), SKEncodedImageFormat.Png, 100);
+
+                Console.WriteLine("Image rendered successfully!");
+            }
         }
     }
 }
