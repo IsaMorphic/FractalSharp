@@ -1259,15 +1259,15 @@ namespace QuadrupleLib
             {
                 return double.NaN;
             }
-            else if (IsPositiveInfinity(x))
+            else if (IsPositiveInfinity(x) || (x.Exponent >= 0x3ff && !x.RawSignBit))
             {
                 return double.PositiveInfinity;
             }
-            else if (IsNegativeInfinity(x))
+            else if (IsNegativeInfinity(x) || (x.Exponent >= 0x3ff && x.RawSignBit))
             {
                 return double.NegativeInfinity;
             }
-            else if (IsSubnormal(x))
+            else if (IsSubnormal(x) || x.Exponent <= -0x3fe)
             {
                 return 0.0;
             }
@@ -1287,14 +1287,14 @@ namespace QuadrupleLib
                 if (BitOperations.TrailingZeroCount(smallMantissa >> 3) == 52)
                 {
                     return BitConverter.UInt64BitsToDouble(
-                        ((ulong)((x.Exponent + 0x400) << 52) & 0x7ff) | 
+                        ((ulong)((x.Exponent + 0x400) << 52) & 0x7ff) |
                         (x.RawSignBit ? 1UL << 63 : 0));
                 }
                 else
                 {
                     return BitConverter.UInt64BitsToDouble(
-                        ((smallMantissa >> 3) & 0xfffffffffffffUL) | 
-                        ((ulong)((x.Exponent + 0x3ff) << 52) & 0x7ff) | 
+                        ((smallMantissa >> 3) & 0xfffffffffffffUL) |
+                        ((ulong)((x.Exponent + 0x3ff) << 52) & 0x7ff) |
                         (x.RawSignBit ? 1UL << 63 : 0));
                 }
             }
