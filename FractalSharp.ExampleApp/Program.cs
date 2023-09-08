@@ -26,6 +26,8 @@ using QuadrupleLib;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -55,8 +57,8 @@ namespace FractalSharp.ExampleApp
 
     class Program
     {
-        private const int WIDTH  = 3840;
-        private const int HEIGHT = 2160;
+        private const int WIDTH  = 3840 * 4;
+        private const int HEIGHT = 2160 * 4;
 
         private static readonly FractalProcessor<Float128, SquareMandelbrotPAlgorithm<Float128>> FractalProcessor =
             new FractalProcessor<Float128, SquareMandelbrotPAlgorithm<Float128>>(WIDTH, HEIGHT);
@@ -95,7 +97,8 @@ namespace FractalSharp.ExampleApp
         {
             Console.WriteLine("Process started.");
 
-            for (int i = 0; i < 10_800; i++) 
+            int i = Directory.EnumerateFiles(Environment.CurrentDirectory, "*.png").Count();
+            while(true)
             {
                 Console.WriteLine($"Computing raw fractal data for frame #{i}...");
                 await FractalProcessor.SetupAsync(new ProcessorConfig
@@ -104,8 +107,8 @@ namespace FractalSharp.ExampleApp
 
                     Params = new PerturbationParams<Float128>
                     {
-                        MaxIterations = 256 * (int)Math.Pow(2, i / 180),
-                        Magnification = (Float128)Math.Pow(2, i / 60.0),
+                        MaxIterations = 256 * (int)Math.Pow(2, i / 540),
+                        Magnification = (Float128)Math.Pow(2, i / 180.0),
                         Location = new Complex<Float128>(Float128.Parse("-0.743643887037158704752191506114774"), Float128.Parse("0.131825904205311970493132056385139")),
                         ReferencePoint = new Complex<Float128>(Float128.Parse("-0.743643887037158704752191506114774"), Float128.Parse("0.131825904205311970493132056385139")),
                         EscapeRadius = (Float128)4.0,
@@ -140,6 +143,7 @@ namespace FractalSharp.ExampleApp
                 Imager.Bitmap.Encode(new SKFileWStream($"{i:D4}.png"), SKEncodedImageFormat.Png, 100);
 
                 Console.WriteLine("Image rendered successfully!");
+                i++;
             }
         }
     }
