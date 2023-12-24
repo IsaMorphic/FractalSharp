@@ -57,11 +57,11 @@ namespace FractalSharp.ExampleApp
 
     class Program
     {
-        private const int WIDTH  = 3840 * 4;
-        private const int HEIGHT = 2160 * 4;
+        private const int WIDTH  = 2560 * 4;
+        private const int HEIGHT = 1440 * 4;
 
-        private static readonly FractalProcessor<Float128, SquareMandelbrotPAlgorithm<Float128>> FractalProcessor =
-            new FractalProcessor<Float128, SquareMandelbrotPAlgorithm<Float128>>(WIDTH, HEIGHT);
+        private static readonly FractalProcessor<double, SquareMandelbrotAlgorithm<double>> FractalProcessor =
+            new FractalProcessor<double, SquareMandelbrotAlgorithm<double>>(WIDTH, HEIGHT);
 
         private static readonly ColorProcessor<SmoothColoringAlgorithm> OuterColorProcessor =
             new ColorProcessor<SmoothColoringAlgorithm>(WIDTH, HEIGHT);
@@ -105,13 +105,12 @@ namespace FractalSharp.ExampleApp
                 {
                     ThreadCount = Environment.ProcessorCount,
 
-                    Params = new PerturbationParams<Float128>
+                    Params = new EscapeTimeParams<double>
                     {
-                        MaxIterations = 256 * (int)Math.Pow(2, i / 540),
-                        Magnification = (Float128)Math.Pow(2, i / 180.0),
-                        Location = new Complex<Float128>(Float128.Parse("-0.743643887037158704752191506114774"), Float128.Parse("0.131825904205311970493132056385139")),
-                        ReferencePoint = new Complex<Float128>(Float128.Parse("-0.743643887037158704752191506114774"), Float128.Parse("0.131825904205311970493132056385139")),
-                        EscapeRadius = (Float128)4.0,
+                        MaxIterations = 256 * (int)Math.Pow(2, i / 360),
+                        Magnification = Math.Pow(2, i / 180.0),
+                        Location = new Complex<double>(double.Parse("-0.743643887037158704752191506114774"), double.Parse("0.131825904205311970493132056385139")),
+                        EscapeRadius = 4.0,
                     }
                 }, CancellationToken.None);
                 PointData[,] inputData = await FractalProcessor.ProcessAsync(CancellationToken.None);
