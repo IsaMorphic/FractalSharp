@@ -25,7 +25,7 @@ using System.Threading.Tasks;
 namespace FractalSharp.Processing
 {
     public class FractalProcessor<TAlgorithm, TParams, TNumber>
-        : BaseProcessor<Complex<TNumber>, PointData, TAlgorithm, TParams>
+        : BaseProcessor<Complex<TNumber>, PointData<TNumber>, TAlgorithm, TParams>
         where TAlgorithm : IFractalProvider<TParams, TNumber>
         where TParams : struct
         where TNumber : struct, INumber<TNumber>
@@ -35,26 +35,26 @@ namespace FractalSharp.Processing
         public FractalProcessor(int width, int height) : base(width, height)
         {
             pointMapper = new PointMapper<TNumber>();
-            pointMapper.InputSpace = new Rectangle<double>(0, Width, 0, Height);
+            pointMapper.InputSpace = new Rectangle<TNumber>(TNumber.Zero, TNumber.CreateChecked(Width), TNumber.Zero, TNumber.CreateChecked(Height));
         }
 
         public override async Task SetupAsync(ProcessorConfig<TParams> settings, CancellationToken cancellationToken)
         {
             await base.SetupAsync(settings, cancellationToken);
-            TNumber aspectRatio = TNumber. / Height;
+            TNumber aspectRatio = TNumber.CreateChecked(Width) / TNumber.CreateChecked(Height);
             pointMapper.OutputSpace = TAlgorithm.GetOutputBounds(Settings?.Params ?? default, aspectRatio);
         }
 
-        protected override PointData[,] Process(ParallelOptions options)
+        protected override PointData<TNumber>[,] Process(ParallelOptions options)
         {
-            PointData[,] data = new PointData[Height, Width];
+            PointData<TNumber>[,] data = new PointData<TNumber>[Height, Width];
 
             Parallel.For(0, Height, options, y =>
             {
-                var py = pointMapper.MapPointY(y);
+                var py = pointMapper.MapPointY(TNumber.CreateChecked(y));
                 Parallel.For(0, Width, options, x =>
                 {
-                    var px = pointMapper.MapPointX(x);
+                    var px = pointMapper.MapPointX(TNumber.CreateChecked(x));
                     data[y, x] = TAlgorithm.Run(Settings?.Params ?? default, new Complex<TNumber>(px, py));
                 });
             });

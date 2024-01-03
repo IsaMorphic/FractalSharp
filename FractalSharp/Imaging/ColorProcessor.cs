@@ -26,7 +26,7 @@ namespace FractalSharp.Imaging
         where TParams : struct
     {
         public PointClass PointClass { get; init; }
-        public PointData[,] InputData { get; init; }
+        public PointData<double>[,] InputData { get; init; }
 
         public override ProcessorConfig<TParams> Copy()
         {
@@ -35,13 +35,13 @@ namespace FractalSharp.Imaging
                 ThreadCount = ThreadCount,
                 Params = Params,
                 PointClass = PointClass,
-                InputData = (PointData[,])InputData.Clone()
+                InputData = (PointData<double>[,])InputData.Clone()
             };
         }
     }
 
-    public class ColorProcessor<TAlgorithm, TParams> : BaseProcessor<PointData, double, TAlgorithm, TParams>
-        where TAlgorithm : IAlgorithmProvider<PointData, double, TParams>
+    public class ColorProcessor<TAlgorithm, TParams> : BaseProcessor<PointData<double>, double, TAlgorithm, TParams>
+        where TAlgorithm : IAlgorithmProvider<PointData<double>, double, TParams>
         where TParams : struct
     {
         protected new ColorProcessorConfig<TParams>? Settings => base.Settings as ColorProcessorConfig<TParams>;
@@ -54,17 +54,17 @@ namespace FractalSharp.Imaging
         {
             if (Settings is null) throw new InvalidOperationException();
 
-            double[,] indicies = new double[Height, Width];
+            double[,] indicies = new double[Width, Height];
 
             Parallel.For(0, Height, y =>
             {
                 Parallel.For(0, Width, x =>
                 {
-                    PointData pointData = Settings.InputData[y, x];
+                    PointData<double> pointData = Settings.InputData[x, y];
                     if (pointData.PointClass == Settings.PointClass)
-                        indicies[y, x] = TAlgorithm.Run(Settings.Params, pointData);
+                        indicies[x, y] = TAlgorithm.Run(Settings.Params, pointData);
                     else
-                        indicies[y, x] = double.NaN;
+                        indicies[x, y] = double.NaN;
                 });
             });
 

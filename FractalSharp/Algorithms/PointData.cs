@@ -17,6 +17,7 @@
  */
 
 using FractalSharp.Numerics.Generic;
+using System.Numerics;
 
 namespace FractalSharp.Algorithms
 {
@@ -26,13 +27,14 @@ namespace FractalSharp.Algorithms
         Outer = 1
     }
 
-    public struct PointData
+    public struct PointData<TNumber>
+        where TNumber : struct, INumber<TNumber>
     {
-        public Complex<double> ZValue { get; }
+        public Complex<TNumber> ZValue { get; }
         public int IterCount { get; }
         public PointClass PointClass { get; }
 
-        public PointData(Complex<double> zValue, int iterCount, PointClass pointClass)
+        public PointData(Complex<TNumber> zValue, int iterCount, PointClass pointClass)
         {
             ZValue = zValue;
             IterCount = iterCount;

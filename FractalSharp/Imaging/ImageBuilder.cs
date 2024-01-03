@@ -24,18 +24,18 @@ namespace FractalSharp.Imaging
     {
         public void CreateImage(double[,] outerIndicies, double[,] innerIndicies, Gradient outerColors, Gradient innerColors)
         {
-            int width = Math.Min(outerIndicies.GetLength(1), innerIndicies.GetLength(1));
-            int height = Math.Min(outerIndicies.GetLength(0), innerIndicies.GetLength(0));
+            int width = Math.Min(outerIndicies.GetLength(0), innerIndicies.GetLength(0));
+            int height = Math.Min(outerIndicies.GetLength(1), innerIndicies.GetLength(1));
 
             InitializeImage(width, height);
             Parallel.For(0, height, y =>
             {
                 Parallel.For(0, width, x =>
                 {
-                    if (double.IsNaN(outerIndicies[y, x]) && !double.IsNaN(innerIndicies[y, x]))
-                        WritePixel(x, y, innerColors[innerIndicies[y, x]]);
-                    else if (!double.IsNaN(outerIndicies[y, x]))
-                        WritePixel(x, y, outerColors[outerIndicies[y, x]]);
+                    if (double.IsNaN(outerIndicies[x, y]) && !double.IsNaN(innerIndicies[x, y]))
+                        WritePixel(x, y, innerColors[innerIndicies[x, y]]);
+                    else if (!double.IsNaN(outerIndicies[x, y]))
+                        WritePixel(x, y, outerColors[outerIndicies[x, y]]);
                     else
                         WritePixel(x, y, new RgbaValue(0, 0, 0));
                 });

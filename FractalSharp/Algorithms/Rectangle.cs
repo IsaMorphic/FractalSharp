@@ -17,17 +17,18 @@
  */
 
 using FractalSharp.Numerics.Generic;
+using System.Numerics;
 
 namespace FractalSharp.Algorithms
 {
-    public struct Rectangle<TNumber> where TNumber : struct
+    public struct Rectangle<TNumber> where TNumber : struct, INumber<TNumber>
     {
-        public Number<TNumber> XMin { get; }
-        public Number<TNumber> XMax { get; }
-        public Number<TNumber> YMin { get; }
-        public Number<TNumber> YMax { get; }
+        public TNumber XMin { get; }
+        public TNumber XMax { get; }
+        public TNumber YMin { get; }
+        public TNumber YMax { get; }
 
-        public Rectangle(Number<TNumber> xMin, Number<TNumber> xMax, Number<TNumber> yMin, Number<TNumber> yMax)
+        public Rectangle(TNumber xMin, TNumber xMax, TNumber yMin, TNumber yMax)
         {
             XMin = xMin;
             XMax = xMax;

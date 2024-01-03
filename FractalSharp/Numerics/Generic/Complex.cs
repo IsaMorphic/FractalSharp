@@ -17,30 +17,20 @@
  */
 
 using System;
+using System.Numerics;
 
 namespace FractalSharp.Numerics.Generic
 {
-    public interface IComplex
+    public struct Complex<T> : IEquatable<Complex<T>> where T : struct, INumber<T>
     {
-        INumber Real { get; }
-        INumber Imag { get; }
+        public static Complex<T> Zero         { get; } = new Complex<T>(T.Zero, T.Zero);
+        public static Complex<T> One          { get; } = new Complex<T>(T.One,  T.Zero);
+        public static Complex<T> ImaginaryOne { get; } = new Complex<T>(T.Zero, T.One);
 
-        Complex<double> ToDouble();
-    }
+        public T Real { get; }
+        public T Imag { get; }
 
-    public struct Complex<T> : IComplex, IEquatable<Complex<T>> where T : struct
-    {
-        public static Complex<T> Zero         { get; } = new Complex<T>(Number<T>.Zero, Number<T>.Zero);
-        public static Complex<T> One          { get; } = new Complex<T>(Number<T>.One,  Number<T>.Zero);
-        public static Complex<T> ImaginaryOne { get; } = new Complex<T>(Number<T>.Zero, Number<T>.One);
-
-        public Number<T> Real { get; }
-        public Number<T> Imag { get; }
-
-        INumber IComplex.Real => Real;
-        INumber IComplex.Imag => Imag;
-
-        public Complex(Number<T> real, Number<T> imag)
+        public Complex(T real, T imag)
         {
             Real = real;
             Imag = imag;
@@ -48,12 +38,7 @@ namespace FractalSharp.Numerics.Generic
 
         public static implicit operator Complex<T>(T n)
         {
-            return new Complex<T>(n, Number<T>.Zero);
-        }
-
-        public static implicit operator Complex<T>(Number<T> n)
-        {
-            return new Complex<T>(n, Number<T>.Zero);
+            return new Complex<T>(n, T.Zero);
         }
 
         public static Complex<T> operator +(Complex<T> value)
@@ -89,7 +74,7 @@ namespace FractalSharp.Numerics.Generic
         {
             Complex<T> conjugate = new Complex<T>(right.Real, -right.Imag);
             Complex<T> numerator = left * conjugate;
-            Number<T> denominator = (right * conjugate).Real;
+            T denominator = (right * conjugate).Real;
             return new Complex<T>(numerator.Real / denominator, numerator.Imag / denominator);
         }
 
@@ -103,44 +88,9 @@ namespace FractalSharp.Numerics.Generic
             return left.Real != right.Real || left.Imag != right.Imag;
         }
 
-        public static Number<T> Abs(Complex<T> z)
-        {
-            Number<T> squ = z.Real * z.Real + z.Imag * z.Imag;
-            return Number<T>.Sqrt(squ);
-        }
-
-        public static Number<T> AbsSqu(Complex<T> value)
+        public static T AbsSqu(Complex<T> value)
         {
             return value.Real * value.Real + value.Imag * value.Imag;
-        }
-
-        public static Number<T> Arg(Complex<T> z)
-        {
-            return Number<T>.Atan2(z.Imag, z.Real);
-        }
-
-        public static Complex<T> Exp(Complex<T> z)
-        {
-            Complex<T> r = Number<T>.Exp(z.Real);
-            Complex<T> i = new Complex<T>(Number<T>.Cos(z.Imag), Number<T>.Sin(z.Imag));
-            return r * i;
-        }
-
-        public static Complex<T> Log(Complex<T> z)
-        {
-            Number<T> ln_r = Number<T>.Ln(AbsSqu(z)) / Number<T>.Two;
-            return new Complex<T>(ln_r, Arg(z));
-        }
-
-        public static Complex<T> Pow(Complex<T> z, Complex<T> n)
-        {
-            if (z == Zero) return Zero;
-            return Exp(Log(z) * n);
-        }
-
-        public Complex<double> ToDouble()
-        {
-            return new Complex<double>(Real.ToDouble(), Imag.ToDouble());
         }
 
         public bool Equals(Complex<T> other)

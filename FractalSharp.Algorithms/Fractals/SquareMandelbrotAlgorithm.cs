@@ -17,29 +17,32 @@
  */
 
 using FractalSharp.Numerics.Generic;
+using System.Numerics;
 
 namespace FractalSharp.Algorithms.Fractals
 {
     public class SquareMandelbrotAlgorithm<TNumber> 
         : IFractalProvider<EscapeTimeParams<TNumber>, TNumber>
-        where TNumber : struct
+        where TNumber : struct, INumber<TNumber>
     {
-        public static Rectangle<TNumber> GetOutputBounds(EscapeTimeParams<TNumber> @params, Number<TNumber> aspectRatio)
+        private static readonly TNumber _two = TNumber.One + TNumber.One;
+
+        public static Rectangle<TNumber> GetOutputBounds(EscapeTimeParams<TNumber> @params, TNumber aspectRatio)
         {
-            Number<TNumber> xScale = aspectRatio * Number<TNumber>.Two / @params.Magnification;
+            TNumber xScale = aspectRatio * _two / @params.Magnification;
 
-            Number<TNumber> xMin = -xScale + @params.Location.Real;
-            Number<TNumber> xMax = xScale + @params.Location.Real;
+            TNumber xMin = -xScale + @params.Location.Real;
+            TNumber xMax = xScale + @params.Location.Real;
 
-            Number<TNumber> yScale = Number<TNumber>.Two / @params.Magnification;
+            TNumber yScale = _two / @params.Magnification;
 
-            Number<TNumber> yMin = yScale + @params.Location.Imag;
-            Number<TNumber> yMax = -yScale + @params.Location.Imag;
+            TNumber yMin = yScale + @params.Location.Imag;
+            TNumber yMax = -yScale + @params.Location.Imag;
 
             return new Rectangle<TNumber>(xMin, xMax, yMin, yMax);
         }
 
-        public static PointData Run(EscapeTimeParams<TNumber> @params, Complex<TNumber> c)
+        public static PointData<TNumber> Run(EscapeTimeParams<TNumber> @params, Complex<TNumber> c)
         {
             int iter = 0;
             Complex<TNumber> z = Complex<TNumber>.Zero;
@@ -50,7 +53,7 @@ namespace FractalSharp.Algorithms.Fractals
                 iter++;
             }
 
-            return new PointData(z.ToDouble(), iter, iter < @params.MaxIterations ? PointClass.Outer : PointClass.Inner);
+            return new PointData<TNumber>(z, iter, iter < @params.MaxIterations ? PointClass.Outer : PointClass.Inner);
         }
     }
 }

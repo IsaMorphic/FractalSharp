@@ -3,26 +3,26 @@ using FractalSharp.Numerics.Generic;
 using ILGPU;
 using ILGPU.Runtime;
 using System;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace FractalSharp.Processing
 {
-    public class GPUFractalProcessor<TAlgorithm, TParams, TNumber> : FractalProcessor<TAlgorithm, TParams, TNumber>, IDisposable
-        where TAlgorithm : IFractalProvider<TParams, TNumber>
+    public class GPUFractalProcessor<TAlgorithm, TParams> : FractalProcessor<TAlgorithm, TParams, double>, IDisposable
+        where TAlgorithm : IFractalProvider<TParams, double>
         where TParams : struct
-        where TNumber : struct, INumber
     {
-        private static void FractalKernel(Index2D idx, ArrayView2D<PointData, Stride2D.DenseY> buff, PointMapper<TNumber> pointMapper, TParams @params)
+        private static void FractalKernel(Index2D idx, ArrayView2D<PointData<double>, Stride2D.DenseY> buff, PointMapper<double> pointMapper, TParams @params)
         {
             var py = pointMapper.MapPointY(idx.Y);
             var px = pointMapper.MapPointX(idx.X);
-            buff[idx] = TAlgorithm.Run(@params, new Complex<TNumber>(px, py));
+            buff[idx] = TAlgorithm.Run(@params, new Complex<double>(px, py));
         }
 
         private Context? context;
         private Accelerator? accelerator;
-        private Action<Index2D, ArrayView2D<PointData, Stride2D.DenseY>, PointMapper<TNumber>, TParams>? loadedKernel;
+        private Action<Index2D, ArrayView2D<PointData<double>, Stride2D.DenseY>, PointMapper<double>, TParams>? loadedKernel;
 
         private bool disposedValue;
 
@@ -38,22 +38,22 @@ namespace FractalSharp.Processing
             accelerator = context.GetPreferredDevice(preferCPU: false)
                 .CreateAccelerator(context);
 
-            loadedKernel = accelerator.LoadAutoGroupedStreamKernel<Index2D, ArrayView2D<PointData, Stride2D.DenseY>, PointMapper<TNumber>, TParams>(FractalKernel);
+            loadedKernel = accelerator.LoadAutoGroupedStreamKernel<Index2D, ArrayView2D<PointData<double>, Stride2D.DenseY>, PointMapper<double>, TParams>(FractalKernel);
         }
 
-        protected override PointData[,] Process(ParallelOptions options)
+        protected override PointData<double>[,] Process(ParallelOptions options)
         {
             if (accelerator is null || loadedKernel is null || Settings is null)
             {
                 throw new InvalidOperationException();
             }
 
-            var gpuBuffer = accelerator.Allocate2DDenseY<PointData>(new LongIndex2D(Width, Height));
+            var gpuBuffer = accelerator.Allocate2DDenseY<PointData<double>>(new LongIndex2D(Width, Height));
 
             loadedKernel(gpuBuffer.IntExtent, gpuBuffer, pointMapper, Settings.Params);
             accelerator.Synchronize();
 
-            var cpuBuffer = new PointData[Height, Width];
+            var cpuBuffer = new PointData<double>[Width, Height];
             gpuBuffer.CopyToCPU(cpuBuffer);
 
             return cpuBuffer;

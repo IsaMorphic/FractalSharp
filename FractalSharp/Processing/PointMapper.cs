@@ -17,36 +17,34 @@
  */
 
 using FractalSharp.Algorithms;
-using FractalSharp.Numerics.Generic;
+using System.Numerics;
 
 namespace FractalSharp.Processing
 {
-    public struct PointMapper<TNumber> where TNumber : struct
+    public struct PointMapper<TNumber> where TNumber : struct, INumber<TNumber>
     {
-        public Rectangle<double> InputSpace { get; set; }
+        public Rectangle<TNumber> InputSpace { get; set; }
         public Rectangle<TNumber> OutputSpace { get; set; }
 
-        public Number<TNumber> MapPointX(Number<double> value)
+        public TNumber MapPointX(TNumber value)
         {
-            return MapValue(Number<TNumber>.FromDouble(value),
-                Number<TNumber>.FromDouble(InputSpace.XMin), 
-                Number<TNumber>.FromDouble(InputSpace.XMax),
+            return MapValue(value,
+                InputSpace.XMin, InputSpace.XMax,
                 OutputSpace.XMin, OutputSpace.XMax);
         }
 
-        public Number<TNumber> MapPointY(Number<double> value)
+        public TNumber MapPointY(TNumber value)
         {
-            return MapValue(Number<TNumber>.FromDouble(value),
-                Number<TNumber>.FromDouble(InputSpace.YMin),
-                Number<TNumber>.FromDouble(InputSpace.YMax),
+            return MapValue(value,
+                InputSpace.YMin, InputSpace.YMax,
                 OutputSpace.YMin, OutputSpace.YMax);
         }
 
-        private static Number<T> MapValue<T>(Number<T> OldValue, Number<T> OldMin, Number<T> OldMax, Number<T> NewMin, Number<T> NewMax) where T : struct
+        private static T MapValue<T>(T OldValue, T OldMin, T OldMax, T NewMin, T NewMax) where T : struct, INumber<T>
         {
-            Number<T> OldRange = OldMax - OldMin;
-            Number<T> NewRange = NewMax - NewMin;
-            Number<T> NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
+            T OldRange = OldMax - OldMin;
+            T NewRange = NewMax - NewMin;
+            T NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
             return NewValue;
         }
     }

@@ -21,7 +21,7 @@ using System.Numerics;
 
 namespace FractalSharp.Algorithms
 {
-    public interface IFractalProvider<TParams, TNumber> : IAlgorithmProvider<Complex<TNumber>, PointData, TParams>
+    public interface IFractalProvider<TParams, TNumber> : IAlgorithmProvider<Complex<TNumber>, PointData<TNumber>, TParams>
         where TParams : struct
         where TNumber : struct, INumber<TNumber>
     {

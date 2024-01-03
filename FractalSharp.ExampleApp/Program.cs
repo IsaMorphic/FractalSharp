@@ -60,8 +60,8 @@ namespace FractalSharp.ExampleApp
         private const int WIDTH  = 2560 * 4;
         private const int HEIGHT = 1440 * 4;
 
-        private static readonly GPUFractalProcessor<SquareMandelbrotAlgorithm<double>, EscapeTimeParams<double>, double> FractalProcessor =
-            new GPUFractalProcessor<SquareMandelbrotAlgorithm<double>, EscapeTimeParams<double>, double>(WIDTH, HEIGHT);
+        private static readonly GPUFractalProcessor<SquareMandelbrotAlgorithm<double>, EscapeTimeParams<double>> FractalProcessor =
+            new GPUFractalProcessor<SquareMandelbrotAlgorithm<double>, EscapeTimeParams<double>>(WIDTH, HEIGHT);
 
         private static readonly ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams> OuterColorProcessor =
             new ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams>(WIDTH, HEIGHT);
@@ -113,7 +113,7 @@ namespace FractalSharp.ExampleApp
                         EscapeRadius = 4.0,
                     }
                 }, CancellationToken.None);
-                PointData[,] inputData = await FractalProcessor.ProcessAsync(CancellationToken.None);
+                PointData<double>[,] inputData = await FractalProcessor.ProcessAsync(CancellationToken.None);
 
                 Console.WriteLine("Computing colors for inner points...");
                 await InnerColorProcessor.SetupAsync(new ColorProcessorConfig<EmptyColoringParams>
