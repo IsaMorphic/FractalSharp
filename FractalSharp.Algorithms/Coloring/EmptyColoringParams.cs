@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace FractalSharp.Algorithms.Coloring
+﻿namespace FractalSharp.Algorithms.Coloring
 {
-    public class EmptyColoringParams : IAlgorithmParams
+    public struct EmptyColoringParams
     {
-        public IAlgorithmParams Copy()
-        {
-            return new EmptyColoringParams();
-        }
     }
 }

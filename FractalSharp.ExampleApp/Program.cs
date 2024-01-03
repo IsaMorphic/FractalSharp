@@ -60,14 +60,14 @@ namespace FractalSharp.ExampleApp
         private const int WIDTH  = 2560 * 4;
         private const int HEIGHT = 1440 * 4;
 
-        private static readonly FractalProcessor<double, SquareMandelbrotAlgorithm<double>> FractalProcessor =
-            new FractalProcessor<double, SquareMandelbrotAlgorithm<double>>(WIDTH, HEIGHT);
+        private static readonly GPUFractalProcessor<SquareMandelbrotAlgorithm<double>, EscapeTimeParams<double>, double> FractalProcessor =
+            new GPUFractalProcessor<SquareMandelbrotAlgorithm<double>, EscapeTimeParams<double>, double>(WIDTH, HEIGHT);
 
-        private static readonly ColorProcessor<SmoothColoringAlgorithm> OuterColorProcessor =
-            new ColorProcessor<SmoothColoringAlgorithm>(WIDTH, HEIGHT);
+        private static readonly ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams> OuterColorProcessor =
+            new ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams>(WIDTH, HEIGHT);
 
-        private static readonly ColorProcessor<SingleColorAlgorithm> InnerColorProcessor =
-            new ColorProcessor<SingleColorAlgorithm>(WIDTH, HEIGHT);
+        private static readonly ColorProcessor<SingleColorAlgorithm, EmptyColoringParams> InnerColorProcessor =
+            new ColorProcessor<SingleColorAlgorithm, EmptyColoringParams>(WIDTH, HEIGHT);
 
         private static readonly SkiaImageBuilder Imager = new SkiaImageBuilder();
 
@@ -101,7 +101,7 @@ namespace FractalSharp.ExampleApp
             while(true)
             {
                 Console.WriteLine($"Computing raw fractal data for frame #{i}...");
-                await FractalProcessor.SetupAsync(new ProcessorConfig
+                await FractalProcessor.SetupAsync(new ProcessorConfig<EscapeTimeParams<double>>
                 {
                     ThreadCount = Environment.ProcessorCount,
 
@@ -116,7 +116,7 @@ namespace FractalSharp.ExampleApp
                 PointData[,] inputData = await FractalProcessor.ProcessAsync(CancellationToken.None);
 
                 Console.WriteLine("Computing colors for inner points...");
-                await InnerColorProcessor.SetupAsync(new ColorProcessorConfig
+                await InnerColorProcessor.SetupAsync(new ColorProcessorConfig<EmptyColoringParams>
                 {
                     ThreadCount = Environment.ProcessorCount,
                     Params = new EmptyColoringParams(),
@@ -126,7 +126,7 @@ namespace FractalSharp.ExampleApp
                 double[,] innerIndicies = await InnerColorProcessor.ProcessAsync(CancellationToken.None);
 
                 Console.WriteLine("Computing colors for outer points...");
-                await OuterColorProcessor.SetupAsync(new ColorProcessorConfig
+                await OuterColorProcessor.SetupAsync(new ColorProcessorConfig<EmptyColoringParams>
                 {
                     ThreadCount = Environment.ProcessorCount,
                     Params = new EmptyColoringParams(),

@@ -21,12 +21,36 @@ using FractalSharp.Numerics.Generic;
 namespace FractalSharp.Algorithms.Fractals
 {
     public class SquareMandelbrotAlgorithm<TNumber> 
-        : EscapeTimeAlgorithm<TNumber, EscapeTimeParams<TNumber>>
+        : IFractalProvider<EscapeTimeParams<TNumber>, TNumber>
         where TNumber : struct
     {
-        protected override Complex<TNumber> DoIteration(Complex<TNumber> z, Complex<TNumber> c)
+        public static Rectangle<TNumber> GetOutputBounds(EscapeTimeParams<TNumber> @params, Number<TNumber> aspectRatio)
         {
-            return z * z + c;
+            Number<TNumber> xScale = aspectRatio * Number<TNumber>.Two / @params.Magnification;
+
+            Number<TNumber> xMin = -xScale + @params.Location.Real;
+            Number<TNumber> xMax = xScale + @params.Location.Real;
+
+            Number<TNumber> yScale = Number<TNumber>.Two / @params.Magnification;
+
+            Number<TNumber> yMin = yScale + @params.Location.Imag;
+            Number<TNumber> yMax = -yScale + @params.Location.Imag;
+
+            return new Rectangle<TNumber>(xMin, xMax, yMin, yMax);
+        }
+
+        public static PointData Run(EscapeTimeParams<TNumber> @params, Complex<TNumber> c)
+        {
+            int iter = 0;
+            Complex<TNumber> z = Complex<TNumber>.Zero;
+
+            while (Complex<TNumber>.AbsSqu(z) < @params.EscapeRadius && iter < @params.MaxIterations)
+            {
+                z = z * z + c;
+                iter++;
+            }
+
+            return new PointData(z.ToDouble(), iter, iter < @params.MaxIterations ? PointClass.Outer : PointClass.Inner);
         }
     }
 }

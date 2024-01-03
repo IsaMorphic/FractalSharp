@@ -15,33 +15,36 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+using System;
 using System.Threading.Tasks;
 using FractalSharp.Algorithms;
 using FractalSharp.Processing;
 
 namespace FractalSharp.Imaging
 {
-    public class ColorProcessorConfig : ProcessorConfig
+    public class ColorProcessorConfig<TParams> : ProcessorConfig<TParams>
+        where TParams : struct
     {
-        public PointClass PointClass { get; set; }
-        public PointData[,] InputData { get; set; }
+        public PointClass PointClass { get; init; }
+        public PointData[,] InputData { get; init; }
 
-        public override ProcessorConfig Copy()
+        public override ProcessorConfig<TParams> Copy()
         {
-            return new ColorProcessorConfig
+            return new ColorProcessorConfig<TParams>
             {
                 ThreadCount = ThreadCount,
-                Params = Params.Copy(),
+                Params = Params,
                 PointClass = PointClass,
-                InputData = InputData.Clone() as PointData[,]
+                InputData = (PointData[,])InputData.Clone()
             };
         }
     }
 
-    public class ColorProcessor<TAlgorithm> : BaseProcessor<PointData, double, TAlgorithm>
-        where TAlgorithm : IAlgorithmProvider<PointData, double>, new()
+    public class ColorProcessor<TAlgorithm, TParams> : BaseProcessor<PointData, double, TAlgorithm, TParams>
+        where TAlgorithm : IAlgorithmProvider<PointData, double, TParams>
+        where TParams : struct
     {
-        protected new ColorProcessorConfig Settings => base.Settings as ColorProcessorConfig;
+        protected new ColorProcessorConfig<TParams>? Settings => base.Settings as ColorProcessorConfig<TParams>;
 
         public ColorProcessor(int width, int height) : base(width, height)
         {
@@ -49,6 +52,8 @@ namespace FractalSharp.Imaging
 
         protected override double[,] Process(ParallelOptions options)
         {
+            if (Settings is null) throw new InvalidOperationException();
+
             double[,] indicies = new double[Height, Width];
 
             Parallel.For(0, Height, y =>
@@ -57,7 +62,7 @@ namespace FractalSharp.Imaging
                 {
                     PointData pointData = Settings.InputData[y, x];
                     if (pointData.PointClass == Settings.PointClass)
-                        indicies[y, x] = AlgorithmProvider.Run(pointData);
+                        indicies[y, x] = TAlgorithm.Run(Settings.Params, pointData);
                     else
                         indicies[y, x] = double.NaN;
                 });

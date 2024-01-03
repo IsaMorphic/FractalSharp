@@ -20,28 +20,8 @@ using System.Threading.Tasks;
 
 namespace FractalSharp.Algorithms
 {
-    public interface IAlgorithmProvider<TInput, TOutput>
+    public interface IAlgorithmProvider<TInput, TOutput, TParams>
     {
-        bool Initialized { get; }
-        Task Initialize(IAlgorithmParams @params, CancellationToken token);
-        TOutput Run(TInput data);
-    }
-
-    public abstract class AlgorithmProvider<TInput, TOutput, TParam> : IAlgorithmProvider<TInput, TOutput>
-        where TParam : class, IAlgorithmParams
-    {
-        public bool Initialized { get; private set; }
-
-        protected TParam Params { get; private set; }
-
-        public async Task Initialize(IAlgorithmParams @params, CancellationToken cancellationToken)
-        {
-            Params = @params as TParam;
-            Initialized = await Task.Run(
-                () => Initialize(cancellationToken)
-                );
-        }
-        public abstract TOutput Run(TInput data);
-        protected abstract bool Initialize(CancellationToken cancellationToken);
+        static abstract TOutput Run(TParams @params, TInput data);
     }
 }

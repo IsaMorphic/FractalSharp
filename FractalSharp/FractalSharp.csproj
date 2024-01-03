@@ -5,4 +5,8 @@
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="ILGPU" Version="1.5.1" />
+	</ItemGroup>
+
 </Project>

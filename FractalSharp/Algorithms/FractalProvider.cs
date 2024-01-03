@@ -17,21 +17,14 @@
  */
 
 using FractalSharp.Numerics.Generic;
+using System.Numerics;
 
 namespace FractalSharp.Algorithms
 {
-    public interface IFractalProvider<TNumber> : IAlgorithmProvider<Complex<TNumber>, PointData>
-        where TNumber : struct
+    public interface IFractalProvider<TParams, TNumber> : IAlgorithmProvider<Complex<TNumber>, PointData, TParams>
+        where TParams : struct
+        where TNumber : struct, INumber<TNumber>
     {
-        Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio);
-    }
-
-    public abstract class FractalProvider<TNumber, TParam> : 
-        AlgorithmProvider<Complex<TNumber>, PointData, TParam>, 
-        IFractalProvider<TNumber>
-        where TParam : FractalParams<TNumber>
-        where TNumber : struct
-    {
-        public abstract Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio);
+        static abstract Rectangle<TNumber> GetOutputBounds(TParams @params, TNumber aspectRatio);
     }
 }

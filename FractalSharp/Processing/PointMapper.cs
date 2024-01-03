@@ -21,7 +21,7 @@ using FractalSharp.Numerics.Generic;
 
 namespace FractalSharp.Processing
 {
-    public class PointMapper<TNumber> where TNumber : struct
+    public struct PointMapper<TNumber> where TNumber : struct
     {
         public Rectangle<double> InputSpace { get; set; }
         public Rectangle<TNumber> OutputSpace { get; set; }

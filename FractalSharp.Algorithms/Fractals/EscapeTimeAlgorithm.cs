@@ -21,11 +21,14 @@ using System.Threading;
 
 namespace FractalSharp.Algorithms.Fractals
 {
-    public class EscapeTimeParams<TNumber> 
-        : FractalParams<TNumber>
+    public struct EscapeTimeParams<TNumber> 
         where TNumber : struct
     {
-        public Number<TNumber> EscapeRadius { get; set; }
+        public int MaxIterations { get; init; }
+        public Complex<TNumber> Location { get; init; }
+        public Number<TNumber> Magnification { get; init; }
+
+        public Number<TNumber> EscapeRadius { get; init; }
 
         public EscapeTimeParams()
         {
@@ -35,62 +38,5 @@ namespace FractalSharp.Algorithms.Fractals
 
             EscapeRadius = Number<TNumber>.FromDouble(4.0);
         }
-
-        public override IFractalParams Copy()
-        {
-            return new EscapeTimeParams<TNumber>
-            {
-                Location = Location,
-                Magnification = Magnification,
-                MaxIterations = MaxIterations,
-
-                EscapeRadius = EscapeRadius
-            };
-        }
-    }
-
-    public abstract class EscapeTimeAlgorithm<TNumber, TParam>
-        : FractalProvider<TNumber, TParam>
-        where TParam : EscapeTimeParams<TNumber>
-        where TNumber : struct
-    {
-        protected override bool Initialize(CancellationToken cancellationToken) => true;
-
-        public override Rectangle<TNumber> GetOutputBounds(Number<TNumber> aspectRatio)
-        {
-            Number<TNumber> xScale = aspectRatio * Number<TNumber>.Two / Params.Magnification;
-
-            Number<TNumber> xMin = -xScale + Params.Location.Real;
-            Number<TNumber> xMax = xScale + Params.Location.Real;
-
-            Number<TNumber> yScale = Number<TNumber>.Two / Params.Magnification;
-
-            Number<TNumber> yMin = yScale + Params.Location.Imag;
-            Number<TNumber> yMax = -yScale + Params.Location.Imag;
-
-            return new Rectangle<TNumber>(xMin, xMax, yMin, yMax);
-        }
-
-        public override PointData Run(Complex<TNumber> mappedPoint)
-        {
-            // Initialize some variables..
-            Complex<TNumber> prevOutput = GetInitialValue(mappedPoint);
-
-            // Initialize our iteration count.
-            int iter = 0;
-
-            // Mandelbrot algorithm
-            while (Complex<TNumber>.AbsSqu(prevOutput) < Params.EscapeRadius && iter < Params.MaxIterations)
-            {
-                prevOutput = DoIteration(prevOutput, mappedPoint);
-                iter++;
-            }
-
-            return new PointData(prevOutput.ToDouble(), iter, iter < Params.MaxIterations ? PointClass.Outer : PointClass.Inner);
-        }
-
-        protected abstract Complex<TNumber> DoIteration(Complex<TNumber> prevOutput, Complex<TNumber> mappedPoint);
-
-        protected virtual Complex<TNumber> GetInitialValue(Complex<TNumber> mappedPoint) => Complex<TNumber>.Zero;
     }
 }

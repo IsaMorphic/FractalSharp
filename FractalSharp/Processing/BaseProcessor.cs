@@ -22,17 +22,19 @@ using System.Threading.Tasks;
 
 namespace FractalSharp.Processing
 {
-    public interface IProcessor<TOutput>
+    public interface IProcessor<TOutput, TParams>
+        where TParams : struct
     {
         int Width { get; }
         int Height { get; }
 
-        Task SetupAsync(ProcessorConfig settings, CancellationToken cancellationToken);
+        Task SetupAsync(ProcessorConfig<TParams> settings, CancellationToken cancellationToken);
         Task<TOutput[,]> ProcessAsync(CancellationToken cancellationToken);
     }
 
-    public abstract class BaseProcessor<TInput, TOutput, TAlgorithm> : IProcessor<TOutput>
-        where TAlgorithm : IAlgorithmProvider<TInput, TOutput>, new()
+    public abstract class BaseProcessor<TInput, TOutput, TAlgorithm, TParams> : IProcessor<TOutput, TParams>
+        where TAlgorithm : IAlgorithmProvider<TInput, TOutput, TParams>
+        where TParams : struct
     {
         public BaseProcessor(int width, int height)
         {
@@ -43,22 +45,19 @@ namespace FractalSharp.Processing
         public int Width { get; private set; }
         public int Height { get; private set; }
 
-        protected TAlgorithm AlgorithmProvider { get; private set; }
+        protected ProcessorConfig<TParams>? Settings { get; private set; }
 
-        protected ProcessorConfig Settings { get; private set; }
-
-        public virtual async Task SetupAsync(ProcessorConfig settings, CancellationToken cancellationToken)
+        public virtual Task SetupAsync(ProcessorConfig<TParams> settings, CancellationToken cancellationToken)
         {
             Settings = settings.Copy();
-            AlgorithmProvider = new TAlgorithm();
-            await AlgorithmProvider.Initialize(Settings.Params.Copy(), cancellationToken);
+            return Task.CompletedTask;
         }
 
         public Task<TOutput[,]> ProcessAsync(CancellationToken cancellationToken)
         {
             var options = new ParallelOptions
             {
-                MaxDegreeOfParallelism = Settings.ThreadCount,
+                MaxDegreeOfParallelism = Settings?.ThreadCount ?? throw new InvalidOperationException(),
                 CancellationToken = cancellationToken
             };
             return Task.Run(() => Process(options));

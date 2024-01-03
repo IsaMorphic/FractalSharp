@@ -18,29 +18,31 @@
 
 using FractalSharp.Algorithms;
 using FractalSharp.Numerics.Generic;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace FractalSharp.Processing
 {
-    public class FractalProcessor<TNumber, TAlgorithm>
-        : BaseProcessor<Complex<TNumber>, PointData, TAlgorithm>
-        where TAlgorithm : IFractalProvider<TNumber>, new()
-        where TNumber : struct
+    public class FractalProcessor<TAlgorithm, TParams, TNumber>
+        : BaseProcessor<Complex<TNumber>, PointData, TAlgorithm, TParams>
+        where TAlgorithm : IFractalProvider<TParams, TNumber>
+        where TParams : struct
+        where TNumber : struct, INumber<TNumber>
     {
-        protected PointMapper<TNumber> PointMapper { get; private set; }
+        protected PointMapper<TNumber> pointMapper;
 
         public FractalProcessor(int width, int height) : base(width, height)
         {
-            PointMapper = new PointMapper<TNumber>();
-            PointMapper.InputSpace = new Rectangle<double>(0, Width, 0, Height);
+            pointMapper = new PointMapper<TNumber>();
+            pointMapper.InputSpace = new Rectangle<double>(0, Width, 0, Height);
         }
 
-        public override async Task SetupAsync(ProcessorConfig settings, CancellationToken cancellationToken)
+        public override async Task SetupAsync(ProcessorConfig<TParams> settings, CancellationToken cancellationToken)
         {
             await base.SetupAsync(settings, cancellationToken);
-            Number<TNumber> aspectRatio = Number<TNumber>.FromDouble(Width) / Number<TNumber>.FromDouble(Height);
-            PointMapper.OutputSpace = AlgorithmProvider.GetOutputBounds(aspectRatio);
+            TNumber aspectRatio = TNumber. / Height;
+            pointMapper.OutputSpace = TAlgorithm.GetOutputBounds(Settings?.Params ?? default, aspectRatio);
         }
 
         protected override PointData[,] Process(ParallelOptions options)
@@ -49,11 +51,11 @@ namespace FractalSharp.Processing
 
             Parallel.For(0, Height, options, y =>
             {
-                var py = PointMapper.MapPointY(y);
+                var py = pointMapper.MapPointY(y);
                 Parallel.For(0, Width, options, x =>
                 {
-                    var px = PointMapper.MapPointX(x);
-                    data[y, x] = AlgorithmProvider.Run(new Complex<TNumber>(px, py));
+                    var px = pointMapper.MapPointX(x);
+                    data[y, x] = TAlgorithm.Run(Settings?.Params ?? default, new Complex<TNumber>(px, py));
                 });
             });
 

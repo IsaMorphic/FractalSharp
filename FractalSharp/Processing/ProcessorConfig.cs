@@ -20,17 +20,18 @@ using FractalSharp.Imaging;
 
 namespace FractalSharp.Processing
 {
-    public class ProcessorConfig
+    public class ProcessorConfig<TParams>
+        where TParams : struct
     {
         public int ThreadCount { get; set; }
-        public IAlgorithmParams Params { get; set; }
+        public TParams Params { get; set; }
 
-        public virtual ProcessorConfig Copy()
+        public virtual ProcessorConfig<TParams> Copy()
         {
-            return new ProcessorConfig
+            return new ProcessorConfig<TParams>
             {
                 ThreadCount = ThreadCount,
-                Params = Params.Copy()
+                Params = Params
             };
         }
     }

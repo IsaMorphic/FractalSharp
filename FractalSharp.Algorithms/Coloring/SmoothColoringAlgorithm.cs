@@ -22,11 +22,9 @@ using System.Threading;
 
 namespace FractalSharp.Algorithms.Coloring
 {
-    public class SmoothColoringAlgorithm : AlgorithmProvider<PointData, double, EmptyColoringParams>
+    public class SmoothColoringAlgorithm : IAlgorithmProvider<PointData, double, EmptyColoringParams>
     {
-        protected override bool Initialize(CancellationToken cancellationToken) => true;
-
-        public override double Run(PointData data)
+        public static double Run(EmptyColoringParams @params, PointData data)
         {
             // sqrt of inner term removed using log simplification rules.
             double log_zn = Math.Log(Complex<double>.AbsSqu(data.ZValue).Value) / 2;
