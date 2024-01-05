@@ -1,5 +1,5 @@
 ﻿/*
- *  Copyright 2018-2020 Chosen Few Software
+ *  Copyright 2018-2024 Chosen Few Software
  *  This file is part of FractalSharp.
  *
  *  FractalSharp is free software: you can redistribute it and/or modify
@@ -15,6 +15,7 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 using System;
 using System.Threading.Tasks;
 

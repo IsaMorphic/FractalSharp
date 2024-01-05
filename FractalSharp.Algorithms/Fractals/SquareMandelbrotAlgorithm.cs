@@ -1,5 +1,5 @@
 ﻿/*
- *  Copyright 2018-2020 Chosen Few Software
+ *  Copyright 2018-2024 Chosen Few Software
  *  This file is part of FractalSharp.
  *
  *  FractalSharp is free software: you can redistribute it and/or modify
@@ -17,13 +17,15 @@
  */
 
 using FractalSharp.Numerics.Generic;
+using FractalSharp.Numerics.Helpers;
 using System.Numerics;
 
 namespace FractalSharp.Algorithms.Fractals
 {
-    public class SquareMandelbrotAlgorithm<TNumber> 
+    public class SquareMandelbrotAlgorithm<TNumber, TConverter>
         : IFractalProvider<EscapeTimeParams<TNumber>, TNumber>
         where TNumber : struct, INumber<TNumber>
+        where TConverter : struct, INumberConverter<TNumber>
     {
         private static readonly TNumber _two = TNumber.One + TNumber.One;
 
@@ -42,7 +44,7 @@ namespace FractalSharp.Algorithms.Fractals
             return new Rectangle<TNumber>(xMin, xMax, yMin, yMax);
         }
 
-        public static PointData<TNumber> Run(EscapeTimeParams<TNumber> @params, Complex<TNumber> c)
+        public static PointData<double> Run(EscapeTimeParams<TNumber> @params, Complex<TNumber> c)
         {
             int iter = 0;
             Complex<TNumber> z = Complex<TNumber>.Zero;
@@ -53,7 +55,12 @@ namespace FractalSharp.Algorithms.Fractals
                 iter++;
             }
 
-            return new PointData<TNumber>(z, iter, iter < @params.MaxIterations ? PointClass.Outer : PointClass.Inner);
+            TConverter floatConverter = default;
+            var doubleReal = floatConverter.ToDouble(z.Real);
+            var doubleImag = floatConverter.ToDouble(z.Imag);
+            var doubleZ = new Complex<double>(doubleReal, doubleImag);
+
+            return new PointData<double>(doubleZ, iter, iter < @params.MaxIterations ? PointClass.Outer : PointClass.Inner);
         }
     }
 }

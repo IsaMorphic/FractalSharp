@@ -1,5 +1,5 @@
 /*
- *  Copyright 2018-2020 Chosen Few Software
+ *  Copyright 2018-2024 Chosen Few Software
  *  This file is part of FractalSharp.
  *
  *  FractalSharp is free software: you can redistribute it and/or modify

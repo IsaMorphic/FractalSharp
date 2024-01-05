@@ -1,5 +1,5 @@
 /*
- *  Copyright 2018-2020 Chosen Few Software
+ *  Copyright 2018-2024 Chosen Few Software
  *  This file is part of FractalSharp.
  *
  *  FractalSharp is free software: you can redistribute it and/or modify
@@ -18,6 +18,7 @@
 
 using FractalSharp.Algorithms;
 using FractalSharp.Numerics.Generic;
+using FractalSharp.Numerics.Helpers;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +26,7 @@ using System.Threading.Tasks;
 namespace FractalSharp.Processing
 {
     public class FractalProcessor<TAlgorithm, TParams, TNumber>
-        : BaseProcessor<Complex<TNumber>, PointData<TNumber>, TAlgorithm, TParams>
+        : BaseProcessor<Complex<TNumber>, PointData<double>, TAlgorithm, TParams>
         where TAlgorithm : IFractalProvider<TParams, TNumber>
         where TParams : struct
         where TNumber : struct, INumber<TNumber>
@@ -45,9 +46,9 @@ namespace FractalSharp.Processing
             pointMapper.OutputSpace = TAlgorithm.GetOutputBounds(Settings?.Params ?? default, aspectRatio);
         }
 
-        protected override PointData<TNumber>[,] Process(ParallelOptions options)
+        protected override PointData<double>[,] Process(ParallelOptions options)
         {
-            PointData<TNumber>[,] data = new PointData<TNumber>[Height, Width];
+            PointData<double>[,] data = new PointData<double>[Width, Height];
 
             Parallel.For(0, Height, options, y =>
             {
@@ -55,7 +56,7 @@ namespace FractalSharp.Processing
                 Parallel.For(0, Width, options, x =>
                 {
                     var px = pointMapper.MapPointX(TNumber.CreateChecked(x));
-                    data[y, x] = TAlgorithm.Run(Settings?.Params ?? default, new Complex<TNumber>(px, py));
+                    data[x, y] = TAlgorithm.Run(Settings?.Params ?? default, new Complex<TNumber>(px, py));
                 });
             });
 

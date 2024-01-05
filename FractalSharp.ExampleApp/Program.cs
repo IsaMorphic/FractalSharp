@@ -1,5 +1,5 @@
 /*
- *  Copyright 2018-2020 Chosen Few Software
+ *  Copyright 2018-2024 Chosen Few Software
  *  This file is part of FractalSharp.
  *
  *  FractalSharp is free software: you can redistribute it and/or modify
@@ -21,8 +21,8 @@ using FractalSharp.Algorithms.Coloring;
 using FractalSharp.Algorithms.Fractals;
 using FractalSharp.Imaging;
 using FractalSharp.Numerics.Generic;
+using FractalSharp.Numerics.Helpers;
 using FractalSharp.Processing;
-using QuadrupleLib;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -60,8 +60,8 @@ namespace FractalSharp.ExampleApp
         private const int WIDTH  = 2560 * 4;
         private const int HEIGHT = 1440 * 4;
 
-        private static readonly GPUFractalProcessor<SquareMandelbrotAlgorithm<double>, EscapeTimeParams<double>> FractalProcessor =
-            new GPUFractalProcessor<SquareMandelbrotAlgorithm<double>, EscapeTimeParams<double>>(WIDTH, HEIGHT);
+        private static readonly GPUFractalProcessor<SquareMandelbrotAlgorithm<double, DefaultNumberConverter>, EscapeTimeParams<double>, double, DefaultNumberConverter> FractalProcessor =
+            new GPUFractalProcessor<SquareMandelbrotAlgorithm<double, DefaultNumberConverter>, EscapeTimeParams<double>, double, DefaultNumberConverter>(WIDTH, HEIGHT);
 
         private static readonly ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams> OuterColorProcessor =
             new ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams>(WIDTH, HEIGHT);

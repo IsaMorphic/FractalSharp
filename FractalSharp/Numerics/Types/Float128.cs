@@ -1,5 +1,5 @@
 ﻿/*
- *  Copyright 2023 Chosen Few Software
+ *  Copyright 2024 Chosen Few Software
  *  This file is part of QuadrupleLib.
  *
  *  QuadrupleLib is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@ using System.Text.RegularExpressions;
 
 namespace QuadrupleLib
 {
-    public struct Float128 : ISignedNumber<Float128>
+    public struct Float128 : INumber<Float128>, ISignedNumber<Float128>
     {
         #region Useful constants
 
