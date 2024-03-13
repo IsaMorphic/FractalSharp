@@ -24,6 +24,7 @@ using ILGPU.IR.Types;
 using ILGPU.Runtime;
 using ILGPU.Runtime.CPU;
 using ILGPU.Runtime.Cuda;
+using ILGPU.Runtime.OpenCL;
 using System;
 using System.Numerics;
 using System.Threading.Tasks;
