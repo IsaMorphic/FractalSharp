@@ -58,11 +58,11 @@ namespace FractalSharp.ExampleApp
 
     class Program
     {
-        private const int WIDTH  = 2560 * 4;
-        private const int HEIGHT = 1440 * 4;
+        private const int WIDTH  = 512;
+        private const int HEIGHT = 512;
 
         private static readonly FractalProcessor<SquareMandelbrotAlgorithm<Float128, DefaultNumberConverter>, EscapeTimeParams<Float128>, Float128> FractalProcessor =
-            new FractalProcessor<SquareMandelbrotAlgorithm<Float128, DefaultNumberConverter>, EscapeTimeParams<Float128>, Float128>(WIDTH, HEIGHT);
+            new GPUFractalProcessor<SquareMandelbrotAlgorithm<Float128, DefaultNumberConverter>, EscapeTimeParams<Float128>, Float128, DefaultNumberConverter>(WIDTH, HEIGHT);
 
         private static readonly ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams> OuterColorProcessor =
             new ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams>(WIDTH, HEIGHT);

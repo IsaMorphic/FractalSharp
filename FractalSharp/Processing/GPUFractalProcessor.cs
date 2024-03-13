@@ -22,6 +22,8 @@ using FractalSharp.Numerics.Helpers;
 using ILGPU;
 using ILGPU.IR.Types;
 using ILGPU.Runtime;
+using ILGPU.Runtime.CPU;
+using ILGPU.Runtime.Cuda;
 using System;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -51,7 +53,10 @@ namespace FractalSharp.Processing
 
         public GPUFractalProcessor(int width, int height) : base(width, height)
         {
-            context = Context.CreateDefault();
+            context = Context.Create()
+                .Default()
+                .Optimize(OptimizationLevel.O0)
+                .ToContext();
             accelerator = context.GetPreferredDevice(preferCPU: false)
                 .CreateAccelerator(context);
 
