@@ -512,7 +512,6 @@ namespace QuadrupleLib
             private static BigMul256 Add(BigMul256 left, BigMul256 right)
             {
                 ulong carry;
-                BigMul256 result = new BigMul256();
 
                 var left_lo_lo = Unsafe.As<BigMul64, ulong>(ref left._lo._lo);
                 var left_lo_hi = Unsafe.As<BigMul64, ulong>(ref left._lo._hi);
@@ -722,8 +721,11 @@ namespace QuadrupleLib
 
                 var bigSignificand = BigMul256.Multiply(left.Significand, right.Significand);
 
-                var lowBits = Unsafe.As<BigMul128, UInt128>(ref bigSignificand._lo);
-                var highBits = Unsafe.As<BigMul128, UInt128>(ref bigSignificand._hi);
+                var bigLoBits = Unsafe.As<BigMul128, UInt128>(ref bigSignificand._lo);
+                var bigHiBits = Unsafe.As<BigMul128, UInt128>(ref bigSignificand._hi);
+
+                var lowBits = bigLoBits & (UInt128.MaxValue >> 16);
+                var highBits = (bigHiBits << 19) | (bigLoBits >> 109);
 
                 // normalize output
                 int normDist;
@@ -1495,17 +1497,19 @@ namespace QuadrupleLib
                 ulong result;
                 if (BitOperations.TrailingZeroCount(smallMantissa >> 3) == 52)
                 {
-                    result = ((ulong)((x.Exponent + 0x400) << 52) & 0x7ff) | (x.RawSignBit ? 1UL << 63 : 0);
-                    return Unsafe.As<ulong, double>(ref result);
+                    result =
+                        ((ulong)((x.Exponent + 0x400) << 52) & 0x7ff) |
+                        (x.RawSignBit ? 1UL << 63 : 0);
                 }
                 else
                 {
-                    result =
+                    result = 
                         ((smallMantissa >> 3) & 0xfffffffffffffUL) |
-                        ((ulong)((x.Exponent + 0x3ff) << 52) & 0x7ff) |
+                        ((ulong)((x.Exponent + 0x3ff) & 0x7ff) << 52) |
                         (x.RawSignBit ? 1UL << 63 : 0);
-                    return Unsafe.As<ulong, double>(ref result);
                 }
+
+                return Unsafe.As<ulong, double>(ref result);
             }
         }
 
