@@ -22,6 +22,7 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -400,84 +401,93 @@ namespace QuadrupleLib
 
         #endregion
 
-        #region Private API: Full-width 128-bit Multiplication Utility
+#region Private API: Full-width 128-bit Multiplication Utility
 
-        private struct BigMul
+#if BIGENDIAN
+
+        [StructLayout(LayoutKind.Explicit)]
+        private struct BigMul128 
         {
-            private readonly UInt128 _lo;
-            private readonly UInt128 _hi;
+            [FieldOffset(0)]
+            private readonly ulong _lo;
 
-            private Span<ulong> GetUInt64Bits()
+            [FieldOffset(sizeof(ulong))]
+            private readonly ulong _hi;
+        }
+#else
+
+        [StructLayout(LayoutKind.Explicit)]
+        private struct BigMul128
+        {
+            [FieldOffset(0)]
+            private readonly ulong _hi;
+
+            [FieldOffset(sizeof(ulong))]
+            private readonly ulong _lo;
+        }
+
+#endif
+
+        private struct BigMul256
+        {
+
+            private static Vector256<ulong> Add(Vector256<ulong> left, Vector256<ulong> right)
             {
-                var thisSpan = MemoryMarshal.CreateSpan(ref this, 1);
-                return MemoryMarshal.Cast<BigMul, ulong>(thisSpan);
-            }
-
-            public ReadOnlySpan<UInt128> GetUInt128Bits()
-            {
-                var thisSpan = MemoryMarshal.CreateSpan(ref this, 1);
-                return MemoryMarshal.Cast<BigMul, UInt128>(thisSpan);
-            }
-
-            private static BigMul Add(BigMul left, BigMul right)
-            {
-                var leftBits = left.GetUInt64Bits();
-                var rightBits = right.GetUInt64Bits();
-
-                BigMul result = new();
-                Span<ulong> newBits = result.GetUInt64Bits();
+                var newBits = new Vector256<ulong>();
 
                 int i;
-                for (i = 0; i < newBits.Length - 1; i++)
+                for (i = 0; i < 3; i++)
                 {
-                    newBits[i] = leftBits[i] + rightBits[i];
-                    var carry = (ulong)Math.Max(0, leftBits[i].CompareTo(newBits[i]));
-                    newBits[i + 1] = leftBits[i + 1] + rightBits[i + 1] + carry;
+                    newBits = newBits.WithElement(i, left[i] + right[i]);
+                    var carry = (ulong)Math.Max(0, left[i].CompareTo(newBits[i]));
+                    newBits = newBits.WithElement(i + 1, left[i + 1] + right[i + 1] + carry);
                 }
 
-                return result;
+                return newBits;
             }
 
-            private static BigMul Multiply(UInt128 left, ulong right)
+            private static Vector256<ulong> Multiply(UInt128 left, ulong right)
             {
-                Span<UInt128> leftVal = stackalloc[] { left };
-                Span<ulong> leftBits = MemoryMarshal.Cast<UInt128, ulong>(leftVal);
+                var leftBits = new Vector128<ulong>()
+                    .WithElement(0, (ulong)(left & ulong.MaxValue))
+                    .WithElement(1, (ulong)(left >> 64));
 
-                BigMul result = new();
-                Span<ulong> newBits = result.GetUInt64Bits();
+                var newBits = new Vector256<ulong>();
 
                 int i;
                 ulong oldHigh = Math.BigMul(leftBits[0], right, out ulong low1);
-                newBits[0] = low1;
-                for (i = 1; i < leftBits.Length; i++)
+                newBits = newBits.WithElement(0, low1);
+                for (i = 1; i < 2; i++)
                 {
                     ulong newHigh = Math.BigMul(leftBits[i], right, out ulong low2);
-                    newBits[i] += low2 + oldHigh;
+                    newBits = newBits.WithElement(i, newBits[i] + low2 + oldHigh);
                     oldHigh = newHigh + (ulong)Math.Max(0, low2.CompareTo(low2 + oldHigh));
                 }
-                newBits[i] = oldHigh;
+                newBits = newBits.WithElement(i, oldHigh);
 
-                return result;
+                return newBits;
             }
 
-            public static BigMul Multiply(UInt128 left, UInt128 right)
+            public static Vector256<ulong> Multiply(UInt128 left, UInt128 right)
             {
-                Span<UInt128> rightVal = stackalloc[] { right };
-                Span<ulong> rightBits = MemoryMarshal.Cast<UInt128, ulong>(rightVal);
+                var rightBits = new Vector128<ulong>()
+                    .WithElement(0, (ulong)(right & ulong.MaxValue))
+                    .WithElement(1, (ulong)(right >> 64));
 
                 var leftProd = Multiply(left, rightBits[0]);
                 var rightProd = Multiply(left, rightBits[1]);
-                var rightShift = new BigMul();
+                var rightShift = new Vector256<ulong>();
 
-                var rightProdBits = rightProd.GetUInt64Bits();
-                var rightShiftBits = rightShift.GetUInt64Bits();
-                rightProdBits.Slice(0, 3).CopyTo(rightShiftBits.Slice(1));
+                for(int i = 0; i < 3; i++) 
+                {
+                    rightShift = rightShift.WithElement(i + 1, rightProd[i]);
+                }
 
                 return Add(leftProd, rightShift);
             }
         }
 
-        #endregion
+#endregion
 
         #region Public API (arithmetic related)
 
@@ -586,9 +596,13 @@ namespace QuadrupleLib
                 var prodSign = left.RawSignBit != right.RawSignBit;
                 var prodExponent = left.Exponent + right.Exponent;
 
-                var bigSignificand = BigMul.Multiply(left.Significand, right.Significand).GetUInt128Bits();
-                var lowBits = bigSignificand[0] & (UInt128.MaxValue >> 16);
-                var highBits = (bigSignificand[1] << 19) | (bigSignificand[0] >> 109);
+                var bigSignificand = BigMul.Multiply(left.Significand, right.Significand);
+                
+                var lo128 = (UInt128)bigSignificand.GetLower()[0] | (bigSignificand.GetLower()[1] << 64);
+                var hi128 = (UInt128)bigSignificand.GetUpper()[0] | (bigSignificand.GetUpper()[1] << 64);
+
+                var lowBits = lo128 & (UInt128.MaxValue >> 16);
+                var highBits = (hi128 << 19) | (hi128 >> 109);
 
                 // normalize output
                 int normDist;

@@ -36,13 +36,13 @@ namespace FractalSharp.Processing
         public FractalProcessor(int width, int height) : base(width, height)
         {
             pointMapper = new PointMapper<TNumber>();
-            pointMapper.InputSpace = new Rectangle<TNumber>(TNumber.Zero, TNumber.CreateChecked(Width), TNumber.Zero, TNumber.CreateChecked(Height));
+            pointMapper.InputSpace = new Rectangle<TNumber>(TNumber.Zero, TNumber.CreateChecked((double)Width), TNumber.Zero, TNumber.CreateChecked((double)Height));
         }
 
         public override async Task SetupAsync(ProcessorConfig<TParams> settings, CancellationToken cancellationToken)
         {
             await base.SetupAsync(settings, cancellationToken);
-            TNumber aspectRatio = TNumber.CreateChecked(Width) / TNumber.CreateChecked(Height);
+            TNumber aspectRatio = TNumber.CreateChecked((double)Width) / TNumber.CreateChecked((double)Height);
             pointMapper.OutputSpace = TAlgorithm.GetOutputBounds(Settings?.Params ?? default, aspectRatio);
         }
 
@@ -52,10 +52,10 @@ namespace FractalSharp.Processing
 
             Parallel.For(0, Height, options, y =>
             {
-                var py = pointMapper.MapPointY(TNumber.CreateChecked(y));
+                var py = pointMapper.MapPointY(TNumber.CreateChecked((double)y));
                 Parallel.For(0, Width, options, x =>
                 {
-                    var px = pointMapper.MapPointX(TNumber.CreateChecked(x));
+                    var px = pointMapper.MapPointX(TNumber.CreateChecked((double)x));
                     data[x, y] = TAlgorithm.Run(Settings?.Params ?? default, new Complex<TNumber>(px, py));
                 });
             });

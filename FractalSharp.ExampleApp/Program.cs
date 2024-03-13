@@ -23,6 +23,7 @@ using FractalSharp.Imaging;
 using FractalSharp.Numerics.Generic;
 using FractalSharp.Numerics.Helpers;
 using FractalSharp.Processing;
+using QuadrupleLib;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -60,8 +61,8 @@ namespace FractalSharp.ExampleApp
         private const int WIDTH  = 2560 * 4;
         private const int HEIGHT = 1440 * 4;
 
-        private static readonly GPUFractalProcessor<SquareMandelbrotAlgorithm<double, DefaultNumberConverter>, EscapeTimeParams<double>, double, DefaultNumberConverter> FractalProcessor =
-            new GPUFractalProcessor<SquareMandelbrotAlgorithm<double, DefaultNumberConverter>, EscapeTimeParams<double>, double, DefaultNumberConverter>(WIDTH, HEIGHT);
+        private static readonly FractalProcessor<SquareMandelbrotAlgorithm<Float128, DefaultNumberConverter>, EscapeTimeParams<Float128>, Float128> FractalProcessor =
+            new FractalProcessor<SquareMandelbrotAlgorithm<Float128, DefaultNumberConverter>, EscapeTimeParams<Float128>, Float128>(WIDTH, HEIGHT);
 
         private static readonly ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams> OuterColorProcessor =
             new ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams>(WIDTH, HEIGHT);
@@ -98,18 +99,18 @@ namespace FractalSharp.ExampleApp
             Console.WriteLine("Process started.");
 
             int i = Directory.EnumerateFiles(Environment.CurrentDirectory, "*.png").Count();
-            while(true)
+            while(i < 4500)
             {
                 Console.WriteLine($"Computing raw fractal data for frame #{i}...");
-                await FractalProcessor.SetupAsync(new ProcessorConfig<EscapeTimeParams<double>>
+                await FractalProcessor.SetupAsync(new ProcessorConfig<EscapeTimeParams<Float128>>
                 {
                     ThreadCount = Environment.ProcessorCount,
 
-                    Params = new EscapeTimeParams<double>
+                    Params = new EscapeTimeParams<Float128>
                     {
                         MaxIterations = 256 * (int)Math.Pow(2, i / 360),
                         Magnification = Math.Pow(2, i / 180.0),
-                        Location = new Complex<double>(double.Parse("-0.743643887037158704752191506114774"), double.Parse("0.131825904205311970493132056385139")),
+                        Location = new Complex<Float128>(Float128.Parse("-0.743643887037158704752191506114774"), Float128.Parse("0.131825904205311970493132056385139")),
                         EscapeRadius = 4.0,
                     }
                 }, CancellationToken.None);

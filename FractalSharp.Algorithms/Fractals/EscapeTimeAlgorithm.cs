@@ -36,7 +36,7 @@ namespace FractalSharp.Algorithms.Fractals
             Magnification = TNumber.One;
             MaxIterations = 256;
 
-            EscapeRadius = TNumber.CreateChecked(4);
+            EscapeRadius = TNumber.CreateChecked((double)4);
         }
     }
 }
