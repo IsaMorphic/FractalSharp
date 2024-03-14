@@ -20,6 +20,7 @@ using FractalSharp.Algorithms;
 using FractalSharp.Numerics.Generic;
 using FractalSharp.Numerics.Helpers;
 using ILGPU;
+using ILGPU.Backends.PTX;
 using ILGPU.IR.Types;
 using ILGPU.Runtime;
 using ILGPU.Runtime.CPU;
@@ -56,10 +57,10 @@ namespace FractalSharp.Processing
         {
             context = Context.Create()
                 .Default()
-                .Optimize(OptimizationLevel.O0)
+                .AutoDebug()
+                .PTXBackend(PTXBackendMode.Enhanced)
                 .ToContext();
-            accelerator = context.GetPreferredDevice(preferCPU: false)
-                .CreateAccelerator(context);
+            accelerator = context.CreateCudaAccelerator(0);
 
             loadedKernel = accelerator.LoadAutoGroupedStreamKernel<Index2D, ArrayView2D<PointData<double>, Stride2D.DenseY>, PointMapper<TNumber>, TParams>(FractalKernel);
         }
