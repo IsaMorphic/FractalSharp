@@ -17,26 +17,23 @@
  */
 
 using FractalSharp.Numerics.Generic;
+using System;
 using System.Numerics;
 
 namespace FractalSharp.Algorithms.Fractals
 {
-    public struct EscapeTimeParams<TNumber> 
+    public struct EscapeTimeParams<TNumber>
         where TNumber : struct, INumber<TNumber>
     {
-        public int MaxIterations { get; init; }
-        public Complex<TNumber> Location { get; init; }
-        public TNumber Magnification { get; init; }
-
-        public TNumber EscapeRadius { get; init; }
+        public int MaxIterations;
+        public Complex<TNumber> Position;
+        public TNumber Scale;
 
         public EscapeTimeParams()
         {
-            Location = Complex<TNumber>.Zero;
-            Magnification = TNumber.One;
             MaxIterations = 256;
-
-            EscapeRadius = TNumber.CreateChecked((double)4);
+            Position = Complex<TNumber>.Zero;
+            Scale = TNumber.One;
         }
     }
 }

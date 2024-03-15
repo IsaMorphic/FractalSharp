@@ -18,49 +18,56 @@
 
 using FractalSharp.Numerics.Generic;
 using FractalSharp.Numerics.Helpers;
+using ILGPU.Runtime;
 using System.Numerics;
 
 namespace FractalSharp.Algorithms.Fractals
 {
-    public class SquareMandelbrotAlgorithm<TNumber, TConverter>
-        : IFractalProvider<EscapeTimeParams<TNumber>, TNumber>
-        where TNumber : struct, INumber<TNumber>
+    public class SquareMandelbrotAlgorithm<TNumber, TConverter> :
+        IAlgorithmProvider<Complex<TNumber>, PointData<double>, SpecializedValue<int>>,
+        IFractalProvider<EscapeTimeParams<TNumber>, TNumber>
+        where TNumber : unmanaged, INumber<TNumber>
         where TConverter : struct, INumberConverter<TNumber>
     {
         private static readonly TNumber _two = TNumber.One + TNumber.One;
 
         public static Rectangle<TNumber> GetOutputBounds(EscapeTimeParams<TNumber> @params, TNumber aspectRatio)
         {
-            TNumber xScale = aspectRatio * _two / @params.Magnification;
+            TNumber xScale = aspectRatio * _two / @params.Scale;
 
-            TNumber xMin = -xScale + @params.Location.Real;
-            TNumber xMax = xScale + @params.Location.Real;
+            TNumber xMin = -xScale + @params.Position.Real;
+            TNumber xMax = xScale + @params.Position.Real;
 
-            TNumber yScale = _two / @params.Magnification;
+            TNumber yScale = _two / @params.Scale;
 
-            TNumber yMin = yScale + @params.Location.Imag;
-            TNumber yMax = -yScale + @params.Location.Imag;
+            TNumber yMin = yScale + @params.Position.Imag;
+            TNumber yMax = -yScale + @params.Position.Imag;
 
             return new Rectangle<TNumber>(xMin, xMax, yMin, yMax);
         }
 
-        public static PointData<double> Run(EscapeTimeParams<TNumber> @params, Complex<TNumber> c)
+        public static PointData<double> Run(SpecializedValue<int> maxIterations, Complex<TNumber> c)
         {
             int iter = 0;
             Complex<TNumber> z = Complex<TNumber>.Zero;
 
-            while (Complex<TNumber>.AbsSqu(z) < @params.EscapeRadius && iter < @params.MaxIterations)
+            for (; iter < maxIterations; iter++)
             {
+                if (Complex<TNumber>.AbsSqu(z) > _two * _two) break;
                 z = z * z + c;
-                iter++;
             }
 
             TConverter floatConverter = default;
             var doubleReal = floatConverter.ToDouble(z.Real);
             var doubleImag = floatConverter.ToDouble(z.Imag);
-            var doubleZ = new Complex<double>(doubleReal, doubleImag);
 
-            return new PointData<double>(doubleZ, iter, iter < @params.MaxIterations ? PointClass.Outer : PointClass.Inner);
+            return new PointData<double>(new Complex<double>(doubleReal, doubleImag), iter,
+                iter < maxIterations ? PointClass.Outer : PointClass.Inner);
+        }
+
+        public static PointData<double> Run(EscapeTimeParams<TNumber> @params, Complex<TNumber> c)
+        {
+            return Run(SpecializedValue.New(@params.MaxIterations), c);
         }
     }
 }

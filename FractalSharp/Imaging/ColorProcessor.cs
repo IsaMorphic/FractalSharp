@@ -27,7 +27,7 @@ namespace FractalSharp.Imaging
         where TParams : struct
     {
         public PointClass PointClass { get; init; }
-        public PointData<double>[,] InputData { get; init; }
+        public PointData<double>[,]? InputData { get; init; }
 
         public override ProcessorConfig<TParams> Copy()
         {
@@ -36,7 +36,7 @@ namespace FractalSharp.Imaging
                 ThreadCount = ThreadCount,
                 Params = Params,
                 PointClass = PointClass,
-                InputData = (PointData<double>[,])InputData.Clone()
+                InputData = InputData?.Clone() as PointData<double>[,]
             };
         }
     }
@@ -55,21 +55,26 @@ namespace FractalSharp.Imaging
         {
             if (Settings is null) throw new InvalidOperationException();
 
-            double[,] indicies = new double[Width, Height];
+            TParams @params = Settings.Params;
+            double[,] indexes = new double[Width, Height];
 
             Parallel.For(0, Height, y =>
             {
                 Parallel.For(0, Width, x =>
                 {
-                    PointData<double> pointData = Settings.InputData[x, y];
-                    if (pointData.PointClass == Settings.PointClass)
-                        indicies[x, y] = TAlgorithm.Run(Settings.Params, pointData);
+                    PointData<double>? pointData = Settings.InputData?[x, y];
+                    if (pointData?.PointClass == Settings.PointClass)
+                    {
+                        indexes[x, y] = TAlgorithm.Run(@params, pointData.Value);
+                    }
                     else
-                        indicies[x, y] = double.NaN;
+                    {
+                        indexes[x, y] = double.NaN;
+                    }
                 });
             });
 
-            return indicies;
+            return indexes;
         }
     }
 }

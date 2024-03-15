@@ -58,11 +58,11 @@ namespace FractalSharp.ExampleApp
 
     class Program
     {
-        private const int WIDTH  = 512;
-        private const int HEIGHT = 512;
+        private const int WIDTH = 2560 * 4;
+        private const int HEIGHT = 1440 * 4;
 
         private static readonly FractalProcessor<SquareMandelbrotAlgorithm<Float128, DefaultNumberConverter>, EscapeTimeParams<Float128>, Float128> FractalProcessor =
-            new GPUFractalProcessor<SquareMandelbrotAlgorithm<Float128, DefaultNumberConverter>, EscapeTimeParams<Float128>, Float128, DefaultNumberConverter>(WIDTH, HEIGHT);
+            new GPUFractalProcessor<SquareMandelbrotAlgorithm<Float128, DefaultNumberConverter>, Float128>(WIDTH, HEIGHT);
 
         private static readonly ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams> OuterColorProcessor =
             new ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams>(WIDTH, HEIGHT);
@@ -99,7 +99,7 @@ namespace FractalSharp.ExampleApp
             Console.WriteLine("Process started.");
 
             int i = Directory.EnumerateFiles(Environment.CurrentDirectory, "*.png").Count();
-            while(i < 4500)
+            while (i < 4500)
             {
                 Console.WriteLine($"Computing raw fractal data for frame #{i}...");
                 await FractalProcessor.SetupAsync(new ProcessorConfig<EscapeTimeParams<Float128>>
@@ -109,10 +109,9 @@ namespace FractalSharp.ExampleApp
                     Params = new EscapeTimeParams<Float128>
                     {
                         MaxIterations = 256 * (int)Math.Pow(2, i / 360),
-                        Magnification = Math.Pow(2, i / 180.0),
-                        Location = new Complex<Float128>(Float128.Parse("-0.743643887037158704752191506114774"), Float128.Parse("0.131825904205311970493132056385139")),
-                        EscapeRadius = 4.0,
-                    }
+                        Position = new Complex<Float128>(Float128.Parse("-0.743643887037158704752191506114774"), Float128.Parse("0.131825904205311970493132056385139")),
+                        Scale = Math.Pow(2, i / 180.0),
+                    },
                 }, CancellationToken.None);
                 PointData<double>[,] inputData = await FractalProcessor.ProcessAsync(CancellationToken.None);
 
@@ -120,8 +119,10 @@ namespace FractalSharp.ExampleApp
                 await InnerColorProcessor.SetupAsync(new ColorProcessorConfig<EmptyColoringParams>
                 {
                     ThreadCount = Environment.ProcessorCount,
+
                     Params = new EmptyColoringParams(),
                     PointClass = PointClass.Inner,
+
                     InputData = inputData
                 }, CancellationToken.None);
                 double[,] innerIndicies = await InnerColorProcessor.ProcessAsync(CancellationToken.None);
@@ -130,8 +131,10 @@ namespace FractalSharp.ExampleApp
                 await OuterColorProcessor.SetupAsync(new ColorProcessorConfig<EmptyColoringParams>
                 {
                     ThreadCount = Environment.ProcessorCount,
+
                     Params = new EmptyColoringParams(),
                     PointClass = PointClass.Outer,
+
                     InputData = inputData
                 }, CancellationToken.None);
                 double[,] outerIndicies = await OuterColorProcessor.ProcessAsync(CancellationToken.None);

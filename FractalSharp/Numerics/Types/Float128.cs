@@ -498,7 +498,7 @@ namespace QuadrupleLib
 
                 result._0 = lo1;
 
-                BigMul128 prod2 = BigMul128.Multiply((ulong)(left >> 32), right);
+                BigMul128 prod2 = BigMul128.Multiply((ulong)(left >> 64), right);
 
                 var lo2 = prod2._0 | ((ulong)prod2._1 << 32);
                 var hi2 = prod2._2 | ((ulong)prod2._3 << 32);
@@ -719,7 +719,7 @@ namespace QuadrupleLib
 
                 while (r >= d)
                 {
-                    var p = Divide(r, dHiBits, out ulong _discard);
+                    var p = Divide(r, dHiBits, out ulong _);
                     if (p.hi == 0)
                     {
                         q += UInt128.One;

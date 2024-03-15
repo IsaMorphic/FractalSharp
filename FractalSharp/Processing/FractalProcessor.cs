@@ -42,12 +42,16 @@ namespace FractalSharp.Processing
         public override async Task SetupAsync(ProcessorConfig<TParams> settings, CancellationToken cancellationToken)
         {
             await base.SetupAsync(settings, cancellationToken);
+
+            TParams @params = Settings?.Params ?? default;
             TNumber aspectRatio = TNumber.CreateChecked((double)Width) / TNumber.CreateChecked((double)Height);
-            pointMapper.OutputSpace = TAlgorithm.GetOutputBounds(Settings?.Params ?? default, aspectRatio);
+
+            pointMapper.OutputSpace = TAlgorithm.GetOutputBounds(@params, aspectRatio);
         }
 
         protected override PointData<double>[,] Process(ParallelOptions options)
         {
+            TParams @params = Settings?.Params ?? default;
             PointData<double>[,] data = new PointData<double>[Width, Height];
 
             Parallel.For(0, Height, options, y =>
@@ -56,7 +60,7 @@ namespace FractalSharp.Processing
                 Parallel.For(0, Width, options, x =>
                 {
                     var px = pointMapper.MapPointX(TNumber.CreateChecked((double)x));
-                    data[x, y] = TAlgorithm.Run(Settings?.Params ?? default, new Complex<TNumber>(px, py));
+                    data[x, y] = TAlgorithm.Run(@params, new Complex<TNumber>(px, py));
                 });
             });
 

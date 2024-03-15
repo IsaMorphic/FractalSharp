@@ -17,39 +17,30 @@
  */
 
 using FractalSharp.Algorithms;
+using FractalSharp.Algorithms.Fractals;
 using FractalSharp.Numerics.Generic;
-using FractalSharp.Numerics.Helpers;
 using ILGPU;
-using ILGPU.Backends.PTX;
-using ILGPU.IR.Types;
 using ILGPU.Runtime;
-using ILGPU.Runtime.CPU;
-using ILGPU.Runtime.Cuda;
-using ILGPU.Runtime.OpenCL;
 using System;
 using System.Numerics;
 using System.Threading.Tasks;
 
 namespace FractalSharp.Processing
 {
-    public class GPUFractalProcessor<TAlgorithm, TParams, TNumber, TConverter> : FractalProcessor<TAlgorithm, TParams, TNumber>, IDisposable
-        where TAlgorithm : IFractalProvider<TParams, TNumber>
-        where TParams : struct
+    public class GPUFractalProcessor<TAlgorithm, TNumber> : FractalProcessor<TAlgorithm, EscapeTimeParams<TNumber>, TNumber>, IDisposable
+        where TAlgorithm : 
+            IFractalProvider<EscapeTimeParams<TNumber>, TNumber>, 
+            IAlgorithmProvider<Complex<TNumber>, PointData<double>, SpecializedValue<int>>
         where TNumber : unmanaged, INumber<TNumber>
-        where TConverter : struct, INumberConverter<TNumber>
     {
-        private static void FractalKernel(Index2D idx, ArrayView2D<PointData<double>, Stride2D.DenseY> buff, PointMapper<TNumber> pointMapper, TParams @params)
+        private static void FractalKernel(Index2D idx, ArrayView2D<Complex<TNumber>, Stride2D.DenseY> inputBuff, ArrayView2D<PointData<double>, Stride2D.DenseY> outputBuff, SpecializedValue<int> maxIterations)
         {
-            TConverter floatConverter = default;
-            var py = pointMapper.MapPointY(floatConverter.FromInt32(idx.Y));
-            var px = pointMapper.MapPointX(floatConverter.FromInt32(idx.X));
-
-            buff[idx] = TAlgorithm.Run(@params, new Complex<TNumber>(px, py));
+            outputBuff[idx] = TAlgorithm.Run(maxIterations, inputBuff[idx]);
         }
 
         private Context context;
         private Accelerator accelerator;
-        private Action<Index2D, ArrayView2D<PointData<double>, Stride2D.DenseY>, PointMapper<TNumber>, TParams> loadedKernel;
+        private Action<Index2D, ArrayView2D<Complex<TNumber>, Stride2D.DenseY>, ArrayView2D<PointData<double>, Stride2D.DenseY>, SpecializedValue<int>> loadedKernel;
 
         private bool disposedValue;
 
@@ -57,12 +48,11 @@ namespace FractalSharp.Processing
         {
             context = Context.Create()
                 .Default()
-                .AutoDebug()
-                .PTXBackend(PTXBackendMode.Enhanced)
+                .Inlining(InliningMode.Conservative)
                 .ToContext();
-            accelerator = context.CreateCudaAccelerator(0);
-
-            loadedKernel = accelerator.LoadAutoGroupedStreamKernel<Index2D, ArrayView2D<PointData<double>, Stride2D.DenseY>, PointMapper<TNumber>, TParams>(FractalKernel);
+            accelerator = context.GetPreferredDevice(preferCPU: false)
+                .CreateAccelerator(context);
+            loadedKernel = accelerator.LoadAutoGroupedStreamKernel<Index2D, ArrayView2D<Complex<TNumber>, Stride2D.DenseY>, ArrayView2D<PointData<double>, Stride2D.DenseY>, SpecializedValue<int>>(FractalKernel);
         }
 
         protected override PointData<double>[,] Process(ParallelOptions options)
@@ -72,18 +62,30 @@ namespace FractalSharp.Processing
                 throw new InvalidOperationException();
             }
 
-            PointData<double>[,] cpuBuffer;
-            using (var gpuBuffer = accelerator.Allocate2DDenseY<PointData<double>>(new LongIndex2D(Width, Height)))
+            Complex<TNumber>[,] cpuInputBuffer = new Complex<TNumber>[Width, Height];
+            Parallel.For(0, Height, options, y =>
+            {
+                var py = pointMapper.MapPointY(TNumber.CreateChecked((double)y));
+                Parallel.For(0, Width, options, x =>
+                {
+                    var px = pointMapper.MapPointX(TNumber.CreateChecked((double)x));
+                    cpuInputBuffer[x, y] = new Complex<TNumber>(px, py);
+                });
+            });
+
+            PointData<double>[,] cpuOutputBuffer = new PointData<double>[Width, Height];
+
+            using (var gpuInputBuffer = accelerator.Allocate2DDenseY(cpuInputBuffer))
+            using (var gpuOutputBuffer = accelerator.Allocate2DDenseY(cpuOutputBuffer))
             {
 
-                loadedKernel(gpuBuffer.IntExtent, gpuBuffer, pointMapper, Settings.Params);
-                cpuBuffer = new PointData<double>[Width, Height];
+                loadedKernel(new (Width, Height), gpuInputBuffer, gpuOutputBuffer, SpecializedValue.New(Settings.Params.MaxIterations));
 
                 accelerator.Synchronize();
-                gpuBuffer.CopyToCPU(cpuBuffer);
+                gpuOutputBuffer.CopyToCPU(cpuOutputBuffer);
             }
 
-            return cpuBuffer;
+            return cpuOutputBuffer;
         }
 
         protected virtual void Dispose(bool disposing)
