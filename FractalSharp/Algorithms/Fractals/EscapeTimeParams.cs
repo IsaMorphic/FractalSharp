@@ -25,9 +25,9 @@ namespace FractalSharp.Algorithms.Fractals
     public struct EscapeTimeParams<TNumber>
         where TNumber : struct, INumber<TNumber>
     {
-        public int MaxIterations;
-        public Complex<TNumber> Position;
-        public TNumber Scale;
+        public int MaxIterations { get; set; }
+        public Complex<TNumber> Position { get; set; }
+        public TNumber Scale { get; set; }
 
         public EscapeTimeParams()
         {
