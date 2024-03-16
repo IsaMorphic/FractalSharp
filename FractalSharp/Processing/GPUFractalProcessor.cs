@@ -46,10 +46,7 @@ namespace FractalSharp.Processing
 
         public GPUFractalProcessor(int width, int height) : base(width, height)
         {
-            context = Context.Create()
-                .Default()
-                .Inlining(InliningMode.Conservative)
-                .ToContext();
+            context = Context.CreateDefault();
             accelerator = context.GetPreferredDevice(preferCPU: false)
                 .CreateAccelerator(context);
             loadedKernel = accelerator.LoadAutoGroupedStreamKernel<Index2D, ArrayView2D<Complex<TNumber>, Stride2D.DenseY>, ArrayView2D<PointData<double>, Stride2D.DenseY>, SpecializedValue<int>>(FractalKernel);
