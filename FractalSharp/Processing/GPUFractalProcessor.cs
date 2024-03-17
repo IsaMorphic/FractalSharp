@@ -21,6 +21,7 @@ using FractalSharp.Algorithms.Fractals;
 using FractalSharp.Numerics.Generic;
 using ILGPU;
 using ILGPU.Runtime;
+using ILGPU.Runtime.Cuda;
 using System;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -35,7 +36,13 @@ namespace FractalSharp.Processing
     {
         private static void FractalKernel(Index2D idx, ArrayView2D<Complex<TNumber>, Stride2D.DenseY> inputBuff, ArrayView2D<PointData<double>, Stride2D.DenseY> outputBuff, SpecializedValue<int> maxIterations)
         {
-            outputBuff[idx] = TAlgorithm.Run(maxIterations, inputBuff[idx]);
+            for (int y = 0; y < 4; y++)
+            {
+                for (int x = 0; x < 4; x++)
+                {
+                    outputBuff[new(idx.X * 4 + x, idx.Y * 4 + y)] = TAlgorithm.Run(maxIterations, inputBuff[new(idx.X * 4 + x, idx.Y * 4 + y)]);
+                }
+            }
         }
 
         private Context context;
@@ -46,9 +53,11 @@ namespace FractalSharp.Processing
 
         public GPUFractalProcessor(int width, int height) : base(width, height)
         {
-            context = Context.CreateDefault();
-            accelerator = context.GetPreferredDevice(preferCPU: false)
-                .CreateAccelerator(context);
+            context = Context.Create()
+                .Default()
+                .Cuda(dev => true)
+                .ToContext();
+            accelerator = context.CreateCudaAccelerator(0);
             loadedKernel = accelerator.LoadAutoGroupedStreamKernel<Index2D, ArrayView2D<Complex<TNumber>, Stride2D.DenseY>, ArrayView2D<PointData<double>, Stride2D.DenseY>, SpecializedValue<int>>(FractalKernel);
         }
 
@@ -76,7 +85,7 @@ namespace FractalSharp.Processing
             using (var gpuOutputBuffer = accelerator.Allocate2DDenseY(cpuOutputBuffer))
             {
 
-                loadedKernel(new (Width, Height), gpuInputBuffer, gpuOutputBuffer, SpecializedValue.New(Settings.Params.MaxIterations));
+                loadedKernel(new (Width / 4, Height / 4), gpuInputBuffer, gpuOutputBuffer, SpecializedValue.New(Settings.Params.MaxIterations));
 
                 accelerator.Synchronize();
                 gpuOutputBuffer.CopyToCPU(cpuOutputBuffer);

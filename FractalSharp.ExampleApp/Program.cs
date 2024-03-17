@@ -61,8 +61,8 @@ namespace FractalSharp.ExampleApp
         private const int WIDTH = 2560 * 4;
         private const int HEIGHT = 1440 * 4;
 
-        private static readonly FractalProcessor<SquareMandelbrotAlgorithm<Float128, DefaultNumberConverter>, EscapeTimeParams<Float128>, Float128> FractalProcessor =
-            new GPUFractalProcessor<SquareMandelbrotAlgorithm<Float128, DefaultNumberConverter>, Float128>(WIDTH, HEIGHT);
+        private static readonly FractalProcessor<SquareMandelbrotAlgorithm<double, DefaultNumberConverter>, EscapeTimeParams<double>, double> FractalProcessor =
+            new GPUFractalProcessor<SquareMandelbrotAlgorithm<double, DefaultNumberConverter>, double>(WIDTH, HEIGHT);
 
         private static readonly ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams> OuterColorProcessor =
             new ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams>(WIDTH, HEIGHT);
@@ -94,60 +94,111 @@ namespace FractalSharp.ExampleApp
                 new GradientKey(new RgbaValue(25, 7, 26))
             });
 
+        private static readonly CancellationTokenSource cts = new CancellationTokenSource();
+
         static async Task Main(string[] args)
         {
             Console.WriteLine("Process started.");
 
-            int i = Directory.EnumerateFiles(Environment.CurrentDirectory, "*.png").Count();
-            while (i < 4500)
+            Console.CancelKeyPress += OnCancelKeyPress;
+
+            int lastFrame, i;
+            bool frameFinished;
+            do
             {
-                Console.WriteLine($"Computing raw fractal data for frame #{i}...");
-                await FractalProcessor.SetupAsync(new ProcessorConfig<EscapeTimeParams<Float128>>
-                {
-                    ThreadCount = Environment.ProcessorCount,
+                lastFrame = Directory.EnumerateFiles(Environment.CurrentDirectory, "*.png")
+                    .Select(x => int.Parse(Path.GetFileNameWithoutExtension(x)))
+                    .OrderByDescending(x => x)
+                    .FirstOrDefault();
 
-                    Params = new EscapeTimeParams<Float128>
+                for (i = 0; i <= lastFrame && lastFrame > 0; i++)
+                {
+                    if (!File.Exists($"{i:D4}.png"))
                     {
-                        MaxIterations = 256 * (int)Math.Pow(2, i / 360),
-                        Position = new Complex<Float128>(Float128.Parse("-0.743643887037158704752191506114774"), Float128.Parse("0.131825904205311970493132056385139")),
-                        Scale = Math.Pow(2, i / 180.0),
-                    },
-                }, CancellationToken.None);
-                PointData<double>[,] inputData = await FractalProcessor.ProcessAsync(CancellationToken.None);
+                        Console.WriteLine($"Found unfinished frame: {i}/{lastFrame}; locking for next job.");
+                        break;
+                    }
+                    else if (args.FirstOrDefault() == "/verify")
+                    {
+                        using var verifyBitmap = SKBitmap.Decode($"{i:D4}.png");
+                        if(verifyBitmap is null) 
+                        {
+                            Console.WriteLine($"Found corrupted frame: {i}/{lastFrame}; attempting to lock & re-render for next job.");
+                            break;
+                        }
+                    }
+                }
 
-                Console.WriteLine("Computing colors for inner points...");
-                await InnerColorProcessor.SetupAsync(new ColorProcessorConfig<EmptyColoringParams>
+                // touch file to allocate it (effectively lock the file)
+                using var outputFileStream = new SKFileWStream($"{i:D4}.png");
+                frameFinished = false;
+
+                try
                 {
-                    ThreadCount = Environment.ProcessorCount,
+                    Console.WriteLine($"Computing raw fractal data for frame #{i}...");
+                    await FractalProcessor.SetupAsync(new ProcessorConfig<EscapeTimeParams<double>>
+                    {
+                        ThreadCount = Environment.ProcessorCount,
 
-                    Params = new EmptyColoringParams(),
-                    PointClass = PointClass.Inner,
+                        Params = new EscapeTimeParams<double>
+                        {
+                            MaxIterations = 256 * (int)Math.Pow(2, i / 360),
+                            Position = new Complex<double>(double.Parse("-0.743643887037158704752191506114774"), double.Parse("0.131825904205311970493132056385139")),
+                            Scale = Math.Pow(2, i / 180.0),
+                        },
+                    }, cts.Token);
+                    PointData<double>[,] inputData = await FractalProcessor.ProcessAsync(cts.Token);
 
-                    InputData = inputData
-                }, CancellationToken.None);
-                double[,] innerIndicies = await InnerColorProcessor.ProcessAsync(CancellationToken.None);
+                    Console.WriteLine("Computing colors for inner points...");
+                    await InnerColorProcessor.SetupAsync(new ColorProcessorConfig<EmptyColoringParams>
+                    {
+                        ThreadCount = Environment.ProcessorCount,
 
-                Console.WriteLine("Computing colors for outer points...");
-                await OuterColorProcessor.SetupAsync(new ColorProcessorConfig<EmptyColoringParams>
-                {
-                    ThreadCount = Environment.ProcessorCount,
+                        Params = new EmptyColoringParams(),
+                        PointClass = PointClass.Inner,
 
-                    Params = new EmptyColoringParams(),
-                    PointClass = PointClass.Outer,
+                        InputData = inputData
+                    }, cts.Token);
+                    double[,] innerIndicies = await InnerColorProcessor.ProcessAsync(cts.Token);
 
-                    InputData = inputData
-                }, CancellationToken.None);
-                double[,] outerIndicies = await OuterColorProcessor.ProcessAsync(CancellationToken.None);
+                    Console.WriteLine("Computing colors for outer points...");
+                    await OuterColorProcessor.SetupAsync(new ColorProcessorConfig<EmptyColoringParams>
+                    {
+                        ThreadCount = Environment.ProcessorCount,
 
-                Console.WriteLine("Building image...");
-                Imager.CreateImage(outerIndicies, innerIndicies, Colors, Colors);
+                        Params = new EmptyColoringParams(),
+                        PointClass = PointClass.Outer,
 
-                Console.WriteLine("Writing image file to disk...");
-                Imager.Bitmap.Encode(new SKFileWStream($"{i:D4}.png"), SKEncodedImageFormat.Png, 100);
+                        InputData = inputData
+                    }, cts.Token);
+                    double[,] outerIndicies = await OuterColorProcessor.ProcessAsync(cts.Token);
 
-                Console.WriteLine("Image rendered successfully!");
-                i++;
+                    Console.WriteLine("Building image...");
+                    Imager.CreateImage(outerIndicies, innerIndicies, Colors, Colors);
+
+                    Console.WriteLine("Writing image file to disk...");
+                    Imager.Bitmap.Encode(outputFileStream, SKEncodedImageFormat.Png, 100);
+
+                    Console.WriteLine("Image rendered successfully!");
+                    frameFinished = true;
+                }
+                catch (AggregateException ex) when (ex.InnerExceptions.Any(err => err.GetType() == typeof(OperationCanceledException))) { }
+                catch (OperationCanceledException) { }
+            } while (!cts.IsCancellationRequested);
+            cts.Dispose();
+
+            if (!frameFinished)
+            {
+                File.Delete($"{i:D4}.png");
             }
+            Console.WriteLine("Process halted. All remaining tasks completed gracefully!");
+        }
+
+        private static void OnCancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        {
+            Console.WriteLine("Cancellation registered! Waiting for current processing to complete...");
+            cts.Cancel();
+            e.Cancel = true;
         }
     }
 }
