@@ -102,35 +102,43 @@ namespace FractalSharp.ExampleApp
 
             Console.CancelKeyPress += OnCancelKeyPress;
 
-            int lastFrame, i;
+            int prevLastFrame, currLastFrame = 0, i;
             bool frameFinished;
             do
             {
-                lastFrame = Directory.EnumerateFiles(Environment.CurrentDirectory, "*.png")
-                    .Select(x => int.Parse(Path.GetFileNameWithoutExtension(x)))
-                    .OrderByDescending(x => x)
-                    .FirstOrDefault();
-
-                for (i = 0; i <= lastFrame && lastFrame > 0; i++)
+                bool frameFound = false;
+                do
                 {
-                    if (!File.Exists($"{i:D4}.png"))
+                    prevLastFrame = currLastFrame;
+                    currLastFrame = Directory.EnumerateFiles(Environment.CurrentDirectory, "*.png").Count();
+                    for (i = prevLastFrame; i <= currLastFrame && currLastFrame > 0;)
                     {
-                        Console.WriteLine($"Found unfinished frame: {i}/{lastFrame}; locking for next job.");
-                        break;
-                    }
-                    else if (args.FirstOrDefault() == "/verify")
-                    {
-                        using var verifyBitmap = SKBitmap.Decode($"{i:D4}.png");
-                        if(verifyBitmap is null) 
+                        try
                         {
-                            Console.WriteLine($"Found corrupted frame: {i}/{lastFrame}; attempting to lock & re-render for next job.");
+                            using var frameStream = File.OpenRead($"{i:D4}.png");
+                            if (frameStream.Length == 0)
+                            {
+                                Console.WriteLine($"Found next frame to do: {i}; locking now.");
+                                frameFound = true;
+                                break;
+                            }
+                        }
+                        catch (FileNotFoundException)
+                        {
+                            Console.WriteLine($"Found next frame to do: {i}; locking now.");
+                            frameFound = true;
                             break;
                         }
+                        catch (IOException)
+                        {
+                            Console.WriteLine($"Skipping locked frame: {i}...");
+                        }
+                        i++;
                     }
-                }
+                } while (!frameFound);
 
                 // touch file to allocate it (effectively lock the file)
-                using var outputFileStream = new SKFileWStream($"{i:D4}.png");
+                using SKWStream outputStream = new SKFileWStream($"{i:D4}.png");
                 frameFinished = false;
 
                 try
@@ -177,7 +185,7 @@ namespace FractalSharp.ExampleApp
                     Imager.CreateImage(outerIndicies, innerIndicies, Colors, Colors);
 
                     Console.WriteLine("Writing image file to disk...");
-                    Imager.Bitmap.Encode(outputFileStream, SKEncodedImageFormat.Png, 100);
+                    Imager.Bitmap.Encode(outputStream, SKEncodedImageFormat.Png, 100);
 
                     Console.WriteLine("Image rendered successfully!");
                     frameFinished = true;
@@ -191,6 +199,7 @@ namespace FractalSharp.ExampleApp
             {
                 File.Delete($"{i:D4}.png");
             }
+
             Console.WriteLine("Process halted. All remaining tasks completed gracefully!");
         }
 
