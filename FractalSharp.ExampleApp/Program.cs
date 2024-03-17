@@ -110,8 +110,8 @@ namespace FractalSharp.ExampleApp
                 do
                 {
                     prevLastFrame = currLastFrame;
-                    currLastFrame = Directory.EnumerateFiles(Environment.CurrentDirectory, "*.png")
-                        .Select(x => int.Parse(Path.GetFileNameWithoutExtension(x)))
+                    currLastFrame = Directory.GetFiles(Environment.CurrentDirectory, "*.png")
+                        .Select(x => int.Parse(Path.GetFileNameWithoutExtension(x)) + 1)
                         .OrderByDescending(n => n)
                         .FirstOrDefault();
 
