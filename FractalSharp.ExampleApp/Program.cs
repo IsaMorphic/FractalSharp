@@ -96,13 +96,22 @@ namespace FractalSharp.ExampleApp
 
         private static readonly CancellationTokenSource cts = new CancellationTokenSource();
 
+        static int? GetLastFrameIndex(string directoryPath) 
+        {
+            return Directory.GetFiles(directoryPath, "*.png")
+                        .Select<string, int?>(x => int.TryParse(Path.GetFileNameWithoutExtension(x), out int frameNum) ? frameNum + 1 : null)
+                        .Where(n => n is not null)
+                        .OrderByDescending(n => n)
+                        .FirstOrDefault();
+        }
+
         static async Task Main(string[] args)
         {
             Console.WriteLine("Process started.");
 
             Console.CancelKeyPress += OnCancelKeyPress;
 
-            int prevLastFrame, currLastFrame = 0, i;
+            int prevLastFrame, currLastFrame = GetLastFrameIndex(Environment.CurrentDirectory) - 8 ?? 0, i;
             bool frameFinished;
             do
             {
@@ -110,10 +119,7 @@ namespace FractalSharp.ExampleApp
                 do
                 {
                     prevLastFrame = currLastFrame;
-                    currLastFrame = Directory.GetFiles(Environment.CurrentDirectory, "*.png")
-                        .Select(x => int.Parse(Path.GetFileNameWithoutExtension(x)) + 1)
-                        .OrderByDescending(n => n)
-                        .FirstOrDefault();
+                    currLastFrame = GetLastFrameIndex(Environment.CurrentDirectory) ?? 0;
 
                     for (i = prevLastFrame; i <= currLastFrame && currLastFrame > 0;)
                     {
