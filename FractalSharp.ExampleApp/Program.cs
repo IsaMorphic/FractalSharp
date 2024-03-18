@@ -121,7 +121,7 @@ namespace FractalSharp.ExampleApp
                     prevLastFrame = currLastFrame;
                     currLastFrame = GetLastFrameIndex(Environment.CurrentDirectory) ?? 0;
 
-                    for (i = prevLastFrame; i <= currLastFrame && currLastFrame > 0;)
+                    for (i = prevLastFrame; i <= currLastFrame && currLastFrame > 0; i++)
                     {
                         try
                         {
@@ -143,7 +143,6 @@ namespace FractalSharp.ExampleApp
                         {
                             Console.WriteLine($"Skipping locked frame: {i}...");
                         }
-                        i++;
                     }
                 } while (!frameFound);
 
