@@ -9,4 +9,8 @@
 	  <PackageReference Include="ILGPU" Version="1.5.1" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\external\QuadrupleLib\QuadrupleLib\QuadrupleLib.csproj" />
+	</ItemGroup>
+
 </Project>

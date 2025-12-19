@@ -1,0 +1,3 @@
+[submodule "external/QuadrupleLib"]
+	path = external/QuadrupleLib
+	url = https://github.com/IsaMorphic/QuadrupleLib.git
