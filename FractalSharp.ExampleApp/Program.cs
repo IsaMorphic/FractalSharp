@@ -119,7 +119,7 @@ namespace FractalSharp.ExampleApp
                 do
                 {
                     prevLastFrame = currLastFrame;
-                    currLastFrame = GetLastFrameIndex(Environment.CurrentDirectory) ?? 0;
+                    currLastFrame = GetLastFrameIndex(Environment.CurrentDirectory) ?? 1;
 
                     for (i = prevLastFrame; i <= currLastFrame && currLastFrame > 0; i++)
                     {
