@@ -16,7 +16,7 @@
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-global using Float128 = QuadrupleLib.Float128<QuadrupleLib.Accelerators.SoftwareAccelerator>;
+global using Quad = QuadrupleLib.Float128<QuadrupleLib.Accelerators.SoftwareAccelerator>;
 
 using FractalSharp.Algorithms;
 using FractalSharp.Algorithms.Coloring;
@@ -63,8 +63,8 @@ namespace FractalSharp.ExampleApp
         private const int WIDTH = 2560 * 4;
         private const int HEIGHT = 1440 * 4;
 
-        private static readonly FractalProcessor<SquareMandelbrotAlgorithm<Float128, DefaultNumberConverter<SoftwareAccelerator>>, EscapeTimeParams<Float128>, Float128> FractalProcessor =
-            new GPUFractalProcessor<SquareMandelbrotAlgorithm<Float128, DefaultNumberConverter<SoftwareAccelerator>>, Float128>(WIDTH, HEIGHT);
+        private static readonly FractalProcessor<SquareMandelbrotAlgorithm<Quad, DefaultNumberConverter<SoftwareAccelerator>>, EscapeTimeParams<Quad>, Quad> FractalProcessor =
+            new GPUFractalProcessor<SquareMandelbrotAlgorithm<Quad, DefaultNumberConverter<SoftwareAccelerator>>, Quad>(WIDTH, HEIGHT);
 
         private static readonly ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams> OuterColorProcessor =
             new ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams>(WIDTH, HEIGHT);
@@ -155,14 +155,14 @@ namespace FractalSharp.ExampleApp
                 try
                 {
                     Console.WriteLine($"Computing raw fractal data for frame #{i}...");
-                    await FractalProcessor.SetupAsync(new ProcessorConfig<EscapeTimeParams<Float128>>
+                    await FractalProcessor.SetupAsync(new ProcessorConfig<EscapeTimeParams<Quad>>
                     {
                         ThreadCount = Environment.ProcessorCount,
 
-                        Params = new EscapeTimeParams<Float128>
+                        Params = new EscapeTimeParams<Quad>
                         {
                             MaxIterations = 256 * (int)Math.Pow(2, i / 360),
-                            Position = new Complex<Float128>(Float128.Parse("-0.743643887037158704752191506114774"), Float128.Parse("0.131825904205311970493132056385139")),
+                            Position = new Complex<Quad>(Quad.Parse("-0.743643887037158704752191506114774"), Quad.Parse("0.131825904205311970493132056385139")),
                             Scale = Math.Pow(2, i / 180.0),
                         },
                     }, cts.Token);
