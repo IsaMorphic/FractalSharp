@@ -16,7 +16,7 @@
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-global using Float128 = QuadrupleLib.Float128<QuadrupleLib.Accelerators.DefaultAccelerator>;
+global using Float128 = QuadrupleLib.Float128<QuadrupleLib.Accelerators.SoftwareAccelerator>;
 
 using FractalSharp.Algorithms;
 using FractalSharp.Algorithms.Coloring;
