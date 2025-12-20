@@ -98,18 +98,14 @@ namespace FractalSharp.Numerics.Generic
             return this == other;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            if (ReferenceEquals(obj, null))
-            {
-                return false;
-            }
-            return obj is Complex<T> && Equals((Complex<T>)obj);
+            return obj is Complex<T> num && Equals(num);
         }
 
         public override int GetHashCode()
         {
-            return 10280812 + (Real.GetHashCode() - Imag.GetHashCode());
+            return HashCode.Combine(Real, Imag);
         }
     }
 }
