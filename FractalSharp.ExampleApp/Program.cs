@@ -16,6 +16,8 @@
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+global using Float128 = QuadrupleLib.Float128<QuadrupleLib.Accelerators.DefaultAccelerator>;
+
 using FractalSharp.Algorithms;
 using FractalSharp.Algorithms.Coloring;
 using FractalSharp.Algorithms.Fractals;
@@ -23,7 +25,7 @@ using FractalSharp.Imaging;
 using FractalSharp.Numerics.Generic;
 using FractalSharp.Numerics.Helpers;
 using FractalSharp.Processing;
-using QuadrupleLib;
+using QuadrupleLib.Accelerators;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -61,8 +63,8 @@ namespace FractalSharp.ExampleApp
         private const int WIDTH = 2560 * 4;
         private const int HEIGHT = 1440 * 4;
 
-        private static readonly FractalProcessor<SquareMandelbrotAlgorithm<Float128, DefaultNumberConverter>, EscapeTimeParams<Float128>, Float128> FractalProcessor =
-            new GPUFractalProcessor<SquareMandelbrotAlgorithm<Float128, DefaultNumberConverter>, Float128>(WIDTH, HEIGHT);
+        private static readonly FractalProcessor<SquareMandelbrotAlgorithm<Float128, DefaultNumberConverter<SoftwareAccelerator>>, EscapeTimeParams<Float128>, Float128> FractalProcessor =
+            new GPUFractalProcessor<SquareMandelbrotAlgorithm<Float128, DefaultNumberConverter<SoftwareAccelerator>>, Float128>(WIDTH, HEIGHT);
 
         private static readonly ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams> OuterColorProcessor =
             new ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams>(WIDTH, HEIGHT);
