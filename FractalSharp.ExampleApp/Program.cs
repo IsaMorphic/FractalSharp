@@ -111,7 +111,7 @@ namespace FractalSharp.ExampleApp
 
             Console.CancelKeyPress += OnCancelKeyPress;
 
-            int prevLastFrame, currLastFrame = GetLastFrameIndex(Environment.CurrentDirectory) - 8 ?? 0, i;
+            int prevLastFrame, currLastFrame = Math.Max(GetLastFrameIndex(Environment.CurrentDirectory) - 8 ?? 0, 0), i;
             bool frameFinished;
             do
             {

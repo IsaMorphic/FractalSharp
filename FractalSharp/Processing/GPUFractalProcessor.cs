@@ -21,7 +21,6 @@ using FractalSharp.Algorithms.Fractals;
 using FractalSharp.Numerics.Generic;
 using ILGPU;
 using ILGPU.Runtime;
-using ILGPU.Runtime.Cuda;
 using System;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -47,11 +46,13 @@ namespace FractalSharp.Processing
 
         public GPUFractalProcessor(int width, int height) : base(width, height)
         {
-            context = Context.Create()
-                .Default()
-                .Cuda(dev => true)
-                .ToContext();
-            accelerator = context.CreateCudaAccelerator(0);
+            context = Context.Create().Default()
+            .Inlining(InliningMode.Conservative)
+            .ToContext();
+
+            Device device = context.GetPreferredDevice(false);
+            accelerator = device.CreateAccelerator(context);
+            
             loadedKernel = accelerator.LoadAutoGroupedStreamKernel<Index2D, ArrayView2D<Complex<TNumber>, Stride2D.DenseY>, ArrayView2D<PointData<double>, Stride2D.DenseY>, SpecializedValue<int>>(FractalKernel);
         }
 
