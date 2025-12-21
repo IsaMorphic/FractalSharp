@@ -36,25 +36,48 @@ using System.Threading.Tasks;
 
 namespace FractalSharp.ExampleApp
 {
-    unsafe class SkiaImageBuilder : UpscalingImageBuilder
+    unsafe class SkiaImageBuilder : UpscalingImageBuilder, IDisposable
     {
-        public SKBitmap Bitmap { get; private set; }
+        public SKBitmap? Bitmap { get; private set; }
 
-        private byte* skPixels;
+        private bool disposedValue;
 
         public override void InitializeImage(int width, int height)
         {
             Bitmap = new SKBitmap(new SKImageInfo(width, height, SKColorType.Rgba8888, SKAlphaType.Unpremul));
-            skPixels = (byte*)Bitmap.GetPixels().ToPointer();
         }
 
         public override void WritePixel(int x, int y, RgbaValue color)
         {
-            var ptr = skPixels + Bitmap.RowBytes * y + x * 4;
+            byte* ptr = (byte*)
+                (Bitmap?.GetPixels() + Bitmap?.RowBytes * y + x * 4)
+                .GetValueOrDefault()
+                .ToPointer();
             *ptr++ = color.Red;
             *ptr++ = color.Green;
             *ptr++ = color.Blue;
             *ptr++ = color.Alpha;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    Bitmap?.Dispose();
+                }
+
+                Bitmap = null;
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 
@@ -98,7 +121,7 @@ namespace FractalSharp.ExampleApp
 
         private static readonly CancellationTokenSource cts = new CancellationTokenSource();
 
-        static int? GetLastFrameIndex(string directoryPath) 
+        static int? GetLastFrameIndex(string directoryPath)
         {
             return Directory.GetFiles(directoryPath, "*.png")
                         .Select<string, int?>(x => int.TryParse(Path.GetFileNameWithoutExtension(x), out int frameNum) ? frameNum + 1 : null)
@@ -196,7 +219,7 @@ namespace FractalSharp.ExampleApp
                     Imager.CreateImage(outerIndicies, innerIndicies, Colors, Colors);
 
                     Console.WriteLine("Writing image file to disk...");
-                    Imager.Bitmap.Encode(outputStream, SKEncodedImageFormat.Png, 100);
+                    Imager.Bitmap?.Encode(outputStream, SKEncodedImageFormat.Png, 100);
 
                     Console.WriteLine("Image rendered successfully!");
                     frameFinished = true;
@@ -211,10 +234,12 @@ namespace FractalSharp.ExampleApp
                 File.Delete($"{i:D4}.png");
             }
 
+            Imager.Dispose();
+
             Console.WriteLine("Process halted. All remaining tasks completed gracefully!");
         }
 
-        private static void OnCancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        private static void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
         {
             Console.WriteLine("Cancellation registered! Waiting for current processing to complete...");
             cts.Cancel();
