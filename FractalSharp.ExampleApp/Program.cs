@@ -16,7 +16,7 @@
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-global using Quad = QuadrupleLib.Float128<QuadrupleLib.Accelerators.SoftwareAccelerator>;
+using TAccelerator = QuadrupleLib.Accelerators.DefaultAccelerator;
 
 using FractalSharp.Algorithms;
 using FractalSharp.Algorithms.Coloring;
@@ -25,7 +25,7 @@ using FractalSharp.Imaging;
 using FractalSharp.Numerics.Generic;
 using FractalSharp.Numerics.Helpers;
 using FractalSharp.Processing;
-using QuadrupleLib.Accelerators;
+using QuadrupleLib;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -86,8 +86,8 @@ namespace FractalSharp.ExampleApp
         private const int WIDTH = 2560 * 4;
         private const int HEIGHT = 1440 * 4;
 
-        private static readonly FractalProcessor<SquareMandelbrotAlgorithm<Quad, DefaultNumberConverter<SoftwareAccelerator>>, EscapeTimeParams<Quad>, Quad> FractalProcessor =
-            new GPUFractalProcessor<SquareMandelbrotAlgorithm<Quad, DefaultNumberConverter<SoftwareAccelerator>>, Quad>(WIDTH, HEIGHT);
+        private static readonly FractalProcessor<SquareMandelbrotAlgorithm<Float128<TAccelerator>, DefaultNumberConverter<TAccelerator>>, EscapeTimeParams<Float128<TAccelerator>>, Float128<TAccelerator>> FractalProcessor =
+            new FractalProcessor<SquareMandelbrotAlgorithm<Float128<TAccelerator>, DefaultNumberConverter<TAccelerator>>, EscapeTimeParams<Float128<TAccelerator>>, Float128<TAccelerator>>(WIDTH, HEIGHT);
 
         private static readonly ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams> OuterColorProcessor =
             new ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams>(WIDTH, HEIGHT);
@@ -178,14 +178,14 @@ namespace FractalSharp.ExampleApp
                 try
                 {
                     Console.WriteLine($"Computing raw fractal data for frame #{i}...");
-                    await FractalProcessor.SetupAsync(new ProcessorConfig<EscapeTimeParams<Quad>>
+                    await FractalProcessor.SetupAsync(new ProcessorConfig<EscapeTimeParams<Float128<TAccelerator>>>
                     {
                         ThreadCount = Environment.ProcessorCount,
 
-                        Params = new EscapeTimeParams<Quad>
+                        Params = new EscapeTimeParams<Float128<TAccelerator>>
                         {
                             MaxIterations = 256 * (int)Math.Pow(2, i / 360),
-                            Position = new Complex<Quad>(Quad.Parse("-0.743643887037158704752191506114774"), Quad.Parse("0.131825904205311970493132056385139")),
+                            Position = new Complex<Float128<TAccelerator>>(Float128<TAccelerator>.Parse("-0.743643887037158704752191506114774"), Float128<TAccelerator>.Parse("0.131825904205311970493132056385139")),
                             Scale = Math.Pow(2, i / 180.0),
                         },
                     }, cts.Token);
