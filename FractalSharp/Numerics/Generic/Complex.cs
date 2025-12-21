@@ -26,7 +26,7 @@ using System.Text.RegularExpressions;
 namespace FractalSharp.Numerics.Generic
 {
     public partial struct Complex<TNumber> : INumber<Complex<TNumber>>
-        where TNumber : struct, IFloatingPointIeee754<TNumber>
+        where TNumber : struct, IFloatingPoint<TNumber>
     {
         [GeneratedRegex(@"\<(\-?[0-9A-Fa-f]+\.?[0-9A-Fa-f]*),\s*(\-?[0-9A-Fa-f]+\.?[0-9A-Fa-f]*)\>")]
         private static partial Regex ParseGeneratedRegex();
