@@ -16,6 +16,8 @@
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using TAccelerator = QuadrupleLib.Accelerators.DefaultAccelerator;
+
 using FractalSharp.Algorithms;
 using FractalSharp.Algorithms.Coloring;
 using FractalSharp.Algorithms.Fractals;
@@ -34,25 +36,48 @@ using System.Threading.Tasks;
 
 namespace FractalSharp.ExampleApp
 {
-    unsafe class SkiaImageBuilder : UpscalingImageBuilder
+    unsafe class SkiaImageBuilder : UpscalingImageBuilder, IDisposable
     {
-        public SKBitmap Bitmap { get; private set; }
+        public SKBitmap? Bitmap { get; private set; }
 
-        private byte* skPixels;
+        private bool disposedValue;
 
         public override void InitializeImage(int width, int height)
         {
             Bitmap = new SKBitmap(new SKImageInfo(width, height, SKColorType.Rgba8888, SKAlphaType.Unpremul));
-            skPixels = (byte*)Bitmap.GetPixels().ToPointer();
         }
 
         public override void WritePixel(int x, int y, RgbaValue color)
         {
-            var ptr = skPixels + Bitmap.RowBytes * y + x * 4;
+            byte* ptr = (byte*)
+                (Bitmap?.GetPixels() + Bitmap?.RowBytes * y + x * 4)
+                .GetValueOrDefault()
+                .ToPointer();
             *ptr++ = color.Red;
             *ptr++ = color.Green;
             *ptr++ = color.Blue;
             *ptr++ = color.Alpha;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    Bitmap?.Dispose();
+                }
+
+                Bitmap = null;
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 
@@ -61,8 +86,8 @@ namespace FractalSharp.ExampleApp
         private const int WIDTH = 2560 * 4;
         private const int HEIGHT = 1440 * 4;
 
-        private static readonly FractalProcessor<SquareMandelbrotAlgorithm<Float128, DefaultNumberConverter>, EscapeTimeParams<Float128>, Float128> FractalProcessor =
-            new GPUFractalProcessor<SquareMandelbrotAlgorithm<Float128, DefaultNumberConverter>, Float128>(WIDTH, HEIGHT);
+        private static readonly FractalProcessor<SquareMandelbrotAlgorithm<Float128<TAccelerator>, DefaultNumberConverter<TAccelerator>>, EscapeTimeParams<Float128<TAccelerator>>, Float128<TAccelerator>> FractalProcessor =
+            new FractalProcessor<SquareMandelbrotAlgorithm<Float128<TAccelerator>, DefaultNumberConverter<TAccelerator>>, EscapeTimeParams<Float128<TAccelerator>>, Float128<TAccelerator>>(WIDTH, HEIGHT);
 
         private static readonly ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams> OuterColorProcessor =
             new ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams>(WIDTH, HEIGHT);
@@ -94,60 +119,131 @@ namespace FractalSharp.ExampleApp
                 new GradientKey(new RgbaValue(25, 7, 26))
             });
 
+        private static readonly CancellationTokenSource cts = new CancellationTokenSource();
+
+        static int? GetLastFrameIndex(string directoryPath)
+        {
+            return Directory.GetFiles(directoryPath, "*.png")
+                        .Select<string, int?>(x => int.TryParse(Path.GetFileNameWithoutExtension(x), out int frameNum) ? frameNum + 1 : null)
+                        .Where(n => n is not null)
+                        .OrderByDescending(n => n)
+                        .FirstOrDefault();
+        }
+
         static async Task Main(string[] args)
         {
             Console.WriteLine("Process started.");
 
-            int i = Directory.EnumerateFiles(Environment.CurrentDirectory, "*.png").Count();
-            while (i < 4500)
+            Console.CancelKeyPress += OnCancelKeyPress;
+
+            int prevLastFrame, currLastFrame = Math.Max(GetLastFrameIndex(Environment.CurrentDirectory) - 8 ?? 0, 0), i;
+            bool frameFinished;
+            do
             {
-                Console.WriteLine($"Computing raw fractal data for frame #{i}...");
-                await FractalProcessor.SetupAsync(new ProcessorConfig<EscapeTimeParams<Float128>>
+                bool frameFound = false;
+                do
                 {
-                    ThreadCount = Environment.ProcessorCount,
+                    prevLastFrame = currLastFrame;
+                    currLastFrame = GetLastFrameIndex(Environment.CurrentDirectory) ?? 1;
 
-                    Params = new EscapeTimeParams<Float128>
+                    for (i = prevLastFrame; i <= currLastFrame && currLastFrame > 0; i++)
                     {
-                        MaxIterations = 256 * (int)Math.Pow(2, i / 360),
-                        Position = new Complex<Float128>(Float128.Parse("-0.743643887037158704752191506114774"), Float128.Parse("0.131825904205311970493132056385139")),
-                        Scale = Math.Pow(2, i / 180.0),
-                    },
-                }, CancellationToken.None);
-                PointData<double>[,] inputData = await FractalProcessor.ProcessAsync(CancellationToken.None);
+                        try
+                        {
+                            using var frameStream = File.OpenRead($"{i:D4}.png");
+                            if (frameStream.Length == 0)
+                            {
+                                Console.WriteLine($"Found next frame to do: {i}; locking now.");
+                                frameFound = true;
+                                break;
+                            }
+                        }
+                        catch (FileNotFoundException)
+                        {
+                            Console.WriteLine($"Found next frame to do: {i}; locking now.");
+                            frameFound = true;
+                            break;
+                        }
+                        catch (IOException)
+                        {
+                            Console.WriteLine($"Skipping locked frame: {i}...");
+                        }
+                    }
+                } while (!frameFound);
 
-                Console.WriteLine("Computing colors for inner points...");
-                await InnerColorProcessor.SetupAsync(new ColorProcessorConfig<EmptyColoringParams>
+                // touch file to allocate it (effectively lock the file)
+                using SKWStream outputStream = new SKFileWStream($"{i:D4}.png");
+                frameFinished = false;
+
+                try
                 {
-                    ThreadCount = Environment.ProcessorCount,
+                    Console.WriteLine($"Computing raw fractal data for frame #{i}...");
+                    await FractalProcessor.SetupAsync(new ProcessorConfig<EscapeTimeParams<Float128<TAccelerator>>>
+                    {
+                        ThreadCount = Environment.ProcessorCount,
 
-                    Params = new EmptyColoringParams(),
-                    PointClass = PointClass.Inner,
+                        Params = new EscapeTimeParams<Float128<TAccelerator>>
+                        {
+                            MaxIterations = 256 * (int)Math.Pow(2, i / 360),
+                            Position = new Complex<Float128<TAccelerator>>(Float128<TAccelerator>.Parse("-0.743643887037158704752191506114774"), Float128<TAccelerator>.Parse("0.131825904205311970493132056385139")),
+                            Scale = Math.Pow(2, i / 180.0),
+                        },
+                    }, cts.Token);
+                    PointData<double>[,] inputData = await FractalProcessor.ProcessAsync(cts.Token);
 
-                    InputData = inputData
-                }, CancellationToken.None);
-                double[,] innerIndicies = await InnerColorProcessor.ProcessAsync(CancellationToken.None);
+                    Console.WriteLine("Computing colors for inner points...");
+                    await InnerColorProcessor.SetupAsync(new ColorProcessorConfig<EmptyColoringParams>
+                    {
+                        ThreadCount = Environment.ProcessorCount,
 
-                Console.WriteLine("Computing colors for outer points...");
-                await OuterColorProcessor.SetupAsync(new ColorProcessorConfig<EmptyColoringParams>
-                {
-                    ThreadCount = Environment.ProcessorCount,
+                        Params = new EmptyColoringParams(),
+                        PointClass = PointClass.Inner,
 
-                    Params = new EmptyColoringParams(),
-                    PointClass = PointClass.Outer,
+                        InputData = inputData
+                    }, cts.Token);
+                    double[,] innerIndicies = await InnerColorProcessor.ProcessAsync(cts.Token);
 
-                    InputData = inputData
-                }, CancellationToken.None);
-                double[,] outerIndicies = await OuterColorProcessor.ProcessAsync(CancellationToken.None);
+                    Console.WriteLine("Computing colors for outer points...");
+                    await OuterColorProcessor.SetupAsync(new ColorProcessorConfig<EmptyColoringParams>
+                    {
+                        ThreadCount = Environment.ProcessorCount,
 
-                Console.WriteLine("Building image...");
-                Imager.CreateImage(outerIndicies, innerIndicies, Colors, Colors);
+                        Params = new EmptyColoringParams(),
+                        PointClass = PointClass.Outer,
 
-                Console.WriteLine("Writing image file to disk...");
-                Imager.Bitmap.Encode(new SKFileWStream($"{i:D4}.png"), SKEncodedImageFormat.Png, 100);
+                        InputData = inputData
+                    }, cts.Token);
+                    double[,] outerIndicies = await OuterColorProcessor.ProcessAsync(cts.Token);
 
-                Console.WriteLine("Image rendered successfully!");
-                i++;
+                    Console.WriteLine("Building image...");
+                    Imager.CreateImage(outerIndicies, innerIndicies, Colors, Colors);
+
+                    Console.WriteLine("Writing image file to disk...");
+                    Imager.Bitmap?.Encode(outputStream, SKEncodedImageFormat.Png, 100);
+
+                    Console.WriteLine("Image rendered successfully!");
+                    frameFinished = true;
+                }
+                catch (AggregateException ex) when (ex.InnerExceptions.Any(err => err.GetType() == typeof(OperationCanceledException))) { }
+                catch (OperationCanceledException) { }
+            } while (!cts.IsCancellationRequested);
+            cts.Dispose();
+
+            if (!frameFinished)
+            {
+                File.Delete($"{i:D4}.png");
             }
+
+            Imager.Dispose();
+
+            Console.WriteLine("Process halted. All remaining tasks completed gracefully!");
+        }
+
+        private static void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs e)
+        {
+            Console.WriteLine("Cancellation registered! Waiting for current processing to complete...");
+            cts.Cancel();
+            e.Cancel = true;
         }
     }
 }

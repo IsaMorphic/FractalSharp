@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "FractalSharp.ExampleApp": {
+      "commandName": "Project",
+      "commandLineArgs": ""
+    }
+  }
+}

@@ -29,7 +29,8 @@ namespace FractalSharp.Numerics.Helpers
         double ToDouble(TNumber x);
     }
 
-    public struct DefaultNumberConverter : INumberConverter<Half>, INumberConverter<float>, INumberConverter<double>, INumberConverter<Float128>
+    public struct DefaultNumberConverter<TAccelerator> : INumberConverter<Half>, INumberConverter<float>, INumberConverter<double>, INumberConverter<Float128<TAccelerator>>
+        where TAccelerator : IAccelerator
     {
         Half INumberConverter<Half>.FromInt32(int x) => (Half)x;
         double INumberConverter<Half>.ToDouble(Half x) => (double)x;
@@ -40,7 +41,7 @@ namespace FractalSharp.Numerics.Helpers
         double INumberConverter<double>.FromInt32(int x) => x;
         double INumberConverter<double>.ToDouble(double x) => x;
 
-        Float128 INumberConverter<Float128>.FromInt32(int x) => x;
-        double INumberConverter<Float128>.ToDouble(Float128 x) => (double)x;
+        Float128<TAccelerator> INumberConverter<Float128<TAccelerator>>.FromInt32(int x) => x;
+        double INumberConverter<Float128<TAccelerator>>.ToDouble(Float128<TAccelerator> x) => (double)x;
     }
 }
