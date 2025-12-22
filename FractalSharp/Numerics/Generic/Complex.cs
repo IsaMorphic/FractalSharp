@@ -180,6 +180,11 @@ namespace FractalSharp.Numerics.Generic
             return value.Real * value.Real + value.Imag * value.Imag;
         }
 
+        public static Complex<TNumber> Abs(Complex<TNumber> value)
+        {
+            return TNumber.Sqrt(value.Real * value.Real + value.Imag * value.Imag);
+        }
+
         public bool Equals(Complex<TNumber> other)
         {
             if (IsNaN(this) || IsNaN(other))
@@ -223,11 +228,6 @@ namespace FractalSharp.Numerics.Generic
             {
                 throw new ArgumentOutOfRangeException("Cannot compare complex and/or imaginary values.");
             }
-        }
-
-        public static Complex<TNumber> Abs(Complex<TNumber> value)
-        {
-            return TNumber.Sqrt(value.Real * value.Real + value.Imag * value.Imag);
         }
 
         public static bool IsCanonical(Complex<TNumber> value)
@@ -370,102 +370,6 @@ namespace FractalSharp.Numerics.Generic
             return IsNaN(y) || AbsSqu(x) < AbsSqu(y) ? x : y;
         }
 
-        public static bool TryConvertFromChecked<TOther>(Complex<TOther> value, out Complex<TNumber> result)
-            where TOther : struct, IFloatingPointIeee754<TOther>
-        {
-            TNumber real, imag;
-            if (TNumber.TryConvertFromChecked(value.Real, out real) & TNumber.TryConvertFromChecked(value.Imag, out imag))
-            {
-                result = new Complex<TNumber>(real, imag);
-                return true;
-            }
-            else 
-            {
-                result = default;
-                return false;
-            }
-        }
-
-        public static bool TryConvertFromSaturating<TOther>(Complex<TOther> value, out Complex<TNumber> result)
-            where TOther : struct, IFloatingPointIeee754<TOther>
-        {
-            TNumber real, imag;
-            if (TNumber.TryConvertFromSaturating(value.Real, out real) & TNumber.TryConvertFromSaturating(value.Imag, out imag))
-            {
-                result = new Complex<TNumber>(real, imag);
-                return true;
-            }
-            else
-            {
-                result = default;
-                return false;
-            }
-        }
-
-        public static bool TryConvertFromTruncating<TOther>(Complex<TOther> value, out Complex<TNumber> result)
-            where TOther : struct, IFloatingPointIeee754<TOther>
-        {
-            TNumber real, imag;
-            if (TNumber.TryConvertFromTruncating(value.Real, out real) & TNumber.TryConvertFromTruncating(value.Imag, out imag))
-            {
-                result = new Complex<TNumber>(real, imag);
-                return true;
-            }
-            else
-            {
-                result = default;
-                return false;
-            }
-        }
-
-        public static bool TryConvertToChecked<TOther>(Complex<TNumber> value, out Complex<TOther> result)
-            where TOther : struct, IFloatingPointIeee754<TOther>
-        {
-            TOther real, imag;
-            if (TNumber.TryConvertToChecked(value.Real, out real) & TNumber.TryConvertToChecked(value.Imag, out imag))
-            {
-                result = new Complex<TOther>(real, imag);
-                return true;
-            }
-            else
-            {
-                result = default;
-                return false;
-            }
-        }
-
-        public static bool TryConvertToSaturating<TOther>(Complex<TNumber> value, out Complex<TOther> result)
-            where TOther : struct, IFloatingPointIeee754<TOther>
-        {
-            TOther real, imag;
-            if (TNumber.TryConvertToSaturating(value.Real, out real) & TNumber.TryConvertToSaturating(value.Imag, out imag))
-            {
-                result = new Complex<TOther>(real, imag);
-                return true;
-            }
-            else
-            {
-                result = default;
-                return false;
-            }
-        }
-
-        public static bool TryConvertToTruncating<TOther>(Complex<TNumber> value, out Complex<TOther> result)
-            where TOther : struct, IFloatingPointIeee754<TOther>
-        {
-            TOther real, imag;
-            if (TNumber.TryConvertToTruncating(value.Real, out real) & TNumber.TryConvertToTruncating(value.Imag, out imag))
-            {
-                result = new Complex<TOther>(real, imag);
-                return true;
-            }
-            else
-            {
-                result = default;
-                return false;
-            }
-        }
-
         private static Delegate? GetConversionDelegateFromType(string methodName, Type fromType)
         {
             lock (s_convDelegates)
@@ -489,26 +393,74 @@ namespace FractalSharp.Numerics.Generic
             }
         }
 
-        public static bool TryConvertFromChecked<TOther>(TOther value, [MaybeNullWhen(false)] out Complex<TNumber> result) where TOther : INumberBase<TOther>
+        public static bool TryConvertFromChecked<TOther>(Complex<TOther> value, out Complex<TNumber> result)
+            where TOther : struct, IFloatingPointIeee754<TOther>
         {
             TNumber real, imag;
-            if (value is Complex z && (TNumber.TryConvertFromChecked(z.Real, out real) & TNumber.TryConvertFromChecked(z.Imaginary, out imag)))
+            if (TNumber.TryConvertFromChecked(value.Real, out real) & TNumber.TryConvertFromChecked(value.Imag, out imag))
             {
                 result = new Complex<TNumber>(real, imag);
                 return true;
             }
-            else if (typeof(TOther).IsGenericType && typeof(TOther).GetGenericTypeDefinition() == typeof(Complex<>))
+            else
             {
-                Type innerType = typeof(TOther).GenericTypeArguments[0];
+                result = NaN;
+                return false;
+            }
+        }
+
+        public static bool TryConvertFromSaturating<TOther>(Complex<TOther> value, out Complex<TNumber> result)
+            where TOther : struct, IFloatingPointIeee754<TOther>
+        {
+            TNumber real, imag;
+            if (TNumber.TryConvertFromSaturating(value.Real, out real) & TNumber.TryConvertFromSaturating(value.Imag, out imag))
+            {
+                result = new Complex<TNumber>(real, imag);
+                return true;
+            }
+            else
+            {
+                result = NaN;
+                return false;
+            }
+        }
+
+        public static bool TryConvertFromTruncating<TOther>(Complex<TOther> value, out Complex<TNumber> result)
+            where TOther : struct, IFloatingPointIeee754<TOther>
+        {
+            TNumber real, imag;
+            if (TNumber.TryConvertFromTruncating(value.Real, out real) & TNumber.TryConvertFromTruncating(value.Imag, out imag))
+            {
+                result = new Complex<TNumber>(real, imag);
+                return true;
+            }
+            else
+            {
+                result = NaN;
+                return false;
+            }
+        }
+
+        public static bool TryConvertFromChecked<TOther>(TOther value, [MaybeNullWhen(false)] out Complex<TNumber> result) where TOther : INumberBase<TOther>
+        {
+            TNumber real, imag;
+            if (value is Complex<TNumber> z0)
+            {
+                result = z0;
+                return true;
+            }
+            else if (value is Complex z1 && (TNumber.TryConvertFromChecked(z1.Real, out real) & TNumber.TryConvertFromChecked(z1.Imaginary, out imag)))
+            {
+                result = new Complex<TNumber>(real, imag);
+                return true;
+            }
+            else if (typeof(TOther) is { IsGenericType: true } t && t.GetGenericTypeDefinition() == typeof(Complex<>))
+            {
+                Type innerType = t.GenericTypeArguments[0];
                 dynamic? methodFunc = GetConversionDelegateFromType("TryConvertFromChecked", innerType);
                 if (methodFunc is not null)
                 {
                     return methodFunc(value, out result);
-                }
-                else
-                {
-                    result = default;
-                    return false;
                 }
             }
             else if (TNumber.TryConvertFromChecked(value, out real))
@@ -516,33 +468,31 @@ namespace FractalSharp.Numerics.Generic
                 result = new Complex<TNumber>(real, TNumber.Zero);
                 return true;
             }
-            else
-            {
-                result = default;
-                return false;
-            }
+
+            result = NaN;
+            return false;
         }
 
         public static bool TryConvertFromSaturating<TOther>(TOther value, [MaybeNullWhen(false)] out Complex<TNumber> result) where TOther : INumberBase<TOther>
         {
             TNumber real, imag;
-            if (value is Complex z && (TNumber.TryConvertFromSaturating(z.Real, out real) & TNumber.TryConvertFromSaturating(z.Imaginary, out imag)))
+            if (value is Complex<TNumber> z0)
+            {
+                result = z0;
+                return true;
+            }
+            else if (value is Complex z1 && (TNumber.TryConvertFromSaturating(z1.Real, out real) & TNumber.TryConvertFromSaturating(z1.Imaginary, out imag)))
             {
                 result = new Complex<TNumber>(real, imag);
                 return true;
             }
-            else if (typeof(TOther).IsGenericType && typeof(TOther).GetGenericTypeDefinition() == typeof(Complex<>))
+            else if (typeof(TOther) is { IsGenericType: true } t && t.GetGenericTypeDefinition() == typeof(Complex<>))
             {
-                Type innerType = typeof(TOther).GenericTypeArguments[0];
+                Type innerType = t.GenericTypeArguments[0];
                 dynamic? methodFunc = GetConversionDelegateFromType("TryConvertFromSaturating", innerType);
                 if (methodFunc is not null)
                 {
                     return methodFunc(value, out result);
-                }
-                else
-                {
-                    result = default;
-                    return false;
                 }
             }
             else if (TNumber.TryConvertFromSaturating(value, out real))
@@ -550,33 +500,31 @@ namespace FractalSharp.Numerics.Generic
                 result = new Complex<TNumber>(real, TNumber.Zero);
                 return true;
             }
-            else
-            {
-                result = default;
-                return false;
-            }
+
+            result = NaN;
+            return false;
         }
 
         public static bool TryConvertFromTruncating<TOther>(TOther value, [MaybeNullWhen(false)] out Complex<TNumber> result) where TOther : INumberBase<TOther>
         {
             TNumber real, imag;
-            if (value is Complex z && (TNumber.TryConvertFromTruncating(z.Real, out real) & TNumber.TryConvertFromTruncating(z.Imaginary, out imag)))
+            if (value is Complex<TNumber> z0)
+            {
+                result = z0;
+                return true;
+            }
+            else if (value is Complex z1 && (TNumber.TryConvertFromTruncating(z1.Real, out real) & TNumber.TryConvertFromTruncating(z1.Imaginary, out imag)))
             {
                 result = new Complex<TNumber>(real, imag);
                 return true;
             }
-            else if (typeof(TOther).IsGenericType && typeof(TOther).GetGenericTypeDefinition() == typeof(Complex<>))
+            else if (typeof(TOther) is { IsGenericType: true } t && t.GetGenericTypeDefinition() == typeof(Complex<>))
             {
-                Type innerType = typeof(TOther).GenericTypeArguments[0];
+                Type innerType = t.GenericTypeArguments[0];
                 dynamic? methodFunc = GetConversionDelegateFromType("TryConvertFromTruncating", innerType);
                 if (methodFunc is not null)
                 {
                     return methodFunc(value, out result);
-                }
-                else
-                {
-                    result = default;
-                    return false;
                 }
             }
             else if (TNumber.TryConvertFromTruncating(value, out real))
@@ -584,11 +532,9 @@ namespace FractalSharp.Numerics.Generic
                 result = new Complex<TNumber>(real, TNumber.Zero);
                 return true;
             }
-            else
-            {
-                result = default;
-                return false;
-            }
+
+            result = NaN;
+            return false;
         }
 
         private static Delegate? GetConversionDelegateToType(string methodName, Type toType)
@@ -614,103 +560,145 @@ namespace FractalSharp.Numerics.Generic
             }
         }
 
+        public static bool TryConvertToChecked<TOther>(Complex<TNumber> value, out Complex<TOther> result)
+            where TOther : struct, IFloatingPointIeee754<TOther>
+        {
+            TOther real, imag;
+            if (TNumber.TryConvertToChecked(value.Real, out real) & TNumber.TryConvertToChecked(value.Imag, out imag))
+            {
+                result = new Complex<TOther>(real, imag);
+                return true;
+            }
+            else
+            {
+                result = Complex<TOther>.NaN;
+                return false;
+            }
+        }
+
+        public static bool TryConvertToSaturating<TOther>(Complex<TNumber> value, out Complex<TOther> result)
+            where TOther : struct, IFloatingPointIeee754<TOther>
+        {
+            TOther real, imag;
+            if (TNumber.TryConvertToSaturating(value.Real, out real) & TNumber.TryConvertToSaturating(value.Imag, out imag))
+            {
+                result = new Complex<TOther>(real, imag);
+                return true;
+            }
+            else
+            {
+                result = Complex<TOther>.NaN;
+                return false;
+            }
+        }
+
+        public static bool TryConvertToTruncating<TOther>(Complex<TNumber> value, out Complex<TOther> result)
+            where TOther : struct, IFloatingPointIeee754<TOther>
+        {
+            TOther real, imag;
+            if (TNumber.TryConvertToTruncating(value.Real, out real) & TNumber.TryConvertToTruncating(value.Imag, out imag))
+            {
+                result = new Complex<TOther>(real, imag);
+                return true;
+            }
+            else
+            {
+                result = Complex<TOther>.NaN;
+                return false;
+            }
+        }
+
         public static bool TryConvertToChecked<TOther>(Complex<TNumber> value, [MaybeNullWhen(false)] out TOther result) where TOther : INumberBase<TOther>
         {
             double real, imag;
-            if (typeof(TOther) == typeof(Complex) && (TNumber.TryConvertToChecked(value.Real, out real) & TNumber.TryConvertToChecked(value.Imag, out imag)))
+            if (typeof(TOther) == typeof(Complex<TNumber>))
+            {
+                result = Unsafe.BitCast<Complex<TNumber>, TOther>(value);
+                return true;
+            }
+            else if (typeof(TOther) == typeof(Complex) && (TNumber.TryConvertToChecked(value.Real, out real) & TNumber.TryConvertToChecked(value.Imag, out imag)))
             {
                 result = Unsafe.BitCast<Complex, TOther>(new Complex(real, imag));
                 return true;
             }
-            else if (typeof(TOther).IsGenericType && typeof(TOther).GetGenericTypeDefinition() == typeof(Complex<>))
+            else if (typeof(TOther) is { IsGenericType: true } t && t.GetGenericTypeDefinition() == typeof(Complex<>))
             {
-                Type innerType = typeof(TOther).GenericTypeArguments[0];
+                Type innerType = t.GenericTypeArguments[0];
                 dynamic? methodFunc = GetConversionDelegateToType("TryConvertToChecked", innerType);
                 if (methodFunc is not null)
                 {
                     return methodFunc(value, out result);
-                }
-                else
-                {
-                    result = default;
-                    return false;
                 }
             }
             else if (IsRealNumber(value) && TNumber.TryConvertToChecked(value.Real, out result))
             {
                 return true;
             }
-            else
-            {
-                result = default;
-                return false;
-            }
+
+            result = default;
+            return false;
         }
 
         public static bool TryConvertToSaturating<TOther>(Complex<TNumber> value, [MaybeNullWhen(false)] out TOther result) where TOther : INumberBase<TOther>
         {
             double real, imag;
-            if (typeof(TOther) == typeof(Complex) && (TNumber.TryConvertToSaturating(value.Real, out real) & TNumber.TryConvertToSaturating(value.Imag, out imag)))
+            if (typeof(TOther) == typeof(Complex<TNumber>))
+            {
+                result = Unsafe.BitCast<Complex<TNumber>, TOther>(value);
+                return true;
+            }
+            else if (typeof(TOther) == typeof(Complex) && (TNumber.TryConvertToSaturating(value.Real, out real) & TNumber.TryConvertToSaturating(value.Imag, out imag)))
             {
                 result = Unsafe.BitCast<Complex, TOther>(new Complex(real, imag));
                 return true;
             }
-            else if (typeof(TOther).IsGenericType && typeof(TOther).GetGenericTypeDefinition() == typeof(Complex<>))
+            else if (typeof(TOther) is { IsGenericType: true } t && t.GetGenericTypeDefinition() == typeof(Complex<>))
             {
-                Type innerType = typeof(TOther).GenericTypeArguments[0];
+                Type innerType = t.GenericTypeArguments[0];
                 dynamic? methodFunc = GetConversionDelegateToType("TryConvertToSaturating", innerType);
                 if (methodFunc is not null)
                 {
                     return methodFunc(value, out result);
-                }
-                else
-                {
-                    result = default;
-                    return false;
                 }
             }
             else if (IsRealNumber(value) && TNumber.TryConvertToSaturating(value.Real, out result))
             {
                 return true;
             }
-            else
-            {
-                result = default;
-                return false;
-            }
+
+            result = default;
+            return false;
         }
 
         public static bool TryConvertToTruncating<TOther>(Complex<TNumber> value, [MaybeNullWhen(false)] out TOther result) where TOther : INumberBase<TOther>
         {
             double real, imag;
-            if (typeof(TOther) == typeof(Complex) && (TNumber.TryConvertToTruncating(value.Real, out real) & TNumber.TryConvertToTruncating(value.Imag, out imag)))
+            if (typeof(TOther) == typeof(Complex<TNumber>))
+            {
+                result = Unsafe.BitCast<Complex<TNumber>, TOther>(value);
+                return true;
+            }
+            else if (typeof(TOther) == typeof(Complex) && (TNumber.TryConvertToTruncating(value.Real, out real) & TNumber.TryConvertToTruncating(value.Imag, out imag)))
             {
                 result = Unsafe.BitCast<Complex, TOther>(new Complex(real, imag));
                 return true;
             }
-            else if (typeof(TOther).IsGenericType && typeof(TOther).GetGenericTypeDefinition() == typeof(Complex<>))
+            else if (typeof(TOther) is { IsGenericType: true } t && t.GetGenericTypeDefinition() == typeof(Complex<>))
             {
-                Type innerType = typeof(TOther).GenericTypeArguments[0];
+                Type innerType = t.GenericTypeArguments[0];
                 dynamic? methodFunc = GetConversionDelegateToType("TryConvertToTruncating", innerType);
                 if (methodFunc is not null)
                 {
                     return methodFunc(value, out result);
-                }
-                else
-                {
-                    result = default;
-                    return false;
                 }
             }
             else if (IsRealNumber(value) && TNumber.TryConvertToTruncating(value.Real, out result))
             {
                 return true;
             }
-            else
-            {
-                result = default;
-                return false;
-            }
+
+            result = default;
+            return false;
         }
 
         public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
@@ -756,7 +744,7 @@ namespace FractalSharp.Numerics.Generic
 
         public override string ToString()
         {
-            return ToString(null, CultureInfo.InvariantCulture);
+            return ToString(null, null);
         }
 
         public string ToString(string? format, IFormatProvider? formatProvider)

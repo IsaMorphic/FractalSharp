@@ -66,10 +66,10 @@ namespace FractalSharp.Processing
             Complex<TNumber>[,] cpuInputBuffer = new Complex<TNumber>[Width, Height];
             Parallel.For(0, Height, options, y =>
             {
-                var py = pointMapper.MapPointY(TNumber.CreateChecked((double)y));
+                var py = pointMapper.MapPointY(TNumber.CreateSaturating((double)y));
                 Parallel.For(0, Width, options, x =>
                 {
-                    var px = pointMapper.MapPointX(TNumber.CreateChecked((double)x));
+                    var px = pointMapper.MapPointX(TNumber.CreateSaturating((double)x));
                     cpuInputBuffer[x, y] = new Complex<TNumber>(px, py);
                 });
             });
@@ -79,7 +79,6 @@ namespace FractalSharp.Processing
             using (var gpuInputBuffer = accelerator.Allocate2DDenseY(cpuInputBuffer))
             using (var gpuOutputBuffer = accelerator.Allocate2DDenseY(cpuOutputBuffer))
             {
-
                 loadedKernel(new(Width, Height), gpuInputBuffer, gpuOutputBuffer, SpecializedValue.New(Settings.Params.MaxIterations));
 
                 accelerator.Synchronize();

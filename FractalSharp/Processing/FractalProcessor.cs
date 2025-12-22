@@ -18,7 +18,6 @@
 
 using FractalSharp.Algorithms;
 using FractalSharp.Numerics.Generic;
-using FractalSharp.Numerics.Helpers;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,7 +35,7 @@ namespace FractalSharp.Processing
         public FractalProcessor(int width, int height) : base(width, height)
         {
             pointMapper = new PointMapper<TNumber>();
-            pointMapper.InputSpace = new Rectangle<TNumber>(TNumber.Zero, TNumber.CreateChecked((double)Width), TNumber.Zero, TNumber.CreateChecked((double)Height));
+            pointMapper.InputSpace = new Rectangle<TNumber>(TNumber.Zero, TNumber.CreateSaturating((double)Width), TNumber.Zero, TNumber.CreateSaturating((double)Height));
         }
 
         public override async Task SetupAsync(ProcessorConfig<TParams> settings, CancellationToken cancellationToken)
@@ -44,7 +43,7 @@ namespace FractalSharp.Processing
             await base.SetupAsync(settings, cancellationToken);
 
             TParams @params = Settings?.Params ?? default;
-            TNumber aspectRatio = TNumber.CreateChecked((double)Width) / TNumber.CreateChecked((double)Height);
+            TNumber aspectRatio = TNumber.CreateSaturating((double)Width) / TNumber.CreateSaturating((double)Height);
 
             pointMapper.OutputSpace = TAlgorithm.GetOutputBounds(@params, aspectRatio);
         }
@@ -56,10 +55,10 @@ namespace FractalSharp.Processing
 
             Parallel.For(0, Height, options, y =>
             {
-                var py = pointMapper.MapPointY(TNumber.CreateChecked((double)y));
+                var py = pointMapper.MapPointY(TNumber.CreateSaturating((double)y));
                 Parallel.For(0, Width, options, x =>
                 {
-                    var px = pointMapper.MapPointX(TNumber.CreateChecked((double)x));
+                    var px = pointMapper.MapPointX(TNumber.CreateSaturating((double)x));
                     data[x, y] = TAlgorithm.Run(@params, new Complex<TNumber>(px, py));
                 });
             });
