@@ -26,7 +26,7 @@ using System.Text.RegularExpressions;
 namespace FractalSharp.Numerics.Generic
 {
     public partial struct Complex<TNumber> : INumber<Complex<TNumber>>
-        where TNumber : struct, IFloatingPoint<TNumber>
+        where TNumber : struct, IFloatingPointIeee754<TNumber>
     {
         [GeneratedRegex(@"\<(\-?[0-9A-Fa-f]+\.?[0-9A-Fa-f]*),\s*(\-?[0-9A-Fa-f]+\.?[0-9A-Fa-f]*)\>")]
         private static partial Regex ParseGeneratedRegex();
@@ -35,10 +35,11 @@ namespace FractalSharp.Numerics.Generic
         public static Complex<TNumber> One { get; } = new Complex<TNumber>(TNumber.One, TNumber.Zero);
         public static Complex<TNumber> ImaginaryOne { get; } = new Complex<TNumber>(TNumber.Zero, TNumber.One);
 
+        public static Complex<TNumber> NaN { get; } = new Complex<TNumber>(TNumber.NaN, TNumber.NaN);
+        public static Complex<TNumber> Infinity { get; } = new Complex<TNumber>(TNumber.PositiveInfinity, TNumber.PositiveInfinity);
+
         public static int Radix { get; } = TNumber.Radix;
-
         public static Complex<TNumber> AdditiveIdentity { get; } = Zero;
-
         public static Complex<TNumber> MultiplicativeIdentity { get; } = One;
 
         public TNumber Real { get; }
