@@ -28,7 +28,7 @@ namespace FractalSharp.Algorithms
     }
 
     public struct PointData<TNumber>
-        where TNumber : struct, INumber<TNumber>
+        where TNumber : struct, IFloatingPointIeee754<TNumber>
     {
         public Complex<TNumber> ZValue { get; }
         public int IterCount { get; }

@@ -29,7 +29,7 @@ namespace FractalSharp.Processing
         : BaseProcessor<Complex<TNumber>, PointData<double>, TAlgorithm, TParams>
         where TAlgorithm : IFractalProvider<TParams, TNumber>
         where TParams : struct
-        where TNumber : struct, INumber<TNumber>
+        where TNumber : struct, IFloatingPointIeee754<TNumber>
     {
         protected PointMapper<TNumber> pointMapper;
 

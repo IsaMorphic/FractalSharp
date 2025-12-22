@@ -26,7 +26,7 @@ namespace FractalSharp.Algorithms.Fractals
     public class SquareMandelbrotAlgorithm<TNumber, TConverter> :
         IAlgorithmProvider<Complex<TNumber>, PointData<double>, SpecializedValue<int>>,
         IFractalProvider<EscapeTimeParams<TNumber>, TNumber>
-        where TNumber : unmanaged, INumber<TNumber>
+        where TNumber : unmanaged, IFloatingPointIeee754<TNumber>
         where TConverter : struct, INumberConverter<TNumber>
     {
         private static readonly TNumber _two = TNumber.One + TNumber.One;

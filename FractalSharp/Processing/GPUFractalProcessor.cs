@@ -31,7 +31,7 @@ namespace FractalSharp.Processing
         where TAlgorithm :
             IFractalProvider<EscapeTimeParams<TNumber>, TNumber>,
             IAlgorithmProvider<Complex<TNumber>, PointData<double>, SpecializedValue<int>>
-        where TNumber : unmanaged, INumber<TNumber>
+        where TNumber : unmanaged, IFloatingPointIeee754<TNumber>
     {
         private static void FractalKernel(Index2D idx, ArrayView2D<Complex<TNumber>, Stride2D.DenseY> inputBuff, ArrayView2D<PointData<double>, Stride2D.DenseY> outputBuff, SpecializedValue<int> maxIterations)
         {
