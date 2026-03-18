@@ -16,7 +16,7 @@
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-using TAccelerator = QuadrupleLib.Accelerators.DefaultAccelerator;
+using TAccelerator = QuadrupleLib.Accelerators.SoftwareAccelerator;
 
 using FractalSharp.Algorithms;
 using FractalSharp.Algorithms.Coloring;
@@ -87,7 +87,7 @@ namespace FractalSharp.ExampleApp
         private const int HEIGHT = 1440 * 4;
 
         private static readonly FractalProcessor<SquareMandelbrotAlgorithm<Float128<TAccelerator>, DefaultNumberConverter<TAccelerator>>, EscapeTimeParams<Float128<TAccelerator>>, Float128<TAccelerator>> FractalProcessor =
-            new FractalProcessor<SquareMandelbrotAlgorithm<Float128<TAccelerator>, DefaultNumberConverter<TAccelerator>>, EscapeTimeParams<Float128<TAccelerator>>, Float128<TAccelerator>>(WIDTH, HEIGHT);
+            new GPUFractalProcessor<SquareMandelbrotAlgorithm<Float128<TAccelerator>, DefaultNumberConverter<TAccelerator>>, Float128<TAccelerator>>(WIDTH, HEIGHT);
 
         private static readonly ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams> OuterColorProcessor =
             new ColorProcessor<SmoothColoringAlgorithm, EmptyColoringParams>(WIDTH, HEIGHT);
