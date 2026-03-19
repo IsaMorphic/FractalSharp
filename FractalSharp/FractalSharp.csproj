@@ -6,11 +6,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="ILGPU" Version="1.5.3" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\external\QuadrupleLib\QuadrupleLib\QuadrupleLib.csproj" />
+		<PackageReference Include="ILGPU" Version="1.5.3" />
+		<PackageReference Include="QuadrupleLib" Version="0.1.*" />
 	</ItemGroup>
 
 </Project>
