@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="FractalSharp.Algorithms/FractalSharp.Algorithms.csproj" />
+  <Project Path="FractalSharp.ExampleApp/FractalSharp.ExampleApp.csproj" />
+  <Project Path="FractalSharp/FractalSharp.csproj" />
+</Solution>
