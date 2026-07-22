@@ -21,7 +21,7 @@ using System.Numerics;
 
 namespace FractalSharp.Processing
 {
-    public struct PointMapper<TNumber> where TNumber : struct, INumber<TNumber>
+    public struct PointMapper<TNumber> where TNumber : unmanaged, INumber<TNumber>
     {
         public Rectangle<TNumber> InputSpace { get; set; }
         public Rectangle<TNumber> OutputSpace { get; set; }

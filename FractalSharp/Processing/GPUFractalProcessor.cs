@@ -18,6 +18,7 @@
 
 using FractalSharp.Algorithms;
 using FractalSharp.Algorithms.Fractals;
+using FractalSharp.Imaging;
 using FractalSharp.Numerics.Generic;
 using ILGPU;
 using ILGPU.Runtime;
@@ -27,22 +28,22 @@ using System.Threading.Tasks;
 
 namespace FractalSharp.Processing
 {
-    public class GPUFractalProcessor<TAlgorithm, TNumber> : FractalProcessor<TAlgorithm, EscapeTimeParams<TNumber>, TNumber>, IDisposable
-        where TAlgorithm :
-            IFractalProvider<EscapeTimeParams<TNumber>, TNumber>,
-            IAlgorithmProvider<Complex<TNumber>, PointData<double>, SpecializedValue<int>>
+    public class GPUFractalProcessor<TAlgorithm, TNumber> : FractalProcessor<TAlgorithm, TNumber>, IDisposable
+        where TAlgorithm : IFractalProvider<EscapeTimeParams<TNumber>, TNumber>
         where TNumber : unmanaged, IFloatingPointIeee754<TNumber>
     {
-        private static void FractalKernel(Index2D idx, ArrayView2D<Complex<TNumber>, Stride2D.DenseY> inputBuff, ArrayView2D<PointData<double>, Stride2D.DenseY> outputBuff, SpecializedValue<int> maxIterations)
+        private static void FractalKernel(Index2D idx, ArrayView2D<Complex<TNumber>, Stride2D.DenseY> inputBuff, ArrayView2D<PointData<double>, Stride2D.DenseY> outputBuff, SpecializedValue<EscapeTimeParams<TNumber>> @params)
         {
-            outputBuff[idx] = TAlgorithm.Run(maxIterations, inputBuff[idx]);
+            outputBuff[idx] = TAlgorithm.Run(@params, inputBuff[idx]);
         }
 
         private Context context;
         private Accelerator accelerator;
-        private Action<Index2D, ArrayView2D<Complex<TNumber>, Stride2D.DenseY>, ArrayView2D<PointData<double>, Stride2D.DenseY>, SpecializedValue<int>> loadedKernel;
+        private Action<Index2D, ArrayView2D<Complex<TNumber>, Stride2D.DenseY>, ArrayView2D<PointData<double>, Stride2D.DenseY>, SpecializedValue<EscapeTimeParams<TNumber>>> loadedKernel;
 
         private bool disposedValue;
+
+        protected new ProcessorConfig<EscapeTimeParams<TNumber>>? Settings => base.Settings as ProcessorConfig<EscapeTimeParams<TNumber>>;
 
         public GPUFractalProcessor(int width, int height) : base(width, height)
         {
@@ -53,7 +54,7 @@ namespace FractalSharp.Processing
             Device device = context.GetPreferredDevice(false);
             accelerator = device.CreateAccelerator(context);
             
-            loadedKernel = accelerator.LoadAutoGroupedStreamKernel<Index2D, ArrayView2D<Complex<TNumber>, Stride2D.DenseY>, ArrayView2D<PointData<double>, Stride2D.DenseY>, SpecializedValue<int>>(FractalKernel);
+            loadedKernel = accelerator.LoadAutoGroupedStreamKernel<Index2D, ArrayView2D<Complex<TNumber>, Stride2D.DenseY>, ArrayView2D<PointData<double>, Stride2D.DenseY>, SpecializedValue<EscapeTimeParams<TNumber>>>(FractalKernel);
         }
 
         protected override PointData<double>[,] Process(ParallelOptions options)
@@ -79,7 +80,7 @@ namespace FractalSharp.Processing
             using (var gpuInputBuffer = accelerator.Allocate2DDenseY(cpuInputBuffer))
             using (var gpuOutputBuffer = accelerator.Allocate2DDenseY(cpuOutputBuffer))
             {
-                loadedKernel(new(Width, Height), gpuInputBuffer, gpuOutputBuffer, SpecializedValue.New(Settings.Params.MaxIterations));
+                loadedKernel(new(Width, Height), gpuInputBuffer, gpuOutputBuffer, SpecializedValue.New(Settings.Params));
 
                 accelerator.Synchronize();
                 gpuOutputBuffer.CopyToCPU(cpuOutputBuffer);

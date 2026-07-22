@@ -15,26 +15,22 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-using FractalSharp.Algorithms;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace FractalSharp.Processing
 {
-    public interface IProcessor<TOutput, TParams>
-        where TParams : struct
+    public interface IProcessor<TOutput>
     {
         int Width { get; }
         int Height { get; }
 
-        Task SetupAsync(ProcessorConfig<TParams> settings, CancellationToken cancellationToken);
+        Task SetupAsync(ProcessorConfig settings, CancellationToken cancellationToken);
         Task<TOutput[,]> ProcessAsync(CancellationToken cancellationToken);
     }
 
-    public abstract class BaseProcessor<TInput, TOutput, TAlgorithm, TParams> : IProcessor<TOutput, TParams>
-        where TAlgorithm : IAlgorithmProvider<TInput, TOutput, TParams>
-        where TParams : struct
+    public abstract class BaseProcessor<TInput, TOutput> : IProcessor<TOutput>
     {
         public BaseProcessor(int width, int height)
         {
@@ -45,9 +41,9 @@ namespace FractalSharp.Processing
         public int Width { get; private set; }
         public int Height { get; private set; }
 
-        protected ProcessorConfig<TParams>? Settings { get; private set; }
+        protected ProcessorConfig? Settings { get; private set; }
 
-        public virtual Task SetupAsync(ProcessorConfig<TParams> settings, CancellationToken cancellationToken)
+        public virtual Task SetupAsync(ProcessorConfig settings, CancellationToken cancellationToken)
         {
             Settings = settings.Copy();
             return Task.CompletedTask;

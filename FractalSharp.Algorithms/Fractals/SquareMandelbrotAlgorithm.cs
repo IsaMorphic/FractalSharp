@@ -18,13 +18,11 @@
 
 using FractalSharp.Numerics.Generic;
 using FractalSharp.Numerics.Helpers;
-using ILGPU.Runtime;
 using System.Numerics;
 
 namespace FractalSharp.Algorithms.Fractals
 {
     public class SquareMandelbrotAlgorithm<TNumber, TConverter> :
-        IAlgorithmProvider<Complex<TNumber>, PointData<double>, SpecializedValue<int>>,
         IFractalProvider<EscapeTimeParams<TNumber>, TNumber>
         where TNumber : unmanaged, IFloatingPointIeee754<TNumber>
         where TConverter : struct, INumberConverter<TNumber>
@@ -46,12 +44,12 @@ namespace FractalSharp.Algorithms.Fractals
             return new Rectangle<TNumber>(xMin, xMax, yMin, yMax);
         }
 
-        public static PointData<double> Run(SpecializedValue<int> maxIterations, Complex<TNumber> c)
+        public static PointData<double> Run(EscapeTimeParams<TNumber> @params, Complex<TNumber> c)
         {
             int iter = 0;
             Complex<TNumber> z = Complex<TNumber>.Zero;
 
-            for (; iter < maxIterations; iter++)
+            for (; iter < @params.MaxIterations; iter++)
             {
                 if (Complex<TNumber>.AbsSqu(z) > _two * _two) break;
                 z = z * z + c;
@@ -62,12 +60,7 @@ namespace FractalSharp.Algorithms.Fractals
             var doubleImag = floatConverter.ToDouble(z.Imag);
 
             return new PointData<double>(new Complex<double>(doubleReal, doubleImag), iter,
-                iter < maxIterations ? PointClass.Outer : PointClass.Inner);
-        }
-
-        public static PointData<double> Run(EscapeTimeParams<TNumber> @params, Complex<TNumber> c)
-        {
-            return Run(SpecializedValue.New(@params.MaxIterations), c);
+                iter < @params.MaxIterations ? PointClass.Outer : PointClass.Inner);
         }
     }
 }
