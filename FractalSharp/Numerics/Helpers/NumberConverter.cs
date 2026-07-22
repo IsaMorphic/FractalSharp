@@ -23,7 +23,7 @@ using System.Numerics;
 namespace FractalSharp.Numerics.Helpers
 {
     public interface INumberConverter<TNumber>
-            where TNumber : struct, INumber<TNumber>
+            where TNumber : unmanaged, INumber<TNumber>
     {
         TNumber FromInt32(int x);
         double ToDouble(TNumber x);

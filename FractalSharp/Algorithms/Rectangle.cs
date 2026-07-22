@@ -20,7 +20,7 @@ using System.Numerics;
 
 namespace FractalSharp.Algorithms
 {
-    public struct Rectangle<TNumber> where TNumber : struct, INumber<TNumber>
+    public struct Rectangle<TNumber> where TNumber : unmanaged, INumber<TNumber>
     {
         public TNumber XMin { get; }
         public TNumber XMax { get; }

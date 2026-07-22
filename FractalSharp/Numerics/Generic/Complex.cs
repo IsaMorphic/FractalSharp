@@ -29,11 +29,11 @@ using System.Text.RegularExpressions;
 namespace FractalSharp.Numerics.Generic
 {
     internal delegate bool TryConvertNumberDelegate<TFrom, TTo>(Complex<TFrom> value, out Complex<TTo> result)
-        where TFrom : struct, IFloatingPointIeee754<TFrom>
-        where TTo : struct, IFloatingPointIeee754<TTo>;
+        where TFrom : unmanaged, IFloatingPointIeee754<TFrom>
+        where TTo : unmanaged, IFloatingPointIeee754<TTo>;
 
     public partial struct Complex<TNumber> : INumber<Complex<TNumber>>
-        where TNumber : struct, IFloatingPointIeee754<TNumber>
+        where TNumber : unmanaged, IFloatingPointIeee754<TNumber>
     {
         [GeneratedRegex(@"\<(\-?[0-9A-Fa-f]+\.?[0-9A-Fa-f]*),\s*(\-?[0-9A-Fa-f]+\.?[0-9A-Fa-f]*)\>")]
         private static partial Regex ParseGeneratedRegex();
@@ -394,7 +394,7 @@ namespace FractalSharp.Numerics.Generic
         }
 
         public static bool TryConvertFromChecked<TOther>(Complex<TOther> value, out Complex<TNumber> result)
-            where TOther : struct, IFloatingPointIeee754<TOther>
+            where TOther : unmanaged, IFloatingPointIeee754<TOther>
         {
             TNumber real, imag;
             if (TNumber.TryConvertFromChecked(value.Real, out real) & TNumber.TryConvertFromChecked(value.Imag, out imag))
@@ -410,7 +410,7 @@ namespace FractalSharp.Numerics.Generic
         }
 
         public static bool TryConvertFromSaturating<TOther>(Complex<TOther> value, out Complex<TNumber> result)
-            where TOther : struct, IFloatingPointIeee754<TOther>
+            where TOther : unmanaged, IFloatingPointIeee754<TOther>
         {
             TNumber real, imag;
             if (TNumber.TryConvertFromSaturating(value.Real, out real) & TNumber.TryConvertFromSaturating(value.Imag, out imag))
@@ -426,7 +426,7 @@ namespace FractalSharp.Numerics.Generic
         }
 
         public static bool TryConvertFromTruncating<TOther>(Complex<TOther> value, out Complex<TNumber> result)
-            where TOther : struct, IFloatingPointIeee754<TOther>
+            where TOther : unmanaged, IFloatingPointIeee754<TOther>
         {
             TNumber real, imag;
             if (TNumber.TryConvertFromTruncating(value.Real, out real) & TNumber.TryConvertFromTruncating(value.Imag, out imag))
@@ -561,7 +561,7 @@ namespace FractalSharp.Numerics.Generic
         }
 
         public static bool TryConvertToChecked<TOther>(Complex<TNumber> value, out Complex<TOther> result)
-            where TOther : struct, IFloatingPointIeee754<TOther>
+            where TOther : unmanaged, IFloatingPointIeee754<TOther>
         {
             TOther real, imag;
             if (TNumber.TryConvertToChecked(value.Real, out real) & TNumber.TryConvertToChecked(value.Imag, out imag))
@@ -577,7 +577,7 @@ namespace FractalSharp.Numerics.Generic
         }
 
         public static bool TryConvertToSaturating<TOther>(Complex<TNumber> value, out Complex<TOther> result)
-            where TOther : struct, IFloatingPointIeee754<TOther>
+            where TOther : unmanaged, IFloatingPointIeee754<TOther>
         {
             TOther real, imag;
             if (TNumber.TryConvertToSaturating(value.Real, out real) & TNumber.TryConvertToSaturating(value.Imag, out imag))
@@ -593,7 +593,7 @@ namespace FractalSharp.Numerics.Generic
         }
 
         public static bool TryConvertToTruncating<TOther>(Complex<TNumber> value, out Complex<TOther> result)
-            where TOther : struct, IFloatingPointIeee754<TOther>
+            where TOther : unmanaged, IFloatingPointIeee754<TOther>
         {
             TOther real, imag;
             if (TNumber.TryConvertToTruncating(value.Real, out real) & TNumber.TryConvertToTruncating(value.Imag, out imag))

@@ -23,29 +23,29 @@ using FractalSharp.Processing;
 
 namespace FractalSharp.Imaging
 {
-    public class ColorProcessorConfig<TParams> : ProcessorConfig<TParams>
-        where TParams : struct
+    public class ColorProcessorConfig : ProcessorConfig
     {
         public PointClass PointClass { get; init; }
         public PointData<double>[,]? InputData { get; init; }
+        public object? Params { get; init; }
 
-        public override ProcessorConfig<TParams> Copy()
+        public override ProcessorConfig Copy()
         {
-            return new ColorProcessorConfig<TParams>
+            return new ColorProcessorConfig
             {
-                ThreadCount = ThreadCount,
-                Params = Params,
+                ThreadCount= ThreadCount,
                 PointClass = PointClass,
-                InputData = InputData?.Clone() as PointData<double>[,]
+                InputData = InputData,
+                Params = Params,
             };
         }
     }
 
-    public class ColorProcessor<TAlgorithm, TParams> : BaseProcessor<PointData<double>, double, TAlgorithm, TParams>
+    public class ColorProcessor<TAlgorithm, TParams> : BaseProcessor<PointData<double>, double>
         where TAlgorithm : IAlgorithmProvider<PointData<double>, double, TParams>
-        where TParams : struct
+        where TParams : unmanaged
     {
-        protected new ColorProcessorConfig<TParams>? Settings => base.Settings as ColorProcessorConfig<TParams>;
+        protected new ColorProcessorConfig? Settings => base.Settings as ColorProcessorConfig;
 
         public ColorProcessor(int width, int height) : base(width, height)
         {
@@ -55,7 +55,7 @@ namespace FractalSharp.Imaging
         {
             if (Settings is null) throw new InvalidOperationException();
 
-            TParams @params = Settings.Params;
+            TParams @params = (TParams)Settings.Params!;
             double[,] indexes = new double[Width, Height];
 
             Parallel.For(0, Height, y =>

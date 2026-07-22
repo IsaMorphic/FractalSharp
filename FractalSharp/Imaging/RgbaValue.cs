@@ -16,6 +16,8 @@
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+using System;
+
 namespace FractalSharp.Imaging
 {
     public struct RgbaValue
@@ -31,6 +33,17 @@ namespace FractalSharp.Imaging
             Green = g;
             Blue = b;
             Alpha = a;
+        }
+
+        public RgbaValue(string hexColor)
+        {
+            if (hexColor.Length != 9)
+                throw new ArgumentException("Invalid hex color format. Expected format: #RRGGBBAA");
+
+            Alpha = byte.Parse(hexColor.Substring(1, 2), System.Globalization.NumberStyles.HexNumber);
+            Red = byte.Parse(hexColor.Substring(3, 2), System.Globalization.NumberStyles.HexNumber);
+            Green = byte.Parse(hexColor.Substring(5, 2), System.Globalization.NumberStyles.HexNumber);
+            Blue = byte.Parse(hexColor.Substring(7, 2), System.Globalization.NumberStyles.HexNumber);
         }
 
         private static double lerp(double v0, double v1, double t)
