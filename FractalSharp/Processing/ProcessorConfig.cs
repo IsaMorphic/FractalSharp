@@ -18,21 +18,15 @@
 
 namespace FractalSharp.Processing
 {
-    public abstract class ProcessorConfig
+    public class ProcessorConfig
     {
         public int ThreadCount { get; set; }
 
-        public abstract ProcessorConfig Copy();
-    }
+        public object? Params { get; set; }
 
-    public class ProcessorConfig<TParams> : ProcessorConfig
-        where TParams : unmanaged
-    {
-        public TParams Params { get; set; }
-
-        public override ProcessorConfig Copy()
+        public virtual ProcessorConfig Copy()
         {
-            return new ProcessorConfig<TParams>
+            return new ProcessorConfig
             {
                 ThreadCount = ThreadCount,
                 Params = Params

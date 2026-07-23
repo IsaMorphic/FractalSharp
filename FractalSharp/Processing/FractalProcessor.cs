@@ -17,7 +17,6 @@
  */
 
 using FractalSharp.Algorithms;
-using FractalSharp.Algorithms.Fractals;
 using FractalSharp.Numerics.Generic;
 using System.Numerics;
 using System.Threading;
@@ -25,10 +24,11 @@ using System.Threading.Tasks;
 
 namespace FractalSharp.Processing
 {
-    public class FractalProcessor<TAlgorithm, TNumber>
+    public class FractalProcessor<TAlgorithm, TParams, TNumber>
         : BaseProcessor<Complex<TNumber>, PointData<double>>
-        where TAlgorithm : IFractalProvider<EscapeTimeParams<TNumber>, TNumber>
+        where TAlgorithm : IFractalProvider<TParams, TNumber>
         where TNumber : unmanaged, IFloatingPointIeee754<TNumber>
+        where TParams : unmanaged, IFractalProviderParams<TNumber>
     {
         protected PointMapper<TNumber> pointMapper;
 
@@ -42,7 +42,7 @@ namespace FractalSharp.Processing
         {
             await base.SetupAsync(settings, cancellationToken);
 
-            EscapeTimeParams<TNumber> @params = (Settings as ProcessorConfig<EscapeTimeParams<TNumber>>)?.Params ?? default;
+            TParams @params = (TParams?)Settings?.Params ?? default;
             TNumber aspectRatio = TNumber.CreateSaturating((double)Width) / TNumber.CreateSaturating((double)Height);
 
             pointMapper.OutputSpace = TAlgorithm.GetOutputBounds(@params, aspectRatio);
@@ -50,7 +50,7 @@ namespace FractalSharp.Processing
 
         protected override PointData<double>[,] Process(ParallelOptions options)
         {
-            EscapeTimeParams<TNumber> @params = (Settings as ProcessorConfig<EscapeTimeParams<TNumber>>)?.Params ?? default;
+            TParams @params = (TParams?)Settings?.Params ?? default;
             PointData<double>[,] data = new PointData<double>[Width, Height];
 
             Parallel.For(0, Height, options, y =>

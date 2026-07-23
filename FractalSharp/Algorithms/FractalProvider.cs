@@ -23,7 +23,7 @@ namespace FractalSharp.Algorithms
 {
     public interface IFractalProvider<TParams, TNumber>
         : IAlgorithmProvider<Complex<TNumber>, PointData<double>, TParams>
-        where TParams : unmanaged
+        where TParams : unmanaged, IFractalProviderParams<TNumber>
         where TNumber : unmanaged, IFloatingPointIeee754<TNumber>
     {
         static abstract Rectangle<TNumber> GetOutputBounds(TParams @params, TNumber aspectRatio);
