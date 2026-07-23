@@ -22,7 +22,7 @@ using System.Numerics;
 
 namespace FractalSharp.Algorithms.Fractals
 {
-    public record struct SquareMandelbrotAlgorithmParams<TNumber> :
+    public record struct GeneralMandelbrotAlgorithmParams<TNumber> :
         IFractalProviderParams<TNumber> where TNumber :
         unmanaged, IFloatingPointIeee754<TNumber>
     {
@@ -34,23 +34,26 @@ namespace FractalSharp.Algorithms.Fractals
 
         public Complex<TNumber> InitialValue { get; set; }
 
-        public SquareMandelbrotAlgorithmParams()
+        public Complex<TNumber> Power { get; set; }
+
+        public GeneralMandelbrotAlgorithmParams()
         {
             MaxIterations = 256;
             Position = Complex<TNumber>.Zero;
             Scale = TNumber.One;
             InitialValue = Complex<TNumber>.Zero;
+            Power = new(TNumber.CreateSaturating(2.0), TNumber.Zero);
         }
     }
 
-    public class SquareMandelbrotAlgorithm<TNumber, TConverter> :
-        IFractalProvider<SquareMandelbrotAlgorithmParams<TNumber>, TNumber>
+    public class GeneralMandelbrotAlgorithm<TNumber, TConverter> :
+        IFractalProvider<GeneralMandelbrotAlgorithmParams<TNumber>, TNumber>
         where TNumber : unmanaged, IFloatingPointIeee754<TNumber>
         where TConverter : struct, INumberConverter<TNumber>
     {
         private static readonly TNumber _two = TNumber.One + TNumber.One;
 
-        public static Rectangle<TNumber> GetOutputBounds(SquareMandelbrotAlgorithmParams<TNumber> @params, TNumber aspectRatio)
+        public static Rectangle<TNumber> GetOutputBounds(GeneralMandelbrotAlgorithmParams<TNumber> @params, TNumber aspectRatio)
         {
             TNumber xScale = aspectRatio * _two / @params.Scale;
 
@@ -65,7 +68,7 @@ namespace FractalSharp.Algorithms.Fractals
             return new Rectangle<TNumber>(xMin, xMax, yMin, yMax);
         }
 
-        public static PointData<double> Run(SquareMandelbrotAlgorithmParams<TNumber> @params, Complex<TNumber> c)
+        public static PointData<double> Run(GeneralMandelbrotAlgorithmParams<TNumber> @params, Complex<TNumber> c)
         {
             int iter = 0;
             Complex<TNumber> z = @params.InitialValue;
@@ -73,7 +76,7 @@ namespace FractalSharp.Algorithms.Fractals
             for (; iter < @params.MaxIterations; iter++)
             {
                 if (Complex<TNumber>.AbsSqu(z) > _two * _two) break;
-                z = z * z + c;
+                z = Complex<TNumber>.Pow(z, @params.Power) + c;
             }
 
             TConverter floatConverter = default;
