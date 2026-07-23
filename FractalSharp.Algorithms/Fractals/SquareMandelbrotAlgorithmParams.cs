@@ -15,24 +15,3 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with FractalSharp.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-using FractalSharp.Numerics.Generic;
-using System.Numerics;
-
-namespace FractalSharp.Algorithms.Fractals
-{
-    public record struct EscapeTimeParams<TNumber>
-        where TNumber : unmanaged, IFloatingPointIeee754<TNumber>
-    {
-        public int MaxIterations { get; init; }
-        public Complex<TNumber> Position { get; init; }
-        public TNumber Scale { get; init; }
-
-        public EscapeTimeParams()
-        {
-            MaxIterations = 256;
-            Position = Complex<TNumber>.Zero;
-            Scale = TNumber.One;
-        }
-    }
-}

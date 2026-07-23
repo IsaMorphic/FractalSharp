@@ -22,14 +22,30 @@ using System.Numerics;
 
 namespace FractalSharp.Algorithms.Fractals
 {
+    public record struct SquareMandelbrotAlgorithmParams<TNumber> :
+        IFractalProviderParams<TNumber> where TNumber :
+        unmanaged, IFloatingPointIeee754<TNumber>
+    {
+        public int MaxIterations { get; set; }
+        public Complex<TNumber> Position { get; set; }
+        public TNumber Scale { get; set; }
+
+        public SquareMandelbrotAlgorithmParams()
+        {
+            MaxIterations = 256;
+            Position = Complex<TNumber>.Zero;
+            Scale = TNumber.One;
+        }
+    }
+
     public class SquareMandelbrotAlgorithm<TNumber, TConverter> :
-        IFractalProvider<EscapeTimeParams<TNumber>, TNumber>
+        IFractalProvider<SquareMandelbrotAlgorithmParams<TNumber>, TNumber>
         where TNumber : unmanaged, IFloatingPointIeee754<TNumber>
         where TConverter : struct, INumberConverter<TNumber>
     {
         private static readonly TNumber _two = TNumber.One + TNumber.One;
 
-        public static Rectangle<TNumber> GetOutputBounds(EscapeTimeParams<TNumber> @params, TNumber aspectRatio)
+        public static Rectangle<TNumber> GetOutputBounds(SquareMandelbrotAlgorithmParams<TNumber> @params, TNumber aspectRatio)
         {
             TNumber xScale = aspectRatio * _two / @params.Scale;
 
@@ -44,7 +60,7 @@ namespace FractalSharp.Algorithms.Fractals
             return new Rectangle<TNumber>(xMin, xMax, yMin, yMax);
         }
 
-        public static PointData<double> Run(EscapeTimeParams<TNumber> @params, Complex<TNumber> c)
+        public static PointData<double> Run(SquareMandelbrotAlgorithmParams<TNumber> @params, Complex<TNumber> c)
         {
             int iter = 0;
             Complex<TNumber> z = Complex<TNumber>.Zero;

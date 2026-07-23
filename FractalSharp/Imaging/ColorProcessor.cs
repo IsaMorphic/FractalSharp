@@ -25,15 +25,15 @@ namespace FractalSharp.Imaging
 {
     public class ColorProcessorConfig : ProcessorConfig
     {
-        public PointClass PointClass { get; init; }
-        public PointData<double>[,]? InputData { get; init; }
-        public object? Params { get; init; }
+        public PointClass PointClass { get; set; }
+
+        public PointData<double>[,]? InputData { get; set; }
 
         public override ProcessorConfig Copy()
         {
             return new ColorProcessorConfig
             {
-                ThreadCount= ThreadCount,
+                ThreadCount = ThreadCount,
                 PointClass = PointClass,
                 InputData = InputData,
                 Params = Params,
