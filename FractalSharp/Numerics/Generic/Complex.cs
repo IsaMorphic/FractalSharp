@@ -185,6 +185,21 @@ namespace FractalSharp.Numerics.Generic
             return TNumber.Sqrt(value.Real * value.Real + value.Imag * value.Imag);
         }
 
+        public static Complex<TNumber> Exp(Complex<TNumber> value)
+        {
+            return new Complex<TNumber>(TNumber.Exp(value.Real) * TNumber.Cos(value.Imag), TNumber.Exp(value.Real) * TNumber.Sin(value.Imag));
+        }
+
+        public static Complex<TNumber> Log(Complex<TNumber> value)
+        {
+            return new Complex<TNumber>(TNumber.Log(AbsSqu(value)) * TNumber.CreateSaturating(0.5), TNumber.Atan2(value.Imag, value.Real));
+        }
+
+        public static Complex<TNumber> Pow(Complex<TNumber> z, Complex<TNumber> n)
+        {
+            return z == Zero ? Zero : Exp(Log(z) * n);
+        }
+
         public bool Equals(Complex<TNumber> other)
         {
             if (IsNaN(this) || IsNaN(other))
