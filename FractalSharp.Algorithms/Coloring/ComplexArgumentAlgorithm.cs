@@ -35,7 +35,8 @@ namespace FractalSharp.Algorithms.Coloring
     {
         public static double Run(ComplexArgumentAlgorithmParams @params, PointData<double> data) 
         {
-            return (Complex<double>.Arg(data.ZValue) + Math.PI) * @params.Scale / Math.Tau;
+            double arg = (Complex<double>.Arg(data.ZValue) + Math.PI) * @params.Scale / Math.Tau;
+            return double.IsNaN(arg) ? 0 : arg;
         }
     }
 }
