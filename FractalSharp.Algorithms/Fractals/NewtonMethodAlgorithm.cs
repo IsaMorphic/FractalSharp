@@ -73,13 +73,16 @@ namespace FractalSharp.Algorithms.Fractals
             int iter = 0;
             for (; iter < @params.MaxIterations; iter++)
             {
-                Complex<TNumber> z_new = z - @params.Constant * (Complex<TNumber>.Pow(z, @params.Power) - Complex<TNumber>.One) / 
+                Complex<TNumber> dz = @params.Constant * (Complex<TNumber>.Pow(z, @params.Power) - Complex<TNumber>.One) /
                     (Complex<TNumber>.Pow(z, @params.Power - Complex<TNumber>.One) * @params.Power);
-                if(Complex<TNumber>.AbsSqu(z_new - z) < TNumber.CreateSaturating(0.0001))
+                if (Complex<TNumber>.AbsSqu(dz) < TNumber.CreateSaturating(0.0001))
                 {
                     break;
                 }
-                z = z_new;
+                else
+                {
+                    z = z - dz;
+                }
             }
 
             TConverter floatConverter = default;
