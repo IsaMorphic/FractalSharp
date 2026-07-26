@@ -175,29 +175,34 @@ namespace FractalSharp.Numerics.Generic
             return value + One;
         }
 
-        public static TNumber AbsSqu(Complex<TNumber> value)
+        public static TNumber AbsSqu(Complex<TNumber> z)
         {
-            return value.Real * value.Real + value.Imag * value.Imag;
+            return z.Real * z.Real + z.Imag * z.Imag;
         }
 
-        public static Complex<TNumber> Abs(Complex<TNumber> value)
+        public static Complex<TNumber> Abs(Complex<TNumber> z)
         {
-            return TNumber.Sqrt(value.Real * value.Real + value.Imag * value.Imag);
+            return TNumber.Sqrt(z.Real * z.Real + z.Imag * z.Imag);
         }
 
-        public static Complex<TNumber> Exp(Complex<TNumber> value)
+        public static Complex<TNumber> Exp(Complex<TNumber> z)
         {
-            return new Complex<TNumber>(TNumber.Exp(value.Real) * TNumber.Cos(value.Imag), TNumber.Exp(value.Real) * TNumber.Sin(value.Imag));
+            return new Complex<TNumber>(TNumber.Exp(z.Real) * TNumber.Cos(z.Imag), TNumber.Exp(z.Real) * TNumber.Sin(z.Imag));
         }
 
-        public static Complex<TNumber> Log(Complex<TNumber> value)
+        public static Complex<TNumber> Log(Complex<TNumber> z)
         {
-            return new Complex<TNumber>(TNumber.Log(AbsSqu(value)) * TNumber.CreateSaturating(0.5), TNumber.Atan2(value.Imag, value.Real));
+            return new Complex<TNumber>(TNumber.Log(AbsSqu(z)) * TNumber.CreateSaturating(0.5), TNumber.Atan2(z.Imag, z.Real));
         }
 
         public static Complex<TNumber> Pow(Complex<TNumber> z, Complex<TNumber> n)
         {
             return z == Zero ? Zero : Exp(Log(z) * n);
+        }
+
+        public static TNumber Arg(Complex<TNumber> z)
+        {
+            return TNumber.Atan2(z.Imag, z.Real);
         }
 
         public bool Equals(Complex<TNumber> other)
