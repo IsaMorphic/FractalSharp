@@ -22,6 +22,7 @@ using ILGPU;
 using ILGPU.Runtime;
 using System;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FractalSharp.Processing
@@ -31,27 +32,45 @@ namespace FractalSharp.Processing
         where TNumber : unmanaged, IFloatingPointIeee754<TNumber>
         where TParams : unmanaged, IFractalProviderParams<TNumber>, IEquatable<TParams>
     {
-        private static void FractalKernel(Index2D idx, ArrayView2D<Complex<TNumber>, Stride2D.DenseY> inputBuff, ArrayView2D<PointData<double>, Stride2D.DenseY> outputBuff, SpecializedValue<TParams> @params)
+        private static void FractalKernel(Index2D idx, ArrayView2D<Complex<TNumber>, Stride2D.DenseY> inputBuff, ArrayView2D<PointData<double>, Stride2D.DenseY> outputBuff, VariableView<TParams> @params)
         {
-            outputBuff[idx] = TAlgorithm.Run(@params, inputBuff[idx]);
+            outputBuff[idx] = TAlgorithm.Run(@params.Value, inputBuff[idx]);
         }
 
-        private Context context;
-        private Accelerator accelerator;
-        private Action<Index2D, ArrayView2D<Complex<TNumber>, Stride2D.DenseY>, ArrayView2D<PointData<double>, Stride2D.DenseY>, SpecializedValue<TParams>> loadedKernel;
+        private readonly Context context;
+
+        private readonly Accelerator accelerator;
+
+        private readonly MemoryBuffer2D<Complex<TNumber>, Stride2D.DenseY> gpuInputBuffer;
+
+        private readonly MemoryBuffer2D<PointData<double>, Stride2D.DenseY> gpuOutputBuffer;
+
+        private readonly MemoryBuffer1D<TParams, Stride1D.Dense> gpuVariableBuffer;
+
+        private readonly Action<Index2D, ArrayView2D<Complex<TNumber>, Stride2D.DenseY>, ArrayView2D<PointData<double>, Stride2D.DenseY>, VariableView<TParams>> loadedKernel;
 
         private bool disposedValue;
 
         public GPUFractalProcessor(int width, int height) : base(width, height)
         {
-            context = Context.Create().Default()
-            .Inlining(InliningMode.Conservative)
-            .ToContext();
+            context = Context.CreateDefault();
 
             Device device = context.GetPreferredDevice(false);
             accelerator = device.CreateAccelerator(context);
-            
-            loadedKernel = accelerator.LoadAutoGroupedStreamKernel<Index2D, ArrayView2D<Complex<TNumber>, Stride2D.DenseY>, ArrayView2D<PointData<double>, Stride2D.DenseY>, SpecializedValue<TParams>>(FractalKernel);
+
+            gpuInputBuffer = accelerator.Allocate2DDenseY<Complex<TNumber>>(new LongIndex2D(width, height));
+
+            gpuOutputBuffer = accelerator.Allocate2DDenseY<PointData<double>>(new LongIndex2D(width, height));
+
+            gpuVariableBuffer = accelerator.Allocate1D<TParams>(1L);
+
+            loadedKernel = accelerator.LoadAutoGroupedStreamKernel<Index2D, ArrayView2D<Complex<TNumber>, Stride2D.DenseY>, ArrayView2D<PointData<double>, Stride2D.DenseY>, VariableView<TParams>>(FractalKernel);
+        }
+
+        public override async Task SetupAsync(ProcessorConfig settings, CancellationToken cancellationToken)
+        {
+            await base.SetupAsync(settings, cancellationToken);
+            gpuVariableBuffer.CopyFromCPU([(TParams)settings.Params!]);
         }
 
         protected override PointData<double>[,] Process(ParallelOptions options)
@@ -72,16 +91,15 @@ namespace FractalSharp.Processing
                 });
             });
 
+            gpuInputBuffer.CopyFromCPU(cpuInputBuffer);
+
             PointData<double>[,] cpuOutputBuffer = new PointData<double>[Width, Height];
 
-            using (var gpuInputBuffer = accelerator.Allocate2DDenseY(cpuInputBuffer))
-            using (var gpuOutputBuffer = accelerator.Allocate2DDenseY(cpuOutputBuffer))
-            {
-                loadedKernel(new(Width, Height), gpuInputBuffer, gpuOutputBuffer, SpecializedValue.New((TParams)Settings.Params!));
+            VariableView<TParams> @params = gpuVariableBuffer.View.VariableView(0);
+            loadedKernel(new(Width, Height), gpuInputBuffer, gpuOutputBuffer, @params);
 
-                accelerator.Synchronize();
-                gpuOutputBuffer.CopyToCPU(cpuOutputBuffer);
-            }
+            accelerator.Synchronize();
+            gpuOutputBuffer.CopyToCPU(cpuOutputBuffer);
 
             return cpuOutputBuffer;
         }
@@ -92,8 +110,9 @@ namespace FractalSharp.Processing
             {
                 if (disposing)
                 {
-                    accelerator?.Dispose();
-                    context?.Dispose();
+                    gpuVariableBuffer.Dispose();
+                    accelerator.Dispose();
+                    context.Dispose();
                 }
                 disposedValue = true;
             }
