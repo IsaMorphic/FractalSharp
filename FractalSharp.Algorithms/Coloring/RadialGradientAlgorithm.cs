@@ -34,7 +34,8 @@ namespace FractalSharp.Algorithms.Coloring
     {
         public static double Run(RadialGradientParams @params, PointData<double> data)
         {
-            return @params.Scale * Complex<double>.Abs(data.ZValue).Real;
+            double result = @params.Scale * Complex<double>.Abs(data.ZValue).Real;
+            return double.IsNaN(result) || double.IsInfinity(result) ? 0.0 : result;
         }
     }
 }

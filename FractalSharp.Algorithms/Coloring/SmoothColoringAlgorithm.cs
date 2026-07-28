@@ -34,7 +34,7 @@ namespace FractalSharp.Algorithms.Coloring
             // center to radius 2, NOT our bailout radius.
 
             // Return the result.
-            return double.IsNaN(nu) ? data.IterCount : data.IterCount + 1 - nu;
+            return double.IsNaN(nu) || double.IsInfinity(nu) ? data.IterCount : data.IterCount + 1 - nu;
         }
     }
 }
