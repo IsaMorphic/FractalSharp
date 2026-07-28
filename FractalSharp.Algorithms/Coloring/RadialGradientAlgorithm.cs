@@ -20,19 +20,19 @@ using FractalSharp.Numerics.Generic;
 
 namespace FractalSharp.Algorithms.Coloring
 {
-    public record struct RadialGradientParams
+    public record struct RadialGradientAlgorithmParams
     {
         public double Scale { get; set; }
 
-        public RadialGradientParams()
+        public RadialGradientAlgorithmParams()
         {
             Scale = 128;
         }
     }
 
-    public class RadialGradientAlgorithm : IAlgorithmProvider<PointData<double>, double, RadialGradientParams>
+    public class RadialGradientAlgorithm : IAlgorithmProvider<PointData<double>, double, RadialGradientAlgorithmParams>
     {
-        public static double Run(RadialGradientParams @params, PointData<double> data)
+        public static double Run(RadialGradientAlgorithmParams @params, PointData<double> data)
         {
             return @params.Scale * Complex<double>.Abs(data.ZValue).Real;
         }
