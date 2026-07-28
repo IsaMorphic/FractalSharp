@@ -84,4 +84,48 @@ namespace FractalSharp.Algorithms.Fractals
                 iter < @params.MaxIterations ? PointClass.Outer : PointClass.Inner);
         }
     }
+
+    public class SquareMandelbrotDifferentialAlgorithm<TNumber, TConverter> :
+        IFractalProvider<SquareMandelbrotAlgorithmParams<TNumber>, TNumber>
+        where TNumber : unmanaged, IFloatingPointIeee754<TNumber>
+        where TConverter : struct, INumberConverter<TNumber>
+    {
+        private static readonly TNumber _two = TNumber.One + TNumber.One;
+
+        public static Rectangle<TNumber> GetOutputBounds(SquareMandelbrotAlgorithmParams<TNumber> @params, TNumber aspectRatio)
+        {
+            TNumber xScale = aspectRatio * _two / @params.Scale;
+
+            TNumber xMin = -xScale + @params.Position.Real;
+            TNumber xMax = xScale + @params.Position.Real;
+
+            TNumber yScale = _two / @params.Scale;
+
+            TNumber yMin = yScale + @params.Position.Imag;
+            TNumber yMax = -yScale + @params.Position.Imag;
+
+            return new Rectangle<TNumber>(xMin, xMax, yMin, yMax);
+        }
+
+        public static PointData<double> Run(SquareMandelbrotAlgorithmParams<TNumber> @params, Complex<TNumber> c)
+        {
+            int iter = 0;
+            Complex<TNumber> z = @params.InitialValue;
+            Complex<TNumber> zPrime = Complex<TNumber>.Zero;
+
+            for (; iter < @params.MaxIterations; iter++)
+            {
+                if (Complex<TNumber>.AbsSqu(z) > _two * _two) break;
+                zPrime = _two * z * zPrime + TNumber.One;
+                z = z * z + c;
+            }
+
+            TConverter floatConverter = default;
+            var doubleReal = floatConverter.ToDouble(zPrime.Real);
+            var doubleImag = floatConverter.ToDouble(zPrime.Imag);
+
+            return new PointData<double>(new Complex<double>(doubleReal, doubleImag), iter,
+                iter < @params.MaxIterations ? PointClass.Outer : PointClass.Inner);
+        }
+    }
 }
