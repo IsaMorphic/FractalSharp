@@ -20,7 +20,7 @@ using FractalSharp.Numerics.Generic;
 
 namespace FractalSharp.Algorithms.Coloring
 {
-    public record struct RadialGradientAlgorithmParams
+    public struct RadialGradientAlgorithmParams
     {
         public double Scale { get; set; }
 

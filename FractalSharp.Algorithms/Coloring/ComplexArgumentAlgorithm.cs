@@ -21,7 +21,7 @@ using System;
 
 namespace FractalSharp.Algorithms.Coloring
 {
-    public record struct ComplexArgumentAlgorithmParams
+    public struct ComplexArgumentAlgorithmParams
     {
         public double Scale { get; set; }
 

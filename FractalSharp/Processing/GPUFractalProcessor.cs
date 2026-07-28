@@ -30,7 +30,7 @@ namespace FractalSharp.Processing
     public class GPUFractalProcessor<TAlgorithm, TParams, TNumber> : FractalProcessor<TAlgorithm, TParams, TNumber>, IDisposable
         where TAlgorithm : IFractalProvider<TParams, TNumber>
         where TNumber : unmanaged, IFloatingPointIeee754<TNumber>
-        where TParams : unmanaged, IFractalProviderParams<TNumber>, IEquatable<TParams>
+        where TParams : unmanaged, IFractalProviderParams<TNumber>
     {
         private static void FractalKernel(Index2D idx, ArrayView2D<Complex<TNumber>, Stride2D.DenseY> inputBuff, ArrayView2D<PointData<double>, Stride2D.DenseY> outputBuff, VariableView<TParams> @params)
         {

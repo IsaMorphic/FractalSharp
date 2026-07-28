@@ -22,7 +22,7 @@ using System.Numerics;
 
 namespace FractalSharp.Algorithms.Fractals
 {
-    public record struct NewtonMethodAlgorithmParams<TNumber> :
+    public struct NewtonMethodAlgorithmParams<TNumber> :
         IFractalProviderParams<TNumber> where TNumber :
         unmanaged, IFloatingPointIeee754<TNumber>
     {
