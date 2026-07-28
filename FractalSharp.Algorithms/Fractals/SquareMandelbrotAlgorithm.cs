@@ -22,7 +22,7 @@ using System.Numerics;
 
 namespace FractalSharp.Algorithms.Fractals
 {
-    public record struct SquareMandelbrotAlgorithmParams<TNumber> :
+    public struct SquareMandelbrotAlgorithmParams<TNumber> :
         IFractalProviderParams<TNumber> where TNumber :
         unmanaged, IFloatingPointIeee754<TNumber>
     {
