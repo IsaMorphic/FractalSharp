@@ -56,7 +56,9 @@ namespace FractalSharp.Processing
 
         public GPUFractalProcessor(int width, int height) : base(width, height)
         {
-            context = Context.CreateDefault();
+            context = Context.Create().Default()
+                .EnableAlgorithms()
+                .ToContext();
 
             Device device = context.GetPreferredDevice(false);
             accelerator = device.CreateAccelerator(context);
