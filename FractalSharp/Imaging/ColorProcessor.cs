@@ -45,10 +45,13 @@ namespace FractalSharp.Imaging
         where TAlgorithm : IAlgorithmProvider<PointData<double>, double, TParams>
         where TParams : unmanaged
     {
+        private readonly double[,] indices;
+
         protected new ColorProcessorConfig? Settings => base.Settings as ColorProcessorConfig;
 
         public ColorProcessor(int width, int height) : base(width, height)
         {
+            indices = new double[Width, Height];
         }
 
         protected override double[,] Process(ParallelOptions options)
@@ -56,8 +59,6 @@ namespace FractalSharp.Imaging
             if (Settings is null) throw new InvalidOperationException();
 
             TParams @params = (TParams)Settings.Params!;
-            double[,] indexes = new double[Width, Height];
-
             Parallel.For(0, Height, y =>
             {
                 Parallel.For(0, Width, x =>
@@ -65,16 +66,16 @@ namespace FractalSharp.Imaging
                     PointData<double>? pointData = Settings.InputData?[x, y];
                     if (pointData?.PointClass == Settings.PointClass)
                     {
-                        indexes[x, y] = TAlgorithm.Run(@params, pointData.Value);
+                        indices[x, y] = TAlgorithm.Run(@params, pointData.Value);
                     }
                     else
                     {
-                        indexes[x, y] = double.NaN;
+                        indices[x, y] = double.NaN;
                     }
                 });
             });
 
-            return indexes;
+            return indices;
         }
     }
 }
