@@ -30,12 +30,17 @@ namespace FractalSharp.Processing
         where TNumber : unmanaged, IFloatingPointIeee754<TNumber>
         where TParams : unmanaged, IFractalProviderParams<TNumber>
     {
+        private readonly PointData<double>[,] outputData;
+
         protected PointMapper<TNumber> pointMapper;
 
         public FractalProcessor(int width, int height) : base(width, height)
         {
-            pointMapper = new PointMapper<TNumber>();
-            pointMapper.InputSpace = new Rectangle<TNumber>(TNumber.Zero, TNumber.CreateSaturating((double)Width), TNumber.Zero, TNumber.CreateSaturating((double)Height));
+            outputData = new PointData<double>[Width, Height];
+            pointMapper = new PointMapper<TNumber>()
+            {
+                InputSpace = new Rectangle<TNumber>(TNumber.Zero, TNumber.CreateSaturating((double)Width), TNumber.Zero, TNumber.CreateSaturating((double)Height)),
+            };
         }
 
         public override async Task SetupAsync(ProcessorConfig settings, CancellationToken cancellationToken)
@@ -51,19 +56,17 @@ namespace FractalSharp.Processing
         protected override PointData<double>[,] Process(ParallelOptions options)
         {
             TParams @params = (TParams?)Settings?.Params ?? default;
-            PointData<double>[,] data = new PointData<double>[Width, Height];
-
             Parallel.For(0, Height, options, y =>
             {
                 var py = pointMapper.MapPointY(TNumber.CreateSaturating((double)y));
                 Parallel.For(0, Width, options, x =>
                 {
                     var px = pointMapper.MapPointX(TNumber.CreateSaturating((double)x));
-                    data[x, y] = TAlgorithm.Run(@params, new Complex<TNumber>(px, py));
+                    outputData[x, y] = TAlgorithm.Run(@params, new Complex<TNumber>(px, py));
                 });
             });
 
-            return data;
+            return outputData;
         }
     }
 }

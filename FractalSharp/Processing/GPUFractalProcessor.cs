@@ -41,6 +41,10 @@ namespace FractalSharp.Processing
 
         private readonly Accelerator accelerator;
 
+        private readonly Complex<TNumber>[,] cpuInputBuffer;
+
+        private readonly PointData<double>[,] cpuOutputBuffer;
+
         private readonly MemoryBuffer2D<Complex<TNumber>, Stride2D.DenseY> gpuInputBuffer;
 
         private readonly MemoryBuffer2D<PointData<double>, Stride2D.DenseY> gpuOutputBuffer;
@@ -58,19 +62,14 @@ namespace FractalSharp.Processing
             Device device = context.GetPreferredDevice(false);
             accelerator = device.CreateAccelerator(context);
 
-            gpuInputBuffer = accelerator.Allocate2DDenseY<Complex<TNumber>>(new LongIndex2D(width, height));
+            cpuInputBuffer = new Complex<TNumber>[Width, Height];
+            cpuOutputBuffer = new PointData<double>[Width, Height];
 
-            gpuOutputBuffer = accelerator.Allocate2DDenseY<PointData<double>>(new LongIndex2D(width, height));
-
+            gpuInputBuffer = accelerator.Allocate2DDenseY<Complex<TNumber>>(new LongIndex2D(Width, Height));
+            gpuOutputBuffer = accelerator.Allocate2DDenseY<PointData<double>>(new LongIndex2D(Width, Height));
             gpuVariableBuffer = accelerator.Allocate1D<TParams>(1L);
 
             loadedKernel = accelerator.LoadAutoGroupedStreamKernel<Index2D, ArrayView2D<Complex<TNumber>, Stride2D.DenseY>, ArrayView2D<PointData<double>, Stride2D.DenseY>, VariableView<TParams>>(FractalKernel);
-        }
-
-        public override async Task SetupAsync(ProcessorConfig settings, CancellationToken cancellationToken)
-        {
-            await base.SetupAsync(settings, cancellationToken);
-            gpuVariableBuffer.CopyFromCPU([(TParams)settings.Params!]);
         }
 
         protected override PointData<double>[,] Process(ParallelOptions options)
@@ -80,7 +79,6 @@ namespace FractalSharp.Processing
                 throw new InvalidOperationException();
             }
 
-            Complex<TNumber>[,] cpuInputBuffer = new Complex<TNumber>[Width, Height];
             Parallel.For(0, Height, options, y =>
             {
                 var py = pointMapper.MapPointY(TNumber.CreateSaturating((double)y));
@@ -90,17 +88,17 @@ namespace FractalSharp.Processing
                     cpuInputBuffer[x, y] = new Complex<TNumber>(px, py);
                 });
             });
-
             gpuInputBuffer.CopyFromCPU(cpuInputBuffer);
 
             PointData<double>[,] cpuOutputBuffer = new PointData<double>[Width, Height];
 
             VariableView<TParams> @params = gpuVariableBuffer.View.VariableView(0);
+            gpuVariableBuffer.CopyFromCPU([(TParams)Settings.Params!]);
+
             loadedKernel(new(Width, Height), gpuInputBuffer, gpuOutputBuffer, @params);
-
             accelerator.Synchronize();
-            gpuOutputBuffer.CopyToCPU(cpuOutputBuffer);
 
+            gpuOutputBuffer.CopyToCPU(cpuOutputBuffer);
             return cpuOutputBuffer;
         }
 
