@@ -22,7 +22,6 @@ using ILGPU;
 using ILGPU.Runtime;
 using System;
 using System.Numerics;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace FractalSharp.Processing
@@ -90,8 +89,6 @@ namespace FractalSharp.Processing
             });
             gpuInputBuffer.CopyFromCPU(cpuInputBuffer);
 
-            PointData<double>[,] cpuOutputBuffer = new PointData<double>[Width, Height];
-
             VariableView<TParams> @params = gpuVariableBuffer.View.VariableView(0);
             gpuVariableBuffer.CopyFromCPU([(TParams)Settings.Params!]);
 
@@ -108,7 +105,10 @@ namespace FractalSharp.Processing
             {
                 if (disposing)
                 {
+                    gpuInputBuffer.Dispose();
+                    gpuOutputBuffer.Dispose();
                     gpuVariableBuffer.Dispose();
+
                     accelerator.Dispose();
                     context.Dispose();
                 }
