@@ -36,6 +36,8 @@ namespace FractalSharp.Algorithms.Fractals
 
         public Complex<TNumber> Constant { get; set; }
 
+        public TNumber Tolerance { get; set; }
+
         public NewtonMethodAlgorithmParams()
         {
             MaxIterations = 256;
@@ -43,6 +45,7 @@ namespace FractalSharp.Algorithms.Fractals
             Scale = TNumber.One;
             Power = new(TNumber.CreateSaturating(3.0), TNumber.Zero);
             Constant = Complex<TNumber>.One;
+            Tolerance = TNumber.CreateSaturating(0.0001);
         }
     }
 
@@ -75,7 +78,7 @@ namespace FractalSharp.Algorithms.Fractals
             {
                 Complex<TNumber> dz = @params.Constant * (Complex<TNumber>.Pow(z, @params.Power) - Complex<TNumber>.One) /
                     (Complex<TNumber>.Pow(z, @params.Power - Complex<TNumber>.One) * @params.Power);
-                if (Complex<TNumber>.AbsSqu(dz) < TNumber.CreateSaturating(0.0001))
+                if (Complex<TNumber>.AbsSqu(dz) < @params.Tolerance)
                 {
                     break;
                 }
