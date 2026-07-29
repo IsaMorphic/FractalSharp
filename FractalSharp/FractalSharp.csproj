@@ -7,6 +7,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="ILGPU" Version="1.5.3" />
+		<PackageReference Include="ILGPU.Algorithms" Version="1.5.3" />
 		<PackageReference Include="QuadrupleLib" Version="0.1.*" />
 	</ItemGroup>
 

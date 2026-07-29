@@ -104,7 +104,7 @@ namespace FractalSharp.Numerics.Generic
 
         public static bool operator ==(Complex<TNumber> left, Complex<TNumber> right)
         {
-            return Equals(left, right);
+            return left.Equals(right);
         }
 
         public static bool operator !=(Complex<TNumber> left, Complex<TNumber> right)
@@ -192,7 +192,7 @@ namespace FractalSharp.Numerics.Generic
 
         public static Complex<TNumber> Log(Complex<TNumber> z)
         {
-            return new Complex<TNumber>(TNumber.Log(AbsSqu(z)) * TNumber.CreateSaturating(0.5), TNumber.Atan2(z.Imag, z.Real));
+            return new Complex<TNumber>(TNumber.Log(AbsSqu(z)) * TNumber.ScaleB(TNumber.One, -1), TNumber.Atan2(z.Imag, z.Real));
         }
 
         public static Complex<TNumber> Pow(Complex<TNumber> z, Complex<TNumber> n)
