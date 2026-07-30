@@ -93,41 +93,35 @@ namespace FractalSharp.Processing
             gpuInputBuffer.CopyFromCPU(cpuInputBuffer);
 
             gpuVariableBuffer.CopyFromCPU([(TParams)Settings.Params!]);
-            RunKernel(new Index2D(), new Index2D(Width, Height), false, options.CancellationToken);
+            RunKernel((Width, Height), options.CancellationToken);
 
             gpuOutputBuffer.CopyToCPU(cpuOutputBuffer);
             return cpuOutputBuffer;
         }
 
-        private void RunKernel(Index2D offset, Index2D size, bool axisFlag, CancellationToken cancellationToken)
+        private void RunKernel(Index2D size, CancellationToken ct, Index2D offset = default, int depth = 0)
         {
             if (size.X > 256 || size.Y > 256)
             {
-                if (axisFlag)
+                int adj = (depth >> 1) & 1;
+                if ((depth & 1) == 0)
                 {
-                    int sizeA = size.Y / 2;
-                    int sizeB = size.Y - sizeA;
-
-                    Index2D dimA = new Index2D(size.X, sizeA);
-                    Index2D dimB = new Index2D(size.X, sizeB);
-
-                    RunKernel(offset, dimA, false, cancellationToken);
-                    RunKernel(new Index2D(offset.X, offset.Y + sizeA), dimB, false, cancellationToken);
+                    int sizeA = size.X / 2 + adj;
+                    int sizeB = size.X - sizeA;
+                    RunKernel((sizeA, size.Y), ct, offset, depth + 1);
+                    RunKernel((sizeB, size.Y), ct, offset + (sizeA, 0), depth + 1);
                 }
                 else
                 {
-                    int sizeA = size.X / 2;
-                    int sizeB = size.X - sizeA;
-                    Index2D dimA = new Index2D(sizeA, size.Y);
-                    Index2D dimB = new Index2D(sizeB, size.Y);
-
-                    RunKernel(offset, dimA, true, cancellationToken);
-                    RunKernel(new Index2D(offset.X + sizeA, offset.Y), dimB, true, cancellationToken);
+                    int sizeA = size.Y / 2 + adj;
+                    int sizeB = size.Y - sizeA;
+                    RunKernel((size.X, sizeA), ct, offset, depth + 1);
+                    RunKernel((size.X, sizeB), ct, offset + (0, sizeA), depth + 1);
                 }
             }
             else
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                ct.ThrowIfCancellationRequested();
 
                 VariableView<TParams> @params = gpuVariableBuffer.View.VariableView(0);
                 loadedKernel(size, offset, gpuInputBuffer, gpuOutputBuffer, @params);
