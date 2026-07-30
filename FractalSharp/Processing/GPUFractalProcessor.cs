@@ -22,6 +22,7 @@ using ILGPU;
 using ILGPU.Runtime;
 using System;
 using System.Numerics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FractalSharp.Processing
@@ -31,9 +32,9 @@ namespace FractalSharp.Processing
         where TNumber : unmanaged, IFloatingPointIeee754<TNumber>
         where TParams : unmanaged, IFractalProviderParams<TNumber>
     {
-        private static void FractalKernel(Index2D idx, ArrayView2D<Complex<TNumber>, Stride2D.DenseY> inputBuff, ArrayView2D<PointData<double>, Stride2D.DenseY> outputBuff, VariableView<TParams> @params)
+        private static void FractalKernel(Index2D idx, Index2D offset, ArrayView2D<Complex<TNumber>, Stride2D.DenseY> inputBuff, ArrayView2D<PointData<double>, Stride2D.DenseY> outputBuff, VariableView<TParams> @params)
         {
-            outputBuff[idx] = TAlgorithm.Run(@params.Value, inputBuff[idx]);
+            outputBuff[offset + idx] = TAlgorithm.Run(@params.Value, inputBuff[offset + idx]);
         }
 
         private readonly Context context;
@@ -50,7 +51,7 @@ namespace FractalSharp.Processing
 
         private readonly MemoryBuffer1D<TParams, Stride1D.Dense> gpuVariableBuffer;
 
-        private readonly Action<Index2D, ArrayView2D<Complex<TNumber>, Stride2D.DenseY>, ArrayView2D<PointData<double>, Stride2D.DenseY>, VariableView<TParams>> loadedKernel;
+        private readonly Action<Index2D, Index2D, ArrayView2D<Complex<TNumber>, Stride2D.DenseY>, ArrayView2D<PointData<double>, Stride2D.DenseY>, VariableView<TParams>> loadedKernel;
 
         private bool disposedValue;
 
@@ -70,7 +71,7 @@ namespace FractalSharp.Processing
             gpuOutputBuffer = accelerator.Allocate2DDenseY<PointData<double>>(new LongIndex2D(Width, Height));
             gpuVariableBuffer = accelerator.Allocate1D<TParams>(1L);
 
-            loadedKernel = accelerator.LoadAutoGroupedStreamKernel<Index2D, ArrayView2D<Complex<TNumber>, Stride2D.DenseY>, ArrayView2D<PointData<double>, Stride2D.DenseY>, VariableView<TParams>>(FractalKernel);
+            loadedKernel = accelerator.LoadAutoGroupedStreamKernel<Index2D, Index2D, ArrayView2D<Complex<TNumber>, Stride2D.DenseY>, ArrayView2D<PointData<double>, Stride2D.DenseY>, VariableView<TParams>>(FractalKernel);
         }
 
         protected override PointData<double>[,] Process(ParallelOptions options)
@@ -91,14 +92,48 @@ namespace FractalSharp.Processing
             });
             gpuInputBuffer.CopyFromCPU(cpuInputBuffer);
 
-            VariableView<TParams> @params = gpuVariableBuffer.View.VariableView(0);
             gpuVariableBuffer.CopyFromCPU([(TParams)Settings.Params!]);
-
-            loadedKernel(new(Width, Height), gpuInputBuffer, gpuOutputBuffer, @params);
-            accelerator.Synchronize();
+            RunKernel(new Index2D(), new Index2D(Width, Height), false, options.CancellationToken);
 
             gpuOutputBuffer.CopyToCPU(cpuOutputBuffer);
             return cpuOutputBuffer;
+        }
+
+        private void RunKernel(Index2D offset, Index2D size, bool axisFlag, CancellationToken cancellationToken)
+        {
+            if (size.X > 256 || size.Y > 256)
+            {
+                if (axisFlag)
+                {
+                    int sizeA = size.Y / 2;
+                    int sizeB = size.Y - sizeA;
+
+                    Index2D dimA = new Index2D(size.X, sizeA);
+                    Index2D dimB = new Index2D(size.X, sizeB);
+
+                    RunKernel(offset, dimA, false, cancellationToken);
+                    RunKernel(new Index2D(offset.X, offset.Y + sizeA), dimB, false, cancellationToken);
+                }
+                else
+                {
+                    int sizeA = size.X / 2;
+                    int sizeB = size.X - sizeA;
+                    Index2D dimA = new Index2D(sizeA, size.Y);
+                    Index2D dimB = new Index2D(sizeB, size.Y);
+
+                    RunKernel(offset, dimA, true, cancellationToken);
+                    RunKernel(new Index2D(offset.X + sizeA, offset.Y), dimB, true, cancellationToken);
+                }
+            }
+            else
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                VariableView<TParams> @params = gpuVariableBuffer.View.VariableView(0);
+                loadedKernel(size, offset, gpuInputBuffer, gpuOutputBuffer, @params);
+
+                accelerator.Synchronize();
+            }
         }
 
         protected virtual void Dispose(bool disposing)
